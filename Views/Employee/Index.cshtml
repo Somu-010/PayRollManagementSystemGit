@@ -1,0 +1,394 @@
+﻿@model IEnumerable<PayRollManagementSystem.Models.Employee>
+
+@{
+    ViewData["Title"] = "Employees";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .btn-add {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(33, 147, 176, 0.4);
+            color: white;
+        }
+
+    .filters-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        align-items: end;
+    }
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        padding: 10px 15px;
+        border: 2px solid #e8f4f8;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+        .form-control:focus {
+            border-color: #6dd5ed;
+            box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.1);
+            outline: none;
+        }
+
+    .btn-filter {
+        padding: 10px 20px;
+        background: #2193b0;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .btn-filter:hover {
+            background: #1a7a94;
+            transform: translateY(-2px);
+        }
+
+    .btn-clear {
+        padding: 10px 20px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .btn-clear:hover {
+            background: #d1e9f0;
+        }
+
+    .employees-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .employees-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .employees-table thead {
+            background: #f8fafb;
+        }
+
+        .employees-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+            border-bottom: 2px solid #e8f4f8;
+        }
+
+        .employees-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f8fafb;
+            font-size: 14px;
+            color: #5a6c7d;
+        }
+
+        .employees-table tbody tr {
+            transition: all 0.3s;
+        }
+
+            .employees-table tbody tr:hover {
+                background: #f8fafb;
+            }
+
+    .employee-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        margin-right: 10px;
+    }
+
+    .employee-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .employee-name {
+        font-weight: 600;
+        color: #2c3e50;
+        display: block;
+    }
+
+    .employee-code {
+        font-size: 12px;
+        color: #5a6c7d;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .badge-inactive {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .badge-resigned {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .btn-view {
+        background: #e8f4f8;
+        color: #2193b0;
+    }
+
+        .btn-view:hover {
+            background: #d1e9f0;
+            color: #2193b0;
+        }
+
+    .btn-edit {
+        background: rgba(109, 213, 237, 0.1);
+        color: #2193b0;
+    }
+
+        .btn-edit:hover {
+            background: rgba(109, 213, 237, 0.2);
+            color: #2193b0;
+        }
+
+    .btn-delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+    .no-records {
+        text-align: center;
+        padding: 40px;
+        color: #5a6c7d;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">👥 Employee Management</h1>
+    <a asp-action="Create" class="btn-add">➕ Add New Employee</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        <span>✓</span>
+        <span>@TempData["Success"]</span>
+    </div>
+}
+
+<!-- Filters -->
+<div class="filters-card">
+    <form asp-action="Index" method="get">
+        <div class="filters-row">
+            <div class="form-group">
+                <label>Search</label>
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"
+                       class="form-control" placeholder="Name, Email, or Employee ID..." />
+            </div>
+            <div class="form-group">
+                <label>Department</label>
+                <select name="department" class="form-control">
+                    <option value="">All Departments</option>
+                    @foreach (var dept in ViewBag.Departments)
+                    {
+                        <option value="@dept" selected="@(dept == ViewData["CurrentDepartment"])">@dept</option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status" class="form-control">
+                    <option value="">All Status</option>
+                    <option value="Active" selected="@("Active" == ViewData["CurrentStatus"])">Active</option>
+                    <option value="Inactive" selected="@("Inactive" == ViewData["CurrentStatus"])">Inactive</option>
+                    <option value="Resigned" selected="@("Resigned" == ViewData["CurrentStatus"])">Resigned</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-filter">🔍 Filter</button>
+                <a asp-action="Index" class="btn-clear" style="text-decoration: none; display: inline-flex; align-items: center;">✕ Clear</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Employees Table -->
+<div class="employees-card">
+    <div class="table-responsive">
+        <table class="employees-table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Email</th>
+                    <th>Phone</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Basic Salary</th>
+                    <th>Joining Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="employee-info">
+                                    <div class="employee-avatar">@item.Name.Substring(0, 2).ToUpper()</div>
+                                    <div>
+                                        <span class="employee-name">@item.Name</span>
+                                        <span class="employee-code">@item.EmployeeCode</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>@item.Email</td>
+                            <td>@item.Phone</td>
+                            <td>@item.Department</td>
+                            <td>@item.Designation</td>
+                            <td>$@item.BasicSalary.ToString("N2")</td>
+                            <td>@item.JoiningDate.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                @if (item.Status == PayRollManagementSystem.Models.EmploymentStatus.Active)
+                                {
+                                    <span class="badge badge-active">Active</span>
+                                }
+                                else if (item.Status == PayRollManagementSystem.Models.EmploymentStatus.Inactive)
+                                {
+                                    <span class="badge badge-inactive">Inactive</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-resigned">Resigned</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-btns">
+                                    <a asp-action="Details" asp-route-id="@item.EmployeeId" class="btn-action btn-view">👁️ View</a>
+                                    <a asp-action="Edit" asp-route-id="@item.EmployeeId" class="btn-action btn-edit">✏️ Edit</a>
+                                    <a asp-action="Delete" asp-route-id="@item.EmployeeId" class="btn-action btn-delete">🗑️ Delete</a>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="9" class="no-records">
+                            <h3>No employees found</h3>
+                            <p>Start by adding your first employee</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>

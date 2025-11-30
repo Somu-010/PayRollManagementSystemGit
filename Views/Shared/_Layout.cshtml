@@ -1,50 +1,480 @@
-﻿<!DOCTYPE html>
+﻿@using Microsoft.AspNetCore.Identity
+@inject SignInManager<IdentityUser> SignInManager
+@inject UserManager<IdentityUser> UserManager
+
+<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PayRollManagementSystem</title>
+    <title>@ViewData["Title"] - PayRoll System</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PayRollManagementSystem.styles.css" asp-append-version="true" />
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --header-height: 70px;
+            --primary-color: #2193b0;
+            --primary-light: #6dd5ed;
+            --primary-gradient: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+            --sidebar-bg: #2c3e50;
+            --sidebar-hover: #34495e;
+            --text-muted: #bdc3c7;
+            --bg-light: #f8fafb;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--bg-light);
+            min-height: 100vh;
+        }
+
+        /* Sidebar Styles */
+        .dashboard-sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: var(--sidebar-width);
+            height: 100vh;
+            background: var(--sidebar-bg);
+            color: white;
+            overflow-y: auto;
+            transition: transform 0.3s ease;
+            z-index: 1000;
+        }
+
+            .dashboard-sidebar::-webkit-scrollbar {
+                width: 6px;
+            }
+
+            .dashboard-sidebar::-webkit-scrollbar-track {
+                background: var(--sidebar-bg);
+            }
+
+            .dashboard-sidebar::-webkit-scrollbar-thumb {
+                background: var(--sidebar-hover);
+                border-radius: 3px;
+            }
+
+        .sidebar-header {
+            padding: 20px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .sidebar-logo {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+        .sidebar-brand {
+            font-size: 20px;
+            font-weight: 700;
+            color: white;
+        }
+
+        .sidebar-nav {
+            padding: 20px 0;
+        }
+
+        .nav-section-title {
+            padding: 15px 20px 10px;
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .nav-item {
+            margin: 4px 12px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 12px 16px;
+            color: rgba(255, 255, 255, 0.7);
+            text-decoration: none;
+            border-radius: 10px;
+            transition: all 0.3s ease;
+            font-size: 14px;
+        }
+
+            .nav-link:hover {
+                background: var(--sidebar-hover);
+                color: white;
+                transform: translateX(4px);
+            }
+
+            .nav-link.active {
+                background: var(--primary-gradient);
+                color: white;
+                box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+            }
+
+        .nav-icon {
+            width: 20px;
+            height: 20px;
+            margin-right: 12px;
+            font-size: 18px;
+        }
+
+        /* Main Content Area */
+        .dashboard-main {
+            margin-left: var(--sidebar-width);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Header Styles */
+        .dashboard-header {
+            height: var(--header-height);
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #e8f4f8;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0 30px;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 2px 15px rgba(52, 152, 219, 0.08);
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .mobile-menu-btn {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: #2c3e50;
+        }
+
+        .page-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 8px 16px;
+            border-radius: 10px;
+            background: #e8f4f8;
+        }
+
+        .user-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: var(--primary-gradient);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+        }
+
+        .user-role {
+            font-size: 12px;
+            color: #5a6c7d;
+        }
+
+        .btn-logout {
+            padding: 8px 16px;
+            background: var(--primary-gradient);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 10px rgba(33, 147, 176, 0.2);
+        }
+
+            .btn-logout:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 4px 15px rgba(33, 147, 176, 0.3);
+            }
+
+        /* Content Area */
+        .dashboard-content {
+            flex: 1;
+            padding: 30px;
+        }
+
+        /* Footer */
+        .dashboard-footer {
+            padding: 20px 30px;
+            background: white;
+            border-top: 1px solid #e8f4f8;
+            text-align: center;
+            color: #5a6c7d;
+            font-size: 14px;
+        }
+
+        /* Mobile Responsive */
+        @@media (max-width: 768px) {
+            .dashboard-sidebar
+
+        {
+            transform: translateX(-100%);
+        }
+
+        .dashboard-sidebar.active {
+            transform: translateX(0);
+        }
+
+        .dashboard-main {
+            margin-left: 0;
+        }
+
+        .mobile-menu-btn {
+            display: block;
+        }
+
+        .user-details {
+            display: none;
+        }
+
+        .dashboard-content {
+            padding: 20px;
+        }
+
+        .page-title {
+            font-size: 20px;
+        }
+
+        }
+
+        /* Overlay for mobile */
+        .sidebar-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 999;
+        }
+
+            .sidebar-overlay.active {
+                display: block;
+            }
+
+        /* Auth Pages (Login/Register) - No Dashboard Layout */
+        .auth-page {
+            margin: 0 !important;
+        }
+
+            .auth-page .dashboard-sidebar,
+            .auth-page .dashboard-header,
+            .auth-page .dashboard-footer {
+                display: none !important;
+            }
+    </style>
 </head>
 <body>
-    <header>
-        <nav class="navbar navbar-expand-sm navbar-toggleable-sm navbar-light bg-white border-bottom box-shadow mb-3">
-            <div class="container-fluid">
-                <a class="navbar-brand" asp-area="" asp-controller="Home" asp-action="Index">PayRollManagementSystem</a>
-                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target=".navbar-collapse" aria-controls="navbarSupportedContent"
-                        aria-expanded="false" aria-label="Toggle navigation">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
-                <div class="navbar-collapse collapse d-sm-inline-flex justify-content-between">
-                    <ul class="navbar-nav flex-grow-1">
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Index">Home</a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link text-dark" asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
-                        </li>
-                    </ul>
-                    <partial name="_LoginPartial" />
-                </div>
-            </div>
-        </nav>
-    </header>
-    <div class="container">
-        <main role="main" class="pb-3">
-            @RenderBody()
-        </main>
-    </div>
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <!-- Sidebar Overlay for Mobile -->
+        <div class="sidebar-overlay" id="sidebarOverlay"></div>
 
-    <footer class="border-top footer text-muted">
-        <div class="container">
-            &copy; 2025 - PayRollManagementSystem - <a asp-area="" asp-controller="Home" asp-action="Privacy">Privacy</a>
+        <!-- Sidebar -->
+        <aside class="dashboard-sidebar" id="sidebar">
+            <div class="sidebar-header">
+                <div class="sidebar-logo">💼</div>
+                <span class="sidebar-brand">PayRoll Pro</span>
+            </div>
+
+            <nav class="sidebar-nav">
+                <div class="nav-section-title">Main Menu</div>
+                <ul class="list-unstyled">
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" && ViewContext.RouteData.Values["controller"]?.ToString() == "Home" ? "active" : "")"
+                           asp-controller="Home" asp-action="Index">
+                            <span class="nav-icon">📊</span>
+                            Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span class="nav-icon">👥</span>
+                            Employees
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span class="nav-icon">💰</span>
+                            Payroll
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span class="nav-icon">📅</span>
+                            Attendance
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span class="nav-icon">🏖️</span>
+                            Leave Management
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="nav-section-title">Reports & Analytics</div>
+                <ul class="list-unstyled">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span class="nav-icon">📈</span>
+                            Reports
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span class="nav-icon">📄</span>
+                            Payslips
+                        </a>
+                    </li>
+                </ul>
+
+                <div class="nav-section-title">Settings</div>
+                <ul class="list-unstyled">
+                    <li class="nav-item">
+                        <a class="nav-link" href="#">
+                            <span class="nav-icon">🏢</span>
+                            Company Settings
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index">
+                            <span class="nav-icon">⚙️</span>
+                            Account Settings
+                        </a>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="dashboard-main">
+            <!-- Header -->
+            <header class="dashboard-header">
+                <div class="header-left">
+                    <button class="mobile-menu-btn" id="mobileMenuBtn">
+                        ☰
+                    </button>
+                    <h1 class="page-title">@ViewData["Title"]</h1>
+                </div>
+
+                <div class="header-right">
+                    <div class="user-info">
+                        <div class="user-avatar">
+                            @(User.Identity?.Name?.Substring(0, 2).ToUpper() ?? "US")
+                        </div>
+                        <div class="user-details">
+                            <span class="user-name">@User.Identity?.Name</span>
+                            <span class="user-role">Administrator</span>
+                        </div>
+                    </div>
+
+                    <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Home", new { area = "" })" method="post">
+                        <button type="submit" class="btn-logout">Logout</button>
+                    </form>
+                </div>
+            </header>
+
+            <!-- Content -->
+            <main class="dashboard-content">
+                @RenderBody()
+            </main>
+
+            <!-- Footer -->
+            <footer class="dashboard-footer">
+                &copy; 2025 PayRoll Pro. All rights reserved.
+            </footer>
         </div>
-    </footer>
+    }
+    else
+    {
+        <!-- For non-authenticated users (Login/Register pages) -->
+        <div class="auth-page">
+            @RenderBody()
+        </div>
+    }
+
     <script src="~/lib/jquery/dist/jquery.min.js"></script>
     <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script src="~/js/site.js" asp-append-version="true"></script>
+
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <script>
+            // Mobile menu toggle
+            const mobileMenuBtn = document.getElementById('mobileMenuBtn');
+            const sidebar = document.getElementById('sidebar');
+            const sidebarOverlay = document.getElementById('sidebarOverlay');
+
+            mobileMenuBtn?.addEventListener('click', () => {
+                sidebar.classList.toggle('active');
+                sidebarOverlay.classList.toggle('active');
+            });
+
+            sidebarOverlay?.addEventListener('click', () => {
+                sidebar.classList.remove('active');
+                sidebarOverlay.classList.remove('active');
+            });
+        </script>
+    }
+
     @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>
