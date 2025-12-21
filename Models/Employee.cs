@@ -70,6 +70,13 @@ namespace PayRollManagementSystem.Models
         [StringLength(10)]
         [Display(Name = "Postal Code")]
         public string? PostalCode { get; set; }
+        // Add this property
+        [Display(Name = "Department ID")]
+        public int? DepartmentId { get; set; }
+
+        // Add this navigation property
+        [Display(Name = "Department")]
+        public virtual Department? DepartmentNavigation { get; set; }
 
         // Navigation properties for future modules
         // public virtual ICollection<Attendance> Attendances { get; set; }
