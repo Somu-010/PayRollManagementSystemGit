@@ -1,67 +1,44 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore;
+using PayRollManagementSystem.Models;
 
-namespace PayRollManagementSystem.Models
+namespace PayRollManagementSystem.Data
 {
-    public class Department
+    public class ApplicationDbContext : IdentityDbContext
     {
-        [Key]
-        public int DepartmentId { get; set; }
+        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
+            : base(options)
+        {
+        }
 
-        [Required(ErrorMessage = "Department code is required")]
-        [StringLength(20)]
-        [Display(Name = "Department Code")]
-        public string DepartmentCode { get; set; } = string.Empty;
+        public DbSet<Employee> Employees { get; set; }
+        public DbSet<Department> Departments { get; set; }
 
-        [Required(ErrorMessage = "Department name is required")]
-        [StringLength(100)]
-        [Display(Name = "Department Name")]
-        public string Name { get; set; } = string.Empty;
+        protected override void OnModelCreating(ModelBuilder modelBuilder)
+        {
+            base.OnModelCreating(modelBuilder);
 
-        [StringLength(500)]
-        [Display(Name = "Description")]
-        public string? Description { get; set; }
+            // Configure Employee entity
+            modelBuilder.Entity<Employee>(entity =>
+            {
+                entity.HasKey(e => e.EmployeeId);
+                entity.HasIndex(e => e.EmployeeCode).IsUnique();
+                entity.HasIndex(e => e.Email).IsUnique();
 
-        [Required(ErrorMessage = "Head of department is required")]
-        [StringLength(100)]
-        [Display(Name = "Department Head")]
-        public string HeadOfDepartment { get; set; } = string.Empty;
+                // Configure relationship with Department
+                entity.HasOne(e => e.DepartmentNavigation)
+                    .WithMany(d => d.Employees)
+                    .HasForeignKey(e => e.DepartmentId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
 
-        [Phone(ErrorMessage = "Invalid phone number")]
-        [StringLength(15)]
-        [Display(Name = "Contact Number")]
-        public string? ContactNumber { get; set; }
-
-        [EmailAddress(ErrorMessage = "Invalid email address")]
-        [StringLength(100)]
-        [Display(Name = "Email")]
-        public string? Email { get; set; }
-
-        [Required]
-        [Display(Name = "Status")]
-        public DepartmentStatus Status { get; set; } = DepartmentStatus.Active;
-
-        [DataType(DataType.Date)]
-        [Display(Name = "Established Date")]
-        public DateTime? EstablishedDate { get; set; }
-
-        [Display(Name = "Employee Count")]
-        public int EmployeeCount { get; set; } = 0;
-
-        [DataType(DataType.Date)]
-        [Display(Name = "Date Created")]
-        public DateTime CreatedAt { get; set; } = DateTime.Now;
-
-        [DataType(DataType.Date)]
-        [Display(Name = "Last Updated")]
-        public DateTime? UpdatedAt { get; set; }
-
-        // Navigation property
-        public virtual ICollection<Employee>? Employees { get; set; }
-    }
-
-    public enum DepartmentStatus
-    {
-        Active,
-        Inactive
+            // Configure Department entity
+            modelBuilder.Entity<Department>(entity =>
+            {
+                entity.HasKey(d => d.DepartmentId);
+                entity.HasIndex(d => d.DepartmentCode).IsUnique();
+                entity.HasIndex(d => d.Name).IsUnique();
+            });
+        }
     }
 }

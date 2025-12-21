@@ -495,7 +495,7 @@
         display: block;
     }
 
-    @keyframes fadeIn {
+    @@keyframes fadeIn {
         from
 
     {
@@ -508,7 +508,7 @@
 
     }
 
-    @keyframes slideDown {
+    @@keyframes slideDown {
         from
 
     {
@@ -776,7 +776,7 @@
         // Edit Modal Functions
         async function openEditModal(id) {
             try {
-                const response = await fetch(`/Departments/GetDepartment/${id}`);
+                const response = await fetch(`/Department/GetDepartment/${id}`);
                 const data = await response.json();
 
                 document.getElementById('edit_DepartmentId').value = data.departmentId;
@@ -810,7 +810,7 @@
             formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
 
             try {
-                const response = await fetch('/Departments/Edit', {
+                const response = await fetch('/Department/Edit', {
                     method: 'POST',
                     body: formData
                 });
@@ -872,7 +872,7 @@
             formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
 
             try {
-                const response = await fetch('/Departments/Delete', {
+                const response = await fetch('/Department/Delete', {
                     method: 'POST',
                     body: formData
                 });

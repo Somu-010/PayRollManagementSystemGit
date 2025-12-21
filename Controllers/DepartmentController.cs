@@ -7,16 +7,16 @@ using PayRollManagementSystem.Models;
 namespace PayRollManagementSystem.Controllers
 {
     [Authorize]
-    public class DepartmentsController : Controller
+    public class DepartmentController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public DepartmentsController(ApplicationDbContext context)
+        public DepartmentController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // GET: Departments
+        // GET: Department
         public async Task<IActionResult> Index(string searchString, string status)
         {
             ViewData["CurrentFilter"] = searchString;

@@ -1,20 +1,52 @@
 using System.Diagnostics;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using PayRollManagementSystem.Data;
 using PayRollManagementSystem.Models;
 
 namespace PayRollManagementSystem.Controllers
 {
+    [Authorize]
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
+        private readonly ApplicationDbContext _context;
 
-        public HomeController(ILogger<HomeController> logger)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
         {
             _logger = logger;
+            _context = context;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            // Get department statistics
+            var totalDepartments = await _context.Departments.CountAsync();
+            var activeDepartments = await _context.Departments
+                .CountAsync(d => d.Status == DepartmentStatus.Active);
+            var totalEmployeesInDepartments = await _context.Employees
+                .Where(e => e.DepartmentId != null)
+                .CountAsync();
+            
+            // Get top departments by employee count
+            var topDepartments = await _context.Departments
+                .Include(d => d.Employees)
+                .OrderByDescending(d => d.Employees!.Count)
+                .Take(5)
+                .Select(d => new {
+                    d.DepartmentId,
+                    d.Name,
+                    d.DepartmentCode,
+                    EmployeeCount = d.Employees!.Count
+                })
+                .ToListAsync();
+
+            ViewBag.TotalDepartments = totalDepartments;
+            ViewBag.ActiveDepartments = activeDepartments;
+            ViewBag.TotalEmployeesInDepartments = totalEmployeesInDepartments;
+            ViewBag.TopDepartments = topDepartments;
+
             return View();
         }
 

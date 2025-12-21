@@ -35,6 +35,10 @@
             box-shadow: 0 10px 30px rgba(52, 152, 219, 0.15);
         }
 
+        .stat-card.clickable {
+            cursor: pointer;
+        }
+
     .stat-header {
         display: flex;
         justify-content: space-between;
@@ -74,6 +78,10 @@
             background: rgba(33, 147, 176, 0.15);
         }
 
+        .stat-icon.purple {
+            background: rgba(168, 85, 247, 0.15);
+        }
+
     .stat-value {
         font-size: 32px;
         font-weight: 700;
@@ -89,6 +97,10 @@
 
         .stat-change.negative {
             color: #ef4444;
+        }
+
+        .stat-change.neutral {
+            color: #5a6c7d;
         }
 
     .content-grid {
@@ -163,6 +175,19 @@
         font-size: 14px;
     }
 
+    .dept-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+    }
+
     .item-details h4 {
         font-size: 14px;
         font-weight: 600;
@@ -180,6 +205,12 @@
         font-size: 16px;
         font-weight: 600;
         color: #10b981;
+    }
+
+    .item-count {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2193b0;
     }
 
     .quick-actions {
@@ -219,17 +250,21 @@
         font-weight: 600;
     }
 
+    .no-data {
+        text-align: center;
+        padding: 20px;
+        color: #5a6c7d;
+        font-size: 14px;
+    }
+
     @@media (max-width: 968px) {
-        .content-grid
+        .content-grid {
+            grid-template-columns: 1fr;
+        }
 
-    {
-        grid-template-columns: 1fr;
-    }
-
-    .stats-grid {
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    }
-
+        .stats-grid {
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        }
     }
 </style>
 
@@ -243,6 +278,15 @@
             </div>
             <div class="stat-value">248</div>
             <div class="stat-change">↑ 12% from last month</div>
+        </div>
+
+        <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Department")'">
+            <div class="stat-header">
+                <span class="stat-title">Total Departments</span>
+                <div class="stat-icon purple">🏢</div>
+            </div>
+            <div class="stat-value">@ViewBag.TotalDepartments</div>
+            <div class="stat-change neutral">@ViewBag.ActiveDepartments active departments</div>
         </div>
 
         <div class="stat-card">
@@ -275,67 +319,35 @@
 
     <!-- Content Grid -->
     <div class="content-grid">
-        <!-- Recent Payroll -->
+        <!-- Top Departments by Employee Count -->
         <div class="content-card">
             <div class="card-header">
-                <h2 class="card-title">Recent Payroll Transactions</h2>
-                <a href="#" class="view-all-link">View All →</a>
+                <h2 class="card-title">🏢 Top Departments by Employee Count</h2>
+                <a asp-controller="Department" asp-action="Index" class="view-all-link">View All →</a>
             </div>
 
-            <div class="recent-item">
-                <div class="item-info">
-                    <div class="item-avatar">JD</div>
-                    <div class="item-details">
-                        <h4>John Doe</h4>
-                        <p>Software Engineer • Nov 2025</p>
+            @if (ViewBag.TopDepartments != null && ViewBag.TopDepartments.Count > 0)
+            {
+                @foreach (var dept in ViewBag.TopDepartments)
+                {
+                    <div class="recent-item">
+                        <div class="item-info">
+                            <div class="dept-avatar">@dept.Name.Substring(0, Math.Min(2, dept.Name.Length)).ToUpper()</div>
+                            <div class="item-details">
+                                <h4>@dept.Name</h4>
+                                <p>@dept.DepartmentCode • Department</p>
+                            </div>
+                        </div>
+                        <span class="item-count">@dept.EmployeeCount <span style="font-size: 12px; color: #5a6c7d;">employees</span></span>
                     </div>
+                }
+            }
+            else
+            {
+                <div class="no-data">
+                    <p>No departments found. <a asp-controller="Department" asp-action="Create">Add your first department</a></p>
                 </div>
-                <span class="item-amount">$5,200</span>
-            </div>
-
-            <div class="recent-item">
-                <div class="item-info">
-                    <div class="item-avatar">SM</div>
-                    <div class="item-details">
-                        <h4>Sarah Miller</h4>
-                        <p>Product Manager • Nov 2025</p>
-                    </div>
-                </div>
-                <span class="item-amount">$6,800</span>
-            </div>
-
-            <div class="recent-item">
-                <div class="item-info">
-                    <div class="item-avatar">RJ</div>
-                    <div class="item-details">
-                        <h4>Robert Johnson</h4>
-                        <p>UI/UX Designer • Nov 2025</p>
-                    </div>
-                </div>
-                <span class="item-amount">$4,500</span>
-            </div>
-
-            <div class="recent-item">
-                <div class="item-info">
-                    <div class="item-avatar">EW</div>
-                    <div class="item-details">
-                        <h4>Emily Wilson</h4>
-                        <p>Data Analyst • Nov 2025</p>
-                    </div>
-                </div>
-                <span class="item-amount">$4,800</span>
-            </div>
-
-            <div class="recent-item">
-                <div class="item-info">
-                    <div class="item-avatar">MB</div>
-                    <div class="item-details">
-                        <h4>Michael Brown</h4>
-                        <p>HR Manager • Nov 2025</p>
-                    </div>
-                </div>
-                <span class="item-amount">$5,500</span>
-            </div>
+            }
         </div>
 
         <!-- Quick Actions -->
@@ -348,6 +360,11 @@
                 <a href="#" class="action-btn">
                     <span class="action-icon">➕</span>
                     <span class="action-label">Add Employee</span>
+                </a>
+
+                <a asp-controller="Department" asp-action="Create" class="action-btn">
+                    <span class="action-icon">🏢</span>
+                    <span class="action-label">Add Department</span>
                 </a>
 
                 <a href="#" class="action-btn">
@@ -363,11 +380,6 @@
                 <a href="#" class="action-btn">
                     <span class="action-icon">✅</span>
                     <span class="action-label">Approve Leaves</span>
-                </a>
-
-                <a href="#" class="action-btn">
-                    <span class="action-icon">📅</span>
-                    <span class="action-label">Attendance</span>
                 </a>
 
                 <a href="#" class="action-btn">
