@@ -13,6 +13,7 @@ namespace PayRollManagementSystem.Data
 
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Department> Departments { get; set; }
+        public DbSet<Designation> Designations { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -38,6 +39,19 @@ namespace PayRollManagementSystem.Data
                 entity.HasKey(d => d.DepartmentId);
                 entity.HasIndex(d => d.DepartmentCode).IsUnique();
                 entity.HasIndex(d => d.Name).IsUnique();
+            });
+
+            // Configure Designation entity
+            modelBuilder.Entity<Designation>(entity =>
+            {
+                entity.HasKey(d => d.DesignationId);
+                entity.HasIndex(d => d.DesignationCode).IsUnique();
+
+                // Configure relationship with Department
+                entity.HasOne(d => d.Department)
+                    .WithMany()
+                    .HasForeignKey(d => d.DepartmentId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

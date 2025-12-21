@@ -358,6 +358,13 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Designation" ? "active" : "")"
+                           asp-controller="Designation" asp-action="Index">
+                            <span class="nav-icon">💼</span>
+                            Designations
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link" href="#">
                             <span class="nav-icon">💰</span>
                             Payroll
