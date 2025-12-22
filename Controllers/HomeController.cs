@@ -42,10 +42,36 @@ namespace PayRollManagementSystem.Controllers
                 })
                 .ToListAsync();
 
+            // Get designation statistics
+            var totalDesignations = await _context.Designations.CountAsync();
+            var activeDesignations = await _context.Designations
+                .CountAsync(d => d.Status == DesignationStatus.Active);
+            
+            // Get top designations by employee count
+            var topDesignations = await _context.Designations
+                .Include(d => d.Department)
+                .Include(d => d.Employees)
+                .OrderByDescending(d => d.Employees!.Count)
+                .Take(5)
+                .Select(d => new {
+                    d.DesignationId,
+                    d.Title,
+                    d.DesignationCode,
+                    DepartmentName = d.Department!.Name,
+                    EmployeeCount = d.Employees!.Count,
+                    MinimumSalary = d.MinimumSalary,
+                    MaximumSalary = d.MaximumSalary
+                })
+                .ToListAsync();
+
             ViewBag.TotalDepartments = totalDepartments;
             ViewBag.ActiveDepartments = activeDepartments;
             ViewBag.TotalEmployeesInDepartments = totalEmployeesInDepartments;
             ViewBag.TopDepartments = topDepartments;
+
+            ViewBag.TotalDesignations = totalDesignations;
+            ViewBag.ActiveDesignations = activeDesignations;
+            ViewBag.TopDesignations = topDesignations;
 
             return View();
         }

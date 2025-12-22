@@ -82,6 +82,10 @@
             background: rgba(168, 85, 247, 0.15);
         }
 
+        .stat-icon.pink {
+            background: rgba(236, 72, 153, 0.15);
+        }
+
     .stat-value {
         font-size: 32px;
         font-weight: 700;
@@ -105,7 +109,7 @@
 
     .content-grid {
         display: grid;
-        grid-template-columns: 2fr 1fr;
+        grid-template-columns: 1fr 1fr;
         gap: 20px;
         margin-bottom: 30px;
     }
@@ -160,6 +164,7 @@
         display: flex;
         align-items: center;
         gap: 12px;
+        flex: 1;
     }
 
     .item-avatar {
@@ -173,6 +178,7 @@
         color: white;
         font-weight: 600;
         font-size: 14px;
+        flex-shrink: 0;
     }
 
     .dept-avatar {
@@ -186,6 +192,26 @@
         color: white;
         font-weight: 600;
         font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .desig-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        background: linear-gradient(135deg, #ec4899 0%, #8b5cf6 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        flex-shrink: 0;
+    }
+
+    .item-details {
+        flex: 1;
+        min-width: 0;
     }
 
     .item-details h4 {
@@ -193,29 +219,52 @@
         font-weight: 600;
         color: #2c3e50;
         margin: 0 0 4px 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .item-details p {
         font-size: 12px;
         color: #5a6c7d;
         margin: 0;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 
     .item-amount {
         font-size: 16px;
         font-weight: 600;
         color: #10b981;
+        flex-shrink: 0;
+        margin-left: 10px;
     }
 
     .item-count {
         font-size: 16px;
         font-weight: 600;
         color: #2193b0;
+        flex-shrink: 0;
+        margin-left: 10px;
+    }
+
+    .item-salary {
+        font-size: 12px;
+        color: #10b981;
+        font-weight: 600;
+        flex-shrink: 0;
+        margin-left: 10px;
+        text-align: right;
+    }
+
+    .quick-actions-section {
+        grid-column: 1 / -1;
     }
 
     .quick-actions {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
         gap: 12px;
     }
 
@@ -289,6 +338,15 @@
             <div class="stat-change neutral">@ViewBag.ActiveDepartments active departments</div>
         </div>
 
+        <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Designation")'">
+            <div class="stat-header">
+                <span class="stat-title">Total Designations</span>
+                <div class="stat-icon pink">💼</div>
+            </div>
+            <div class="stat-value">@ViewBag.TotalDesignations</div>
+            <div class="stat-change neutral">@ViewBag.ActiveDesignations active designations</div>
+        </div>
+
         <div class="stat-card">
             <div class="stat-header">
                 <span class="stat-title">Monthly Payroll</span>
@@ -322,7 +380,7 @@
         <!-- Top Departments by Employee Count -->
         <div class="content-card">
             <div class="card-header">
-                <h2 class="card-title">🏢 Top Departments by Employee Count</h2>
+                <h2 class="card-title">🏢 Top Departments</h2>
                 <a asp-controller="Department" asp-action="Index" class="view-all-link">View All →</a>
             </div>
 
@@ -338,7 +396,7 @@
                                 <p>@dept.DepartmentCode • Department</p>
                             </div>
                         </div>
-                        <span class="item-count">@dept.EmployeeCount <span style="font-size: 12px; color: #5a6c7d;">employees</span></span>
+                        <span class="item-count">@dept.EmployeeCount <span style="font-size: 12px; color: #5a6c7d;">emp</span></span>
                     </div>
                 }
             }
@@ -350,10 +408,47 @@
             }
         </div>
 
-        <!-- Quick Actions -->
+        <!-- Top Designations by Employee Count -->
         <div class="content-card">
             <div class="card-header">
-                <h2 class="card-title">Quick Actions</h2>
+                <h2 class="card-title">💼 Top Designations</h2>
+                <a asp-controller="Designation" asp-action="Index" class="view-all-link">View All →</a>
+            </div>
+
+            @if (ViewBag.TopDesignations != null && ViewBag.TopDesignations.Count > 0)
+            {
+                @foreach (var desig in ViewBag.TopDesignations)
+                {
+                    <div class="recent-item">
+                        <div class="item-info">
+                            <div class="desig-avatar">@desig.Title.Substring(0, Math.Min(2, desig.Title.Length)).ToUpper()</div>
+                            <div class="item-details">
+                                <h4>@desig.Title</h4>
+                                <p>@desig.DesignationCode • @desig.DepartmentName</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <span class="item-count">@desig.EmployeeCount <span style="font-size: 12px; color: #5a6c7d;">emp</span></span>
+                            @if (desig.MinimumSalary is decimal minSalary && desig.MaximumSalary is decimal maxSalary)
+                            {
+                                <span class="item-salary">$@minSalary.ToString("N0")-$@maxSalary.ToString("N0")</span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no-data">
+                    <p>No designations found. <a asp-controller="Designation" asp-action="Create">Add your first designation</a></p>
+                </div>
+            }
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="content-card quick-actions-section">
+            <div class="card-header">
+                <h2 class="card-title">⚡ Quick Actions</h2>
             </div>
 
             <div class="quick-actions">
@@ -365,6 +460,11 @@
                 <a asp-controller="Department" asp-action="Create" class="action-btn">
                     <span class="action-icon">🏢</span>
                     <span class="action-label">Add Department</span>
+                </a>
+
+                <a asp-controller="Designation" asp-action="Create" class="action-btn">
+                    <span class="action-icon">💼</span>
+                    <span class="action-label">Add Designation</span>
                 </a>
 
                 <a href="#" class="action-btn">
@@ -380,11 +480,6 @@
                 <a href="#" class="action-btn">
                     <span class="action-icon">✅</span>
                     <span class="action-label">Approve Leaves</span>
-                </a>
-
-                <a href="#" class="action-btn">
-                    <span class="action-icon">⚙️</span>
-                    <span class="action-label">Settings</span>
                 </a>
             </div>
         </div>
