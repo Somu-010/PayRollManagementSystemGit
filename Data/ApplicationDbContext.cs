@@ -15,6 +15,8 @@ namespace PayRollManagementSystem.Data
         public DbSet<Department> Departments { get; set; }
         public DbSet<Designation> Designations { get; set; }
         public DbSet<Shift> Shifts { get; set; }
+        public DbSet<Attendance> Attendances { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

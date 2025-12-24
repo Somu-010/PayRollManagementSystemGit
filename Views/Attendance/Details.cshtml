@@ -1,0 +1,460 @@
+﻿@model PayRollManagementSystem.Models.Attendance
+
+@{
+    ViewData["Title"] = "Attendance Details";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: #e8f4f8;
+        color: #667eea;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+        .btn-back:hover {
+            background: #d1e9f0;
+            color: #667eea;
+        }
+
+    .details-container {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 20px;
+    }
+
+    .details-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .card-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 25px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .attendance-large-icon {
+        width: 80px;
+        height: 80px;
+        border-radius: 15px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 32px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .card-header-info h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0 0 5px 0;
+    }
+
+    .card-header-info p {
+        color: #5a6c7d;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+        margin-left: 10px;
+    }
+
+    .badge-present {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .badge-absent {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .badge-late {
+        background: rgba(251, 146, 60, 0.1);
+        color: #fb923c;
+    }
+
+    .badge-leave {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+    }
+
+    .badge-holiday {
+        background: rgba(139, 92, 246, 0.1);
+        color: #8b5cf6;
+    }
+
+    .badge-halfday {
+        background: rgba(234, 179, 8, 0.1);
+        color: #eab308;
+    }
+
+    .details-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .detail-item {
+        padding: 15px;
+        background: #f8fafb;
+        border-radius: 10px;
+        border-left: 4px solid #667eea;
+    }
+
+    .detail-label {
+        font-size: 12px;
+        font-weight: 600;
+        color: #5a6c7d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 8px;
+    }
+
+    .detail-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .detail-icon {
+        margin-right: 8px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 15px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 12px;
+        padding: 20px;
+        color: white;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+    }
+
+    .stat-label {
+        font-size: 14px;
+        opacity: 0.9;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+    }
+
+    .remarks-box {
+        background: #f8fafb;
+        border-radius: 10px;
+        padding: 20px;
+        color: #5a6c7d;
+        line-height: 1.6;
+        margin-bottom: 25px;
+    }
+
+    .alert-warning {
+        background: rgba(251, 146, 60, 0.1);
+        border: 2px solid rgba(251, 146, 60, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 12px;
+        align-items: start;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        border: 2px solid rgba(16, 185, 129, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 12px;
+        align-items: start;
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">📋 Attendance Details</h1>
+    <div class="header-actions">
+        <a asp-action="Index" class="btn-back">← Back to List</a>
+    </div>
+</div>
+
+<div class="details-container">
+    <div class="details-card">
+        <div class="card-header">
+            <div class="attendance-large-icon">📋</div>
+            <div class="card-header-info">
+                <h2>
+                    @Model.Employee.Name
+                    @if (Model.Status == PayRollManagementSystem.Models.AttendanceStatus.Present)
+                    {
+                        <span class="badge badge-present">Present</span>
+                    }
+                    else if (Model.Status == PayRollManagementSystem.Models.AttendanceStatus.Absent)
+                    {
+                        <span class="badge badge-absent">Absent</span>
+                    }
+                    else if (Model.Status == PayRollManagementSystem.Models.AttendanceStatus.Late)
+                    {
+                        <span class="badge badge-late">Late</span>
+                    }
+                    else if (Model.Status == PayRollManagementSystem.Models.AttendanceStatus.OnLeave)
+                    {
+                        <span class="badge badge-leave">On Leave</span>
+                    }
+                    else if (Model.Status == PayRollManagementSystem.Models.AttendanceStatus.Holiday)
+                    {
+                        <span class="badge badge-holiday">Holiday</span>
+                    }
+                    else if (Model.Status == PayRollManagementSystem.Models.AttendanceStatus.HalfDay)
+                    {
+                        <span class="badge badge-halfday">Half Day</span>
+                    }
+                </h2>
+                <p>@Model.Date.ToString("dddd, dd MMMM yyyy")</p>
+            </div>
+        </div>
+
+        @if (Model.IsLate)
+        {
+            <div class="alert-warning">
+                <span style="font-size: 24px;">⏰</span>
+                <div style="color: #c2410c;">
+                    <strong>Late Arrival</strong><br>
+                    This employee arrived @Model.LateByMinutes minutes late.
+                </div>
+            </div>
+        }
+
+        @if (Model.OvertimeHours.HasValue && Model.OvertimeHours > 0)
+        {
+            <div class="alert-success">
+                <span style="font-size: 24px;">⭐</span>
+                <div style="color: #047857;">
+                    <strong>Overtime Worked</strong><br>
+                    @Model.OvertimeHours.Value.ToString("0.00") hours of overtime recorded.
+                </div>
+            </div>
+        }
+
+        <!-- Statistics -->
+        <div class="stats-grid">
+            @if (Model.TotalHours.HasValue)
+            {
+                <div class="stat-card">
+                    <div class="stat-label">⏱️ Total Hours</div>
+                    <div class="stat-value">@Model.TotalHours.Value.ToString("0.00")</div>
+                </div>
+            }
+
+            @if (Model.OvertimeHours.HasValue && Model.OvertimeHours > 0)
+            {
+                <div class="stat-card">
+                    <div class="stat-label">⭐ Overtime</div>
+                    <div class="stat-value">@Model.OvertimeHours.Value.ToString("0.00")</div>
+                </div>
+            }
+
+            @if (Model.IsLate)
+            {
+                <div class="stat-card">
+                    <div class="stat-label">⏰ Late By</div>
+                    <div class="stat-value">@Model.LateByMinutes min</div>
+                </div>
+            }
+        </div>
+
+        <!-- Employee Information -->
+        <h3 class="section-title" style="margin-top: 30px;">👤 Employee Information</h3>
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="detail-label">Employee Name</div>
+                <div class="detail-value">
+                    <span class="detail-icon">👤</span>@Model.Employee.Name
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Employee Code</div>
+                <div class="detail-value">
+                    <span class="detail-icon">🔖</span>@Model.Employee.EmployeeCode
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Department</div>
+                <div class="detail-value">
+                    <span class="detail-icon">🏢</span>@(Model.Employee.DepartmentNavigation?.Name ?? Model.Employee.Department ?? "N/A")
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Shift</div>
+                <div class="detail-value">
+                    <span class="detail-icon">⏰</span>@(Model.Employee.ShiftNavigation?.ShiftName ?? "N/A")
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Details -->
+        <h3 class="section-title">📋 Attendance Details</h3>
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="detail-label">Date</div>
+                <div class="detail-value">
+                    <span class="detail-icon">📅</span>@Model.Date.ToString("dd MMM yyyy")
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Day</div>
+                <div class="detail-value">
+                    <span class="detail-icon">📆</span>@Model.Date.ToString("dddd")
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Check-In Time</div>
+                <div class="detail-value">
+                    @{
+                        var checkInHour = Model.CheckInTime.Hours;
+                        var checkInMinute = Model.CheckInTime.Minutes;
+                        var checkInPeriod = checkInHour >= 12 ? "PM" : "AM";
+                        var displayCheckInHour = checkInHour > 12 ? checkInHour - 12 : (checkInHour == 0 ? 12 : checkInHour);
+                    }
+                    <span class="detail-icon">🌅</span>@displayCheckInHour:@checkInMinute.ToString("D2") @checkInPeriod
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Check-Out Time</div>
+                <div class="detail-value">
+                    @if (Model.CheckOutTime.HasValue)
+                    {
+                        var checkOutHour = Model.CheckOutTime.Value.Hours;
+                        var checkOutMinute = Model.CheckOutTime.Value.Minutes;
+                        var checkOutPeriod = checkOutHour >= 12 ? "PM" : "AM";
+                        var displayCheckOutHour = checkOutHour > 12 ? checkOutHour - 12 : (checkOutHour == 0 ? 12 : checkOutHour);
+                        <span class="detail-icon">🌆</span>
+                        @displayCheckOutHour:@checkOutMinute.ToString("D2") @checkOutPeriod
+                    }
+                    else
+                    {
+                        <span style="color: #9ca3af;">Not checked out yet</span>
+                    }
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Status</div>
+                <div class="detail-value">
+                    <span class="detail-icon">📊</span>@Model.Status.ToString()
+                </div>
+            </div>
+
+            <div class="detail-item">
+                <div class="detail-label">Late Status</div>
+                <div class="detail-value">
+                    <span class="detail-icon">⏰</span>@(Model.IsLate ? $"Late by {Model.LateByMinutes} min" : "On Time")
+                </div>
+            </div>
+
+            @if (Model.IsHalfDay)
+            {
+                <div class="detail-item">
+                    <div class="detail-label">Half Day Status</div>
+                    <div class="detail-value">
+                        <span class="detail-icon">🕐</span>Yes
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Remarks -->
+        @if (!string.IsNullOrEmpty(Model.Remarks))
+        {
+            <h3 class="section-title">📝 Remarks</h3>
+            <div class="remarks-box">
+                @Model.Remarks
+            </div>
+        }
+
+        <!-- Record Information -->
+        <h3 class="section-title">🕒 Record Information</h3>
+        <div class="details-grid">
+            <div class="detail-item">
+                <div class="detail-label">Created On</div>
+                <div class="detail-value">
+                    <span class="detail-icon">📅</span>@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")
+                </div>
+            </div>
+
+            @if (Model.UpdatedAt.HasValue)
+            {
+                <div class="detail-item">
+                    <div class="detail-label">Last Updated</div>
+                    <div class="detail-value">
+                        <span class="detail-icon">🔄</span>@Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
