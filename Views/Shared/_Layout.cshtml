@@ -345,7 +345,8 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Employee" ? "active" : "")"
+                           asp-controller="Employee" asp-action="Index">
                             <span class="nav-icon">👥</span>
                             Employees
                         </a>
@@ -362,6 +363,13 @@
                            asp-controller="Designation" asp-action="Index">
                             <span class="nav-icon">💼</span>
                             Designations
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Shift" ? "active" : "")"
+                           asp-controller="Shift" asp-action="Index">
+                            <span class="nav-icon">⏰</span>
+                            Shifts
                         </a>
                     </li>
                     <li class="nav-item">

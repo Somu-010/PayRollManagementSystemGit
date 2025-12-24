@@ -77,6 +77,14 @@ namespace PayRollManagementSystem.Models
         // Navigation property to Department
         [ForeignKey("DepartmentId")]
         public virtual Department? DepartmentNavigation { get; set; }
+        // Add these properties to your Employee class
+
+        [Display(Name = "Shift ID")]
+        public int? ShiftId { get; set; }
+
+        // Navigation property to Shift
+        [ForeignKey("ShiftId")]
+        public virtual Shift? ShiftNavigation { get; set; }
     }
 
     public enum EmploymentStatus

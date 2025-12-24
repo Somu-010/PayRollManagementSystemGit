@@ -14,6 +14,7 @@ namespace PayRollManagementSystem.Data
         public DbSet<Employee> Employees { get; set; }
         public DbSet<Department> Departments { get; set; }
         public DbSet<Designation> Designations { get; set; }
+        public DbSet<Shift> Shifts { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -30,6 +31,12 @@ namespace PayRollManagementSystem.Data
                 entity.HasOne(e => e.DepartmentNavigation)
                     .WithMany(d => d.Employees)
                     .HasForeignKey(e => e.DepartmentId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Configure relationship with Shift
+                entity.HasOne(e => e.ShiftNavigation)
+                    .WithMany(s => s.Employees)
+                    .HasForeignKey(e => e.ShiftId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
 
@@ -52,6 +59,14 @@ namespace PayRollManagementSystem.Data
                     .WithMany()
                     .HasForeignKey(d => d.DepartmentId)
                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure Shift entity
+            modelBuilder.Entity<Shift>(entity =>
+            {
+                entity.HasKey(s => s.ShiftId);
+                entity.HasIndex(s => s.ShiftCode).IsUnique();
+                entity.HasIndex(s => s.ShiftName).IsUnique();
             });
         }
     }

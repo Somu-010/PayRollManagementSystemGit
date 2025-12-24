@@ -7,11 +7,11 @@ using PayRollManagementSystem.Models;
 namespace PayRollManagementSystem.Controllers
 {
     [Authorize]
-    public class EmployeesController : Controller
+    public class EmployeeController : Controller
     {
         private readonly ApplicationDbContext _context;
 
-        public EmployeesController(ApplicationDbContext context)
+        public EmployeeController(ApplicationDbContext context)
         {
             _context = context;
         }
@@ -65,6 +65,8 @@ namespace PayRollManagementSystem.Controllers
             }
 
             var employee = await _context.Employees
+                .Include(e => e.DepartmentNavigation)
+                .Include(e => e.ShiftNavigation)
                 .FirstOrDefaultAsync(m => m.EmployeeId == id);
 
             if (employee == null)
@@ -120,100 +122,101 @@ namespace PayRollManagementSystem.Controllers
             return View(employee);
         }
 
-        // GET: Employees/Edit/5
-        public async Task<IActionResult> Edit(int? id)
+        // AJAX: Get Employee data for Edit Modal
+        [HttpGet]
+        public async Task<IActionResult> GetEmployee(int id)
         {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
             var employee = await _context.Employees.FindAsync(id);
             if (employee == null)
             {
                 return NotFound();
             }
 
-            return View(employee);
+            return Json(new
+            {
+                employeeId = employee.EmployeeId,
+                employeeCode = employee.EmployeeCode,
+                name = employee.Name,
+                email = employee.Email,
+                phone = employee.Phone,
+                department = employee.Department,
+                designation = employee.Designation,
+                basicSalary = employee.BasicSalary,
+                joiningDate = employee.JoiningDate.ToString("yyyy-MM-dd"),
+                status = employee.Status.ToString(),
+                address = employee.Address,
+                city = employee.City,
+                postalCode = employee.PostalCode
+            });
         }
 
-        // POST: Employees/Edit/5
+        // POST: AJAX Edit Employee (Inline Modal)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("EmployeeId,EmployeeCode,Name,Email,Phone,Department,Designation,BasicSalary,JoiningDate,Status,Address,City,PostalCode,CreatedAt")] Employee employee)
+        public async Task<IActionResult> Edit(Employee employee)
         {
-            if (id != employee.EmployeeId)
+            try
             {
-                return NotFound();
-            }
+                var existingEmployee = await _context.Employees.FindAsync(employee.EmployeeId);
+                if (existingEmployee == null)
+                {
+                    return Json(new { success = false, message = "Employee not found" });
+                }
 
-            if (ModelState.IsValid)
+                // Check if email already exists for another employee
+                if (await _context.Employees.AnyAsync(e => e.Email == employee.Email && e.EmployeeId != employee.EmployeeId))
+                {
+                    return Json(new { success = false, message = "Email already exists for another employee" });
+                }
+
+                // Update employee properties
+                existingEmployee.Name = employee.Name;
+                existingEmployee.Email = employee.Email;
+                existingEmployee.Phone = employee.Phone;
+                existingEmployee.Department = employee.Department;
+                existingEmployee.Designation = employee.Designation;
+                existingEmployee.BasicSalary = employee.BasicSalary;
+                existingEmployee.JoiningDate = employee.JoiningDate;
+                existingEmployee.Status = employee.Status;
+                existingEmployee.Address = employee.Address;
+                existingEmployee.City = employee.City;
+                existingEmployee.PostalCode = employee.PostalCode;
+                existingEmployee.UpdatedAt = DateTime.Now;
+
+                _context.Update(existingEmployee);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = $"Employee {employee.Name} updated successfully!" });
+            }
+            catch (Exception ex)
             {
-                try
-                {
-                    // Check if email already exists for another employee
-                    if (await _context.Employees.AnyAsync(e => e.Email == employee.Email && e.EmployeeId != employee.EmployeeId))
-                    {
-                        ModelState.AddModelError("Email", "Email already exists for another employee.");
-                        return View(employee);
-                    }
-
-                    employee.UpdatedAt = DateTime.Now;
-                    _context.Update(employee);
-                    await _context.SaveChangesAsync();
-
-                    TempData["Success"] = $"Employee {employee.Name} updated successfully!";
-                }
-                catch (DbUpdateConcurrencyException)
-                {
-                    if (!EmployeeExists(employee.EmployeeId))
-                    {
-                        return NotFound();
-                    }
-                    else
-                    {
-                        throw;
-                    }
-                }
-                return RedirectToAction(nameof(Index));
+                return Json(new { success = false, message = "Error updating employee: " + ex.Message });
             }
-
-            return View(employee);
         }
 
-        // GET: Employees/Delete/5
-        public async Task<IActionResult> Delete(int? id)
-        {
-            if (id == null)
-            {
-                return NotFound();
-            }
-
-            var employee = await _context.Employees
-                .FirstOrDefaultAsync(m => m.EmployeeId == id);
-
-            if (employee == null)
-            {
-                return NotFound();
-            }
-
-            return View(employee);
-        }
-
-        // POST: Employees/Delete/5
-        [HttpPost, ActionName("Delete")]
+        // POST: AJAX Delete Employee (Inline Modal)
+        [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> DeleteConfirmed(int id)
+        public async Task<IActionResult> Delete(int id)
         {
-            var employee = await _context.Employees.FindAsync(id);
-            if (employee != null)
+            try
             {
+                var employee = await _context.Employees.FindAsync(id);
+                if (employee == null)
+                {
+                    return Json(new { success = false, message = "Employee not found" });
+                }
+
+                var employeeName = employee.Name;
                 _context.Employees.Remove(employee);
                 await _context.SaveChangesAsync();
-                TempData["Success"] = $"Employee {employee.Name} deleted successfully!";
-            }
 
-            return RedirectToAction(nameof(Index));
+                return Json(new { success = true, message = $"Employee {employeeName} deleted successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error deleting employee: " + ex.Message });
+            }
         }
 
         private bool EmployeeExists(int id)

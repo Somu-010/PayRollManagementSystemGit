@@ -1,10 +1,11 @@
-﻿@model IEnumerable<PayRollManagementSystem.Models.Employee>
+﻿@model IEnumerable<PayRollManagementSystem.Models.Shift>
 
 @{
-    ViewData["Title"] = "Employees";
+    ViewData["Title"] = "Shifts";
 }
 
 <style>
+    /* Reusing all styles from Department Index */
     .page-header {
         display: flex;
         justify-content: space-between;
@@ -110,7 +111,7 @@
             color: #2193b0;
         }
 
-    .employees-card {
+    .shifts-card {
         background: white;
         border-radius: 12px;
         padding: 20px;
@@ -121,16 +122,16 @@
         overflow-x: auto;
     }
 
-    .employees-table {
+    .shifts-table {
         width: 100%;
         border-collapse: collapse;
     }
 
-        .employees-table thead {
+        .shifts-table thead {
             background: #f8fafb;
         }
 
-        .employees-table th {
+        .shifts-table th {
             padding: 15px;
             text-align: left;
             font-weight: 600;
@@ -139,49 +140,59 @@
             border-bottom: 2px solid #e8f4f8;
         }
 
-        .employees-table td {
+        .shifts-table td {
             padding: 15px;
             border-bottom: 1px solid #f8fafb;
             font-size: 14px;
             color: #5a6c7d;
         }
 
-        .employees-table tbody tr {
+        .shifts-table tbody tr {
             transition: all 0.3s;
         }
 
-            .employees-table tbody tr:hover {
+            .shifts-table tbody tr:hover {
                 background: #f8fafb;
             }
 
-    .employee-avatar {
+    .shift-icon {
         width: 40px;
         height: 40px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        border-radius: 10px;
+        background: linear-gradient(135deg, #a78bfa 0%, #7c3aed 100%);
         display: inline-flex;
         align-items: center;
         justify-content: center;
         color: white;
         font-weight: 600;
-        font-size: 14px;
+        font-size: 16px;
         margin-right: 10px;
     }
 
-    .employee-info {
+    .shift-info {
         display: flex;
         align-items: center;
     }
 
-    .employee-name {
+    .shift-name {
         font-weight: 600;
         color: #2c3e50;
         display: block;
     }
 
-    .employee-code {
+    .shift-code {
         font-size: 12px;
         color: #5a6c7d;
+    }
+
+    .time-badge {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+        background: rgba(109, 213, 237, 0.1);
+        color: #2193b0;
+        display: inline-block;
     }
 
     .badge {
@@ -202,9 +213,24 @@
         color: #ef4444;
     }
 
-    .badge-resigned {
-        background: rgba(107, 114, 128, 0.1);
-        color: #6b7280;
+    .badge-night {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+        margin-left: 5px;
+    }
+
+    .badge-weekend {
+        background: rgba(251, 146, 60, 0.1);
+        color: #fb923c;
+        margin-left: 5px;
+    }
+
+    .employee-count {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 600;
+        color: #2193b0;
     }
 
     .action-btns {
@@ -282,6 +308,7 @@
         border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
+    /* Modal Styles */
     .modal-overlay {
         display: none;
         position: fixed;
@@ -308,7 +335,7 @@
         border-radius: 16px;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
         z-index: 9999;
-        max-width: 800px;
+        max-width: 700px;
         width: 90%;
         max-height: 90vh;
         overflow-y: auto;
@@ -446,11 +473,16 @@
         color: #7f1d1d;
         line-height: 1.6;
     }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
 </style>
 
 <div class="page-header">
-    <h1 class="page-title">👥 Employee Management</h1>
-    <a asp-action="Create" class="btn-add">➕ Add New Employee</a>
+    <h1 class="page-title">⏰ Shift Management</h1>
+    <a asp-action="Create" class="btn-add">➕ Add New Shift</a>
 </div>
 
 <div id="alertContainer"></div>
@@ -462,7 +494,7 @@
             <div class="form-group">
                 <label>Search</label>
                 <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"
-                       class="form-control" placeholder="Employee name or code..." />
+                       class="form-control" placeholder="Shift name or code..." />
             </div>
             <div class="form-group">
                 <label>Status</label>
@@ -470,7 +502,6 @@
                     <option value="">All Status</option>
                     <option value="Active" selected="@("Active" == ViewData["CurrentStatus"])">Active</option>
                     <option value="Inactive" selected="@("Inactive" == ViewData["CurrentStatus"])">Inactive</option>
-                    <option value="Resigned" selected="@("Resigned" == ViewData["CurrentStatus"])">Resigned</option>
                 </select>
             </div>
             <div style="display: flex; gap: 10px;">
@@ -481,18 +512,18 @@
     </form>
 </div>
 
-<!-- Employees Table -->
-<div class="employees-card">
+<!-- Shifts Table -->
+<div class="shifts-card">
     <div class="table-responsive">
-        <table class="employees-table">
+        <table class="shifts-table">
             <thead>
                 <tr>
-                    <th>Employee</th>
-                    <th>Email</th>
-                    <th>Phone</th>
-                    <th>Department</th>
-                    <th>Designation</th>
-                    <th>Salary</th>
+                    <th>Shift</th>
+                    <th>Timing</th>
+                    <th>Duration</th>
+                    <th>Break</th>
+                    <th>Type</th>
+                    <th>Employees</th>
                     <th>Status</th>
                     <th>Actions</th>
                 </tr>
@@ -504,38 +535,64 @@
                     {
                         <tr>
                             <td>
-                                <div class="employee-info">
-                                    <div class="employee-avatar">@item.Name.Substring(0, Math.Min(2, item.Name.Length)).ToUpper()</div>
+                                <div class="shift-info">
+                                    <div class="shift-icon">⏰</div>
                                     <div>
-                                        <span class="employee-name">@item.Name</span>
-                                        <span class="employee-code">@item.EmployeeCode</span>
+                                        <span class="shift-name">@item.ShiftName</span>
+                                        <span class="shift-code">@item.ShiftCode</span>
                                     </div>
                                 </div>
                             </td>
-                            <td>@item.Email</td>
-                            <td>@item.Phone</td>
-                            <td>@(item.DepartmentNavigation?.Name ?? item.Department)</td>
-                            <td>@item.Designation</td>
-                            <td style="font-weight: 600; color: #10b981;">$@item.BasicSalary.ToString("N2")</td>
                             <td>
-                                @if (item.Status == PayRollManagementSystem.Models.EmploymentStatus.Active)
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span class="time-badge">🌅 @item.StartTime.ToString(@"hh\:mm") - @item.EndTime.ToString(@"hh\:mm")</span>
+                                    <small style="color: #5a6c7d; font-size: 11px;">Grace: @item.GracePeriod min | Late: @item.LateMarkAfter min</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div style="display: flex; flex-direction: column; gap: 4px;">
+                                    <span style="font-weight: 600; color: #2c3e50;">@item.FullDayHours hrs</span>
+                                    <small style="color: #5a6c7d; font-size: 11px;">Half: @item.HalfDayHours hrs</small>
+                                </div>
+                            </td>
+                            <td>@item.BreakDuration min</td>
+                            <td>
+                                <div style="display: flex; flex-wrap: wrap; gap: 4px;">
+                                    @if (item.IsNightShift)
+                                    {
+                                        <span class="badge-night">🌙 Night</span>
+                                    }
+                                    @if (item.IsWeekendShift)
+                                    {
+                                        <span class="badge-weekend">📅 Weekend</span>
+                                    }
+                                    @if (!item.IsNightShift && !item.IsWeekendShift)
+                                    {
+                                        <span style="color: #5a6c7d;">Regular</span>
+                                    }
+                                </div>
+                            </td>
+                            <td>
+                                <span class="employee-count">
+                                    <span>👥</span>
+                                    <span>@item.AssignedEmployees</span>
+                                </span>
+                            </td>
+                            <td>
+                                @if (item.Status == PayRollManagementSystem.Models.ShiftStatus.Active)
                                 {
                                     <span class="badge badge-active">Active</span>
                                 }
-                                else if (item.Status == PayRollManagementSystem.Models.EmploymentStatus.Inactive)
-                                {
-                                    <span class="badge badge-inactive">Inactive</span>
-                                }
                                 else
                                 {
-                                    <span class="badge badge-resigned">Resigned</span>
+                                    <span class="badge badge-inactive">Inactive</span>
                                 }
                             </td>
                             <td>
                                 <div class="action-btns">
-                                    <a asp-action="Details" asp-route-id="@item.EmployeeId" class="btn-action btn-view">👁️ View</a>
-                                    <button onclick="openEditModal(@item.EmployeeId)" class="btn-action btn-edit">✏️ Edit</button>
-                                    <button onclick="openDeleteModal(@item.EmployeeId, '@item.Name', '@item.EmployeeCode')" class="btn-action btn-delete">🗑️ Delete</button>
+                                    <a asp-action="Details" asp-route-id="@item.ShiftId" class="btn-action btn-view">👁️ View</a>
+                                    <button onclick="openEditModal(@item.ShiftId)" class="btn-action btn-edit">✏️ Edit</button>
+                                    <button onclick="openDeleteModal(@item.ShiftId, '@item.ShiftName', '@item.ShiftCode', @item.AssignedEmployees)" class="btn-action btn-delete">🗑️ Delete</button>
                                 </div>
                             </td>
                         </tr>
@@ -545,8 +602,8 @@
                 {
                     <tr>
                         <td colspan="8" class="no-records">
-                            <h3>No employees found</h3>
-                            <p>Start by adding your first employee</p>
+                            <h3>No shifts found</h3>
+                            <p>Start by adding your first shift</p>
                         </td>
                     </tr>
                 }
@@ -559,93 +616,101 @@
 <div class="modal-overlay" id="editModalOverlay" onclick="closeEditModal()"></div>
 <div class="modal" id="editModal">
     <div class="modal-header">
-        <h3 class="modal-title">✏️ Edit Employee</h3>
+        <h3 class="modal-title">✏️ Edit Shift</h3>
         <button class="modal-close" onclick="closeEditModal()">×</button>
     </div>
     <form id="editForm" onsubmit="handleEdit(event)">
         <div class="modal-body">
-            <input type="hidden" id="edit_EmployeeId" name="EmployeeId" />
+            <input type="hidden" id="edit_ShiftId" name="ShiftId" />
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Employee Code <span style="color: #ef4444;">*</span></label>
-                    <input type="text" id="edit_EmployeeCode" name="EmployeeCode" class="form-control readonly-field" readonly required />
+                    <label>Shift Code <span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="edit_ShiftCode" name="ShiftCode" class="form-control readonly-field" readonly required />
                 </div>
 
                 <div class="form-group">
-                    <label>Full Name <span style="color: #ef4444;">*</span></label>
-                    <input type="text" id="edit_Name" name="Name" class="form-control" required />
-                    <span class="text-danger" id="edit_Name_error"></span>
+                    <label>Shift Name <span style="color: #ef4444;">*</span></label>
+                    <input type="text" id="edit_ShiftName" name="ShiftName" class="form-control" required />
+                    <span class="text-danger" id="edit_ShiftName_error"></span>
                 </div>
             </div>
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Email <span style="color: #ef4444;">*</span></label>
-                    <input type="email" id="edit_Email" name="Email" class="form-control" required />
+                    <label>Start Time <span style="color: #ef4444;">*</span></label>
+                    <input type="time" id="edit_StartTime" name="StartTime" class="form-control" required />
                 </div>
 
                 <div class="form-group">
-                    <label>Phone <span style="color: #ef4444;">*</span></label>
-                    <input type="text" id="edit_Phone" name="Phone" class="form-control" required />
+                    <label>End Time <span style="color: #ef4444;">*</span></label>
+                    <input type="time" id="edit_EndTime" name="EndTime" class="form-control" required />
                 </div>
             </div>
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Department <span style="color: #ef4444;">*</span></label>
-                    <input type="text" id="edit_Department" name="Department" class="form-control" required />
+                    <label>Break Duration (minutes) <span style="color: #ef4444;">*</span></label>
+                    <input type="number" id="edit_BreakDuration" name="BreakDuration" class="form-control" min="0" max="480" required />
                 </div>
 
                 <div class="form-group">
-                    <label>Designation <span style="color: #ef4444;">*</span></label>
-                    <input type="text" id="edit_Designation" name="Designation" class="form-control" required />
+                    <label>Grace Period (minutes) <span style="color: #ef4444;">*</span></label>
+                    <input type="number" id="edit_GracePeriod" name="GracePeriod" class="form-control" min="0" max="60" required />
                 </div>
             </div>
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Basic Salary <span style="color: #ef4444;">*</span></label>
-                    <input type="number" id="edit_BasicSalary" name="BasicSalary" class="form-control" step="0.01" required />
+                    <label>Late Mark After (minutes) <span style="color: #ef4444;">*</span></label>
+                    <input type="number" id="edit_LateMarkAfter" name="LateMarkAfter" class="form-control" min="0" max="120" required />
                 </div>
 
-                <div class="form-group">
-                    <label>Joining Date <span style="color: #ef4444;">*</span></label>
-                    <input type="date" id="edit_JoiningDate" name="JoiningDate" class="form-control" required />
-                </div>
-            </div>
-
-            <div class="form-grid">
                 <div class="form-group">
                     <label>Status <span style="color: #ef4444;">*</span></label>
                     <select id="edit_Status" name="Status" class="form-control" required>
                         <option value="Active">Active</option>
                         <option value="Inactive">Inactive</option>
-                        <option value="Resigned">Resigned</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label>Address</label>
-                <input type="text" id="edit_Address" name="Address" class="form-control" />
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Half Day Hours <span style="color: #ef4444;">*</span></label>
+                    <input type="number" id="edit_HalfDayHours" name="HalfDayHours" class="form-control" step="0.5" min="0" max="12" required />
+                </div>
+
+                <div class="form-group">
+                    <label>Full Day Hours <span style="color: #ef4444;">*</span></label>
+                    <input type="number" id="edit_FullDayHours" name="FullDayHours" class="form-control" step="0.5" min="0" max="24" required />
+                </div>
             </div>
 
             <div class="form-grid">
                 <div class="form-group">
-                    <label>City</label>
-                    <input type="text" id="edit_City" name="City" class="form-control" />
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="edit_IsNightShift" name="IsNightShift" value="true" style="width: auto;" />
+                        <span>🌙 Night Shift</span>
+                    </label>
                 </div>
 
                 <div class="form-group">
-                    <label>Postal Code</label>
-                    <input type="text" id="edit_PostalCode" name="PostalCode" class="form-control" />
+                    <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
+                        <input type="checkbox" id="edit_IsWeekendShift" name="IsWeekendShift" value="true" style="width: auto;" />
+                        <span>📅 Weekend Shift</span>
+                    </label>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label>Description</label>
+                <textarea id="edit_Description" name="Description" class="form-control"></textarea>
             </div>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn-modal btn-modal-cancel" onclick="closeEditModal()">Cancel</button>
-            <button type="submit" class="btn-modal btn-modal-save">✓ Update Employee</button>
+            <button type="submit" class="btn-modal btn-modal-save">✓ Update Shift</button>
         </div>
     </form>
 </div>
@@ -654,40 +719,47 @@
 <div class="modal-overlay" id="deleteModalOverlay" onclick="closeDeleteModal()"></div>
 <div class="modal" id="deleteModal">
     <div class="modal-header">
-        <h3 class="modal-title">🗑️ Delete Employee</h3>
+        <h3 class="modal-title">🗑️ Delete Shift</h3>
         <button class="modal-close" onclick="closeDeleteModal()">×</button>
     </div>
     <form id="deleteForm" onsubmit="handleDelete(event)">
         <div class="modal-body">
-            <input type="hidden" id="delete_EmployeeId" name="id" />
+            <input type="hidden" id="delete_ShiftId" name="id" />
 
             <div class="delete-warning">
                 <span class="delete-warning-icon">⚠️</span>
                 <div class="delete-warning-text">
-                    <strong>Are you sure you want to delete this employee?</strong><br>
+                    <strong>Are you sure you want to delete this shift?</strong><br>
                     This action cannot be undone.
                 </div>
             </div>
 
-            <div style="background: #f8fafb; border-radius: 10px; padding: 20px;">
-                <div style="display: flex; align-items: center; gap: 15px;">
-                    <div class="employee-avatar" id="delete_avatar">EM</div>
+            <div style="background: #f8fafb; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
+                <div style="display: flex; align-items: center; gap: 15px; margin-bottom: 15px;">
+                    <div class="shift-icon">⏰</div>
                     <div>
                         <h3 style="margin: 0 0 5px 0; font-size: 18px; color: #2c3e50;" id="delete_name"></h3>
                         <p style="margin: 0; font-size: 14px; color: #5a6c7d;" id="delete_code"></p>
+                    </div>
+                </div>
+                <div id="delete_employee_warning" style="display: none;">
+                    <div class="alert-error">
+                        <span>🚫</span>
+                        <span id="delete_employee_message"></span>
                     </div>
                 </div>
             </div>
         </div>
         <div class="modal-footer">
             <button type="button" class="btn-modal btn-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
-            <button type="submit" class="btn-modal btn-modal-delete">🗑️ Delete Employee</button>
+            <button type="submit" class="btn-modal btn-modal-delete" id="delete_confirm_btn">🗑️ Delete Shift</button>
         </div>
     </form>
 </div>
 
 @section Scripts {
     <script>
+        // Show alert message
         function showAlert(message, type) {
             const alertContainer = document.getElementById('alertContainer');
             const alert = document.createElement('div');
@@ -701,29 +773,31 @@
             }, 5000);
         }
 
+        // Edit Modal Functions
         async function openEditModal(id) {
             try {
-                const response = await fetch(`/Employee/GetEmployee/${id}`);
+                const response = await fetch(`/Shift/GetShift/${id}`);
                 const data = await response.json();
 
-                document.getElementById('edit_EmployeeId').value = data.employeeId;
-                document.getElementById('edit_EmployeeCode').value = data.employeeCode;
-                document.getElementById('edit_Name').value = data.name;
-                document.getElementById('edit_Email').value = data.email;
-                document.getElementById('edit_Phone').value = data.phone;
-                document.getElementById('edit_Department').value = data.department;
-                document.getElementById('edit_Designation').value = data.designation;
-                document.getElementById('edit_BasicSalary').value = data.basicSalary;
-                document.getElementById('edit_JoiningDate').value = data.joiningDate.split('T')[0];
+                document.getElementById('edit_ShiftId').value = data.shiftId;
+                document.getElementById('edit_ShiftCode').value = data.shiftCode;
+                document.getElementById('edit_ShiftName').value = data.shiftName;
+                document.getElementById('edit_StartTime').value = data.startTime;
+                document.getElementById('edit_EndTime').value = data.endTime;
+                document.getElementById('edit_BreakDuration').value = data.breakDuration;
+                document.getElementById('edit_GracePeriod').value = data.gracePeriod;
+                document.getElementById('edit_LateMarkAfter').value = data.lateMarkAfter;
+                document.getElementById('edit_HalfDayHours').value = data.halfDayHours;
+                document.getElementById('edit_FullDayHours').value = data.fullDayHours;
                 document.getElementById('edit_Status').value = data.status;
-                document.getElementById('edit_Address').value = data.address || '';
-                document.getElementById('edit_City').value = data.city || '';
-                document.getElementById('edit_PostalCode').value = data.postalCode || '';
+                document.getElementById('edit_IsNightShift').checked = data.isNightShift;
+                document.getElementById('edit_IsWeekendShift').checked = data.isWeekendShift;
+                document.getElementById('edit_Description').value = data.description || '';
 
                 document.getElementById('editModal').classList.add('active');
                 document.getElementById('editModalOverlay').classList.add('active');
             } catch (error) {
-                showAlert('Error loading employee data', 'error');
+                showAlert('Error loading shift data', 'error');
             }
         }
 
@@ -731,7 +805,7 @@
             document.getElementById('editModal').classList.remove('active');
             document.getElementById('editModalOverlay').classList.remove('active');
             document.getElementById('editForm').reset();
-            document.getElementById('edit_Name_error').textContent = '';
+            document.getElementById('edit_ShiftName_error').textContent = '';
         }
 
         async function handleEdit(event) {
@@ -741,7 +815,7 @@
             formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
 
             try {
-                const response = await fetch('/Employee/Edit', {
+                const response = await fetch('/Shift/Edit', {
                     method: 'POST',
                     body: formData
                 });
@@ -753,19 +827,36 @@
                     showAlert(result.message, 'success');
                     setTimeout(() => location.reload(), 1000);
                 } else {
-                    document.getElementById('edit_Name_error').textContent = result.message;
+                    document.getElementById('edit_ShiftName_error').textContent = result.message;
                     showAlert(result.message, 'error');
                 }
             } catch (error) {
-                showAlert('Error updating employee', 'error');
+                showAlert('Error updating shift', 'error');
             }
         }
 
-        function openDeleteModal(id, name, code) {
-            document.getElementById('delete_EmployeeId').value = id;
+        // Delete Modal Functions
+        function openDeleteModal(id, name, code, employeeCount) {
+            document.getElementById('delete_ShiftId').value = id;
             document.getElementById('delete_name').textContent = name;
             document.getElementById('delete_code').textContent = code;
-            document.getElementById('delete_avatar').textContent = name.substring(0, 2).toUpperCase();
+
+            const warningDiv = document.getElementById('delete_employee_warning');
+            const confirmBtn = document.getElementById('delete_confirm_btn');
+
+            if (employeeCount > 0) {
+                warningDiv.style.display = 'block';
+                document.getElementById('delete_employee_message').textContent =
+                    `This shift has ${employeeCount} employee(s). Please reassign or remove them first.`;
+                confirmBtn.disabled = true;
+                confirmBtn.style.opacity = '0.5';
+                confirmBtn.style.cursor = 'not-allowed';
+            } else {
+                warningDiv.style.display = 'none';
+                confirmBtn.disabled = false;
+                confirmBtn.style.opacity = '1';
+                confirmBtn.style.cursor = 'pointer';
+            }
 
             document.getElementById('deleteModal').classList.add('active');
             document.getElementById('deleteModalOverlay').classList.add('active');
@@ -779,13 +870,13 @@
         async function handleDelete(event) {
             event.preventDefault();
 
-            const id = document.getElementById('delete_EmployeeId').value;
+            const id = document.getElementById('delete_ShiftId').value;
             const formData = new FormData();
             formData.append('id', id);
             formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
 
             try {
-                const response = await fetch('/Employee/Delete', {
+                const response = await fetch('/Shift/Delete', {
                     method: 'POST',
                     body: formData
                 });
@@ -800,17 +891,18 @@
                     showAlert(result.message, 'error');
                 }
             } catch (error) {
-                showAlert('Error deleting employee', 'error');
+                showAlert('Error deleting shift', 'error');
             }
         }
 
+        // Show success message from TempData
         @if (TempData["Success"] != null)
         {
-                <text>
-                document.addEventListener('DOMContentLoaded', function() {
-                    showAlert('@TempData["Success"]', 'success');
-                });
-                </text>
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                showAlert('@TempData["Success"]', 'success');
+            });
+            </text>
         }
     </script>
 }
