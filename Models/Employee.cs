@@ -71,15 +71,23 @@ namespace PayRollManagementSystem.Models
         public string? PostalCode { get; set; }
 
         // Foreign Key to Department
-        [Display(Name = "Department ID")]
+        [Display(Name = "Department")]
         public int? DepartmentId { get; set; }
 
         // Navigation property to Department
         [ForeignKey("DepartmentId")]
         public virtual Department? DepartmentNavigation { get; set; }
-        // Add these properties to your Employee class
 
-        [Display(Name = "Shift ID")]
+        // Foreign Key to Designation (ADD THIS - IT'S MISSING!)
+        [Display(Name = "Designation")]
+        public int? DesignationId { get; set; }
+
+        // Navigation property to Designation (ADD THIS - IT'S MISSING!)
+        [ForeignKey("DesignationId")]
+        public virtual Designation? DesignationNavigation { get; set; }
+
+        // Foreign Key to Shift
+        [Display(Name = "Shift")]
         public int? ShiftId { get; set; }
 
         // Navigation property to Shift

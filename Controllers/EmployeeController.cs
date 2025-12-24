@@ -24,9 +24,10 @@ namespace PayRollManagementSystem.Controllers
             ViewData["CurrentStatus"] = status;
 
             var employees = from e in _context.Employees
+                            .Include(e => e.DepartmentNavigation)
+                            .Include(e => e.ShiftNavigation)
                             select e;
 
-            // Search by name, email, or employee code
             if (!string.IsNullOrEmpty(searchString))
             {
                 employees = employees.Where(e => e.Name.Contains(searchString)
@@ -34,19 +35,16 @@ namespace PayRollManagementSystem.Controllers
                                                || e.EmployeeCode.Contains(searchString));
             }
 
-            // Filter by department
             if (!string.IsNullOrEmpty(department))
             {
                 employees = employees.Where(e => e.Department == department);
             }
 
-            // Filter by status
             if (!string.IsNullOrEmpty(status) && Enum.TryParse<EmploymentStatus>(status, out var statusEnum))
             {
                 employees = employees.Where(e => e.Status == statusEnum);
             }
 
-            // Get unique departments for filter dropdown
             ViewBag.Departments = await _context.Employees
                 .Select(e => e.Department)
                 .Distinct()
@@ -66,6 +64,7 @@ namespace PayRollManagementSystem.Controllers
 
             var employee = await _context.Employees
                 .Include(e => e.DepartmentNavigation)
+                .Include(e => e.DesignationNavigation)
                 .Include(e => e.ShiftNavigation)
                 .FirstOrDefaultAsync(m => m.EmployeeId == id);
 
@@ -78,11 +77,12 @@ namespace PayRollManagementSystem.Controllers
         }
 
         // GET: Employees/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
-            // Generate new employee code
             var newEmployeeCode = GenerateEmployeeCode();
             ViewBag.GeneratedEmployeeCode = newEmployeeCode;
+
+            await LoadDropdownData();
 
             return View();
         }
@@ -90,14 +90,19 @@ namespace PayRollManagementSystem.Controllers
         // POST: Employees/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EmployeeCode,Name,Email,Phone,Department,Designation,BasicSalary,JoiningDate,Status,Address,City,PostalCode")] Employee employee)
+        public async Task<IActionResult> Create([Bind("EmployeeCode,Name,Email,Phone,DepartmentId,DesignationId,ShiftId,BasicSalary,JoiningDate,Status,Address,City,PostalCode")] Employee employee)
         {
+            // Remove Department and Designation from ModelState validation since they'll be populated from the IDs
+            ModelState.Remove("Department");
+            ModelState.Remove("Designation");
+            
             if (ModelState.IsValid)
             {
                 // Check if employee code already exists
                 if (await _context.Employees.AnyAsync(e => e.EmployeeCode == employee.EmployeeCode))
                 {
                     ModelState.AddModelError("EmployeeCode", "Employee code already exists.");
+                    await LoadDropdownData();
                     ViewBag.GeneratedEmployeeCode = employee.EmployeeCode;
                     return View(employee);
                 }
@@ -106,8 +111,23 @@ namespace PayRollManagementSystem.Controllers
                 if (await _context.Employees.AnyAsync(e => e.Email == employee.Email))
                 {
                     ModelState.AddModelError("Email", "Email already exists.");
+                    await LoadDropdownData();
                     ViewBag.GeneratedEmployeeCode = employee.EmployeeCode;
                     return View(employee);
+                }
+
+                // Get Department name from selected DepartmentId
+                if (employee.DepartmentId.HasValue)
+                {
+                    var department = await _context.Departments.FindAsync(employee.DepartmentId.Value);
+                    employee.Department = department?.Name ?? string.Empty;
+                }
+
+                // Get Designation name from selected DesignationId
+                if (employee.DesignationId.HasValue)
+                {
+                    var designation = await _context.Designations.FindAsync(employee.DesignationId.Value);
+                    employee.Designation = designation?.Title ?? string.Empty;
                 }
 
                 employee.CreatedAt = DateTime.Now;
@@ -118,6 +138,8 @@ namespace PayRollManagementSystem.Controllers
                 return RedirectToAction(nameof(Index));
             }
 
+            // Reload dropdowns if validation fails
+            await LoadDropdownData();
             ViewBag.GeneratedEmployeeCode = employee.EmployeeCode;
             return View(employee);
         }
@@ -163,13 +185,11 @@ namespace PayRollManagementSystem.Controllers
                     return Json(new { success = false, message = "Employee not found" });
                 }
 
-                // Check if email already exists for another employee
                 if (await _context.Employees.AnyAsync(e => e.Email == employee.Email && e.EmployeeId != employee.EmployeeId))
                 {
                     return Json(new { success = false, message = "Email already exists for another employee" });
                 }
 
-                // Update employee properties
                 existingEmployee.Name = employee.Name;
                 existingEmployee.Email = employee.Email;
                 existingEmployee.Phone = employee.Phone;
@@ -224,7 +244,6 @@ namespace PayRollManagementSystem.Controllers
             return _context.Employees.Any(e => e.EmployeeId == id);
         }
 
-        // Generate unique employee code
         private string GenerateEmployeeCode()
         {
             var lastEmployee = _context.Employees
@@ -236,7 +255,6 @@ namespace PayRollManagementSystem.Controllers
                 return "EMP001";
             }
 
-            // Extract number from last employee code
             var lastCode = lastEmployee.EmployeeCode;
             var numberPart = new string(lastCode.Where(char.IsDigit).ToArray());
 
@@ -247,6 +265,28 @@ namespace PayRollManagementSystem.Controllers
             }
 
             return "EMP001";
+        }
+
+        // Helper method to load dropdown data
+        private async Task LoadDropdownData()
+        {
+            ViewBag.Departments = await _context.Departments
+                .Where(d => d.Status == DepartmentStatus.Active)
+                .OrderBy(d => d.Name)
+                .Select(d => new { d.DepartmentId, d.Name })
+                .ToListAsync();
+
+            ViewBag.Designations = await _context.Designations
+                .Where(d => d.Status == DesignationStatus.Active)
+                .OrderBy(d => d.Title)
+                .Select(d => new { d.DesignationId, d.Title, d.DepartmentId })
+                .ToListAsync();
+
+            ViewBag.Shifts = await _context.Shifts
+                .Where(s => s.Status == ShiftStatus.Active)
+                .OrderBy(s => s.ShiftName)
+                .Select(s => new { s.ShiftId, s.ShiftName })
+                .ToListAsync();
         }
     }
 }
