@@ -15,7 +15,7 @@ namespace PayRollManagementSystem.Models
         [Required(ErrorMessage = "Date is required")]
         [DataType(DataType.Date)]
         [Display(Name = "Attendance Date")]
-        public DateTime Date { get; set; } = DateTime.Today;
+        public DateTime Date { get; set; }
 
         [Required(ErrorMessage = "Check-in time is required")]
         [Display(Name = "Check-In Time")]
@@ -24,40 +24,40 @@ namespace PayRollManagementSystem.Models
         [Display(Name = "Check-Out Time")]
         public TimeSpan? CheckOutTime { get; set; }
 
-        [Display(Name = "Total Hours")]
         [Column(TypeName = "decimal(5,2)")]
+        [Display(Name = "Total Hours")]
         public decimal? TotalHours { get; set; }
 
         [Required]
         [Display(Name = "Status")]
         public AttendanceStatus Status { get; set; } = AttendanceStatus.Present;
 
-        [Display(Name = "Is Late")]
+        [Display(Name = "Late Arrival")]
         public bool IsLate { get; set; } = false;
 
         [Display(Name = "Late By (Minutes)")]
         public int? LateByMinutes { get; set; }
 
-        [Display(Name = "Is Half Day")]
+        [Display(Name = "Half Day")]
         public bool IsHalfDay { get; set; } = false;
 
-        [Display(Name = "Overtime Hours")]
         [Column(TypeName = "decimal(5,2)")]
+        [Display(Name = "Overtime Hours")]
         public decimal? OvertimeHours { get; set; }
 
         [StringLength(500)]
-        [Display(Name = "Remarks")]
+        [Display(Name = "Remarks/Notes")]
         public string? Remarks { get; set; }
 
-        [DataType(DataType.DateTime)]
-        [Display(Name = "Date Created")]
+        [DataType(DataType.Date)]
+        [Display(Name = "Created At")]
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
-        [DataType(DataType.DateTime)]
-        [Display(Name = "Last Updated")]
+        [DataType(DataType.Date)]
+        [Display(Name = "Updated At")]
         public DateTime? UpdatedAt { get; set; }
 
-        // Navigation Properties
+        // Navigation property
         [ForeignKey("EmployeeId")]
         public virtual Employee? Employee { get; set; }
     }
@@ -67,10 +67,7 @@ namespace PayRollManagementSystem.Models
         Present,
         Absent,
         Late,
-        [Display(Name = "On Leave")]
         OnLeave,
-        Holiday,
-        [Display(Name = "Half Day")]
         HalfDay
     }
 }
