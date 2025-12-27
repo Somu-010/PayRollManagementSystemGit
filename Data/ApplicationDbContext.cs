@@ -18,6 +18,7 @@ namespace PayRollManagementSystem.Data
         public DbSet<Attendance> Attendances { get; set; }
         public DbSet<Leave> Leaves { get; set; }
         public DbSet<LeaveBalance> LeaveBalances { get; set; }
+        public DbSet<AllowanceDeduction> AllowanceDeductions { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -97,6 +98,12 @@ namespace PayRollManagementSystem.Data
 
                 // Create unique index on EmployeeId and Year
                 entity.HasIndex(lb => new { lb.EmployeeId, lb.Year }).IsUnique();
+            });
+            // Configure AllowanceDeduction entity
+            modelBuilder.Entity<AllowanceDeduction>(entity =>
+            {
+                entity.HasKey(a => a.AllowanceDeductionId);
+                entity.HasIndex(a => a.Code).IsUnique();
             });
         }
     }

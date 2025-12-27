@@ -291,16 +291,6 @@
             color: #ef4444;
         }
 
-    .btn-edit {
-        background: rgba(109, 213, 237, 0.1);
-        color: #2193b0;
-    }
-
-        .btn-edit:hover {
-            background: rgba(109, 213, 237, 0.2);
-            color: #2193b0;
-        }
-
     .btn-delete {
         background: rgba(239, 68, 68, 0.1);
         color: #ef4444;
@@ -474,6 +464,26 @@
     textarea.form-control {
         resize: vertical;
         min-height: 80px;
+    }
+
+    @@keyframes fadeIn {
+        from {
+            opacity: 0;
+        }
+        to {
+            opacity: 1;
+        }
+    }
+
+    @@keyframes slideDown {
+        from {
+            transform: translate(-50%, -60%);
+            opacity: 0;
+        }
+        to {
+            transform: translate(-50%, -50%);
+            opacity: 1;
+        }
     }
 </style>
 
@@ -832,4 +842,36 @@
             event.preventDefault();
 
             const id = document.getElementById('delete_LeaveId').value;
-            const form
+
+            try {
+                const response = await fetch(`/Leave/Delete/${id}`, {
+                    method: 'POST',
+                    headers: {
+                        'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]').value
+                    }
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeDeleteModal();
+                    showAlert(result.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error deleting leave', 'error');
+            }
+        }
+
+        // Close modals when clicking outside
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeApproveModal();
+                closeRejectModal();
+                closeDeleteModal();
+            }
+        });
+    </script>
+}
