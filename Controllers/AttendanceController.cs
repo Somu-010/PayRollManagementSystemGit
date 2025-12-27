@@ -92,7 +92,7 @@ namespace PayRollManagementSystem.Controllers
         // POST: Attendance/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EmployeeId,Date,CheckInTime,CheckOutTime,Status,IsLate,LateByMinutes,IsHalfDay,OvertimeHours,Remarks")] Attendance attendance)
+        public async Task<IActionResult> Create([Bind("EmployeeId,Date,CheckInTime,CheckOutTime,Status,Remarks")] Attendance attendance)
         {
             ModelState.Remove("Employee");
 
@@ -115,20 +115,26 @@ namespace PayRollManagementSystem.Controllers
                 {
                     var shift = employee.ShiftNavigation;
 
-                    // Calculate if late
+                    // Calculate if late arrival
                     var gracePeriodEnd = shift.StartTime.Add(TimeSpan.FromMinutes(shift.GracePeriod));
                     if (attendance.CheckInTime > gracePeriodEnd)
                     {
                         attendance.IsLate = true;
                         attendance.LateByMinutes = (int)(attendance.CheckInTime - shift.StartTime).TotalMinutes;
+                        
+                        // Update status to Late if currently Present
+                        if (attendance.Status == AttendanceStatus.Present)
+                        {
+                            attendance.Status = AttendanceStatus.Late;
+                        }
                     }
 
-                    // Calculate total hours if checkout time is provided
+                    // Calculate total hours and early leave if checkout time is provided
                     if (attendance.CheckOutTime.HasValue)
                     {
                         var totalMinutes = (attendance.CheckOutTime.Value - attendance.CheckInTime).TotalMinutes;
 
-                        // Handle night shift
+                        // Handle night shift (checkout time is before check-in time next day)
                         if (shift.IsNightShift && attendance.CheckOutTime.Value < attendance.CheckInTime)
                         {
                             totalMinutes = (new TimeSpan(24, 0, 0) - attendance.CheckInTime + attendance.CheckOutTime.Value).TotalMinutes;
@@ -138,14 +144,27 @@ namespace PayRollManagementSystem.Controllers
                         totalMinutes -= shift.BreakDuration;
                         attendance.TotalHours = (decimal)(totalMinutes / 60);
 
-                        // Check if half day
+                        // Check for early leave (left before shift end time)
+                        if (attendance.CheckOutTime.Value < shift.EndTime)
+                        {
+                            var earlyLeaveMinutes = (int)(shift.EndTime - attendance.CheckOutTime.Value).TotalMinutes;
+                            
+                            // Only mark as early leave if significant (more than 5 minutes)
+                            if (earlyLeaveMinutes > 5)
+                            {
+                                attendance.IsEarlyLeave = true;
+                                attendance.EarlyLeaveByMinutes = earlyLeaveMinutes;
+                            }
+                        }
+
+                        // Check if half day based on hours worked
                         if (attendance.TotalHours < shift.HalfDayHours)
                         {
                             attendance.IsHalfDay = true;
                             attendance.Status = AttendanceStatus.HalfDay;
                         }
 
-                        // Calculate overtime
+                        // Calculate overtime (only if full day hours are completed)
                         if (attendance.TotalHours > shift.FullDayHours)
                         {
                             attendance.OvertimeHours = attendance.TotalHours - shift.FullDayHours;
@@ -189,6 +208,8 @@ namespace PayRollManagementSystem.Controllers
                 status = attendance.Status.ToString(),
                 isLate = attendance.IsLate,
                 lateByMinutes = attendance.LateByMinutes,
+                isEarlyLeave = attendance.IsEarlyLeave,
+                earlyLeaveByMinutes = attendance.EarlyLeaveByMinutes,
                 isHalfDay = attendance.IsHalfDay,
                 overtimeHours = attendance.OvertimeHours,
                 remarks = attendance.Remarks
@@ -234,7 +255,7 @@ namespace PayRollManagementSystem.Controllers
                             attendance.LateByMinutes = null;
                         }
 
-                        // Recalculate total hours
+                        // Recalculate total hours and early leave
                         if (attendance.CheckOutTime.HasValue)
                         {
                             var totalMinutes = (attendance.CheckOutTime.Value - attendance.CheckInTime).TotalMinutes;
@@ -247,6 +268,28 @@ namespace PayRollManagementSystem.Controllers
                             totalMinutes -= shift.BreakDuration;
                             attendance.TotalHours = (decimal)(totalMinutes / 60);
 
+                            // Check for early leave
+                            if (attendance.CheckOutTime.Value < shift.EndTime)
+                            {
+                                var earlyLeaveMinutes = (int)(shift.EndTime - attendance.CheckOutTime.Value).TotalMinutes;
+                                
+                                if (earlyLeaveMinutes > 5)
+                                {
+                                    attendance.IsEarlyLeave = true;
+                                    attendance.EarlyLeaveByMinutes = earlyLeaveMinutes;
+                                }
+                                else
+                                {
+                                    attendance.IsEarlyLeave = false;
+                                    attendance.EarlyLeaveByMinutes = null;
+                                }
+                            }
+                            else
+                            {
+                                attendance.IsEarlyLeave = false;
+                                attendance.EarlyLeaveByMinutes = null;
+                            }
+
                             // Check if half day
                             attendance.IsHalfDay = attendance.TotalHours < shift.HalfDayHours;
 
@@ -255,6 +298,11 @@ namespace PayRollManagementSystem.Controllers
                                 ? attendance.TotalHours - shift.FullDayHours
                                 : null;
                         }
+                        else
+                        {
+                            attendance.IsEarlyLeave = false;
+                            attendance.EarlyLeaveByMinutes = null;
+                        }
                     }
 
                     existingAttendance.CheckInTime = attendance.CheckInTime;
@@ -262,6 +310,8 @@ namespace PayRollManagementSystem.Controllers
                     existingAttendance.Status = attendance.Status;
                     existingAttendance.IsLate = attendance.IsLate;
                     existingAttendance.LateByMinutes = attendance.LateByMinutes;
+                    existingAttendance.IsEarlyLeave = attendance.IsEarlyLeave;
+                    existingAttendance.EarlyLeaveByMinutes = attendance.EarlyLeaveByMinutes;
                     existingAttendance.IsHalfDay = attendance.IsHalfDay;
                     existingAttendance.TotalHours = attendance.TotalHours;
                     existingAttendance.OvertimeHours = attendance.OvertimeHours;
@@ -459,6 +509,38 @@ namespace PayRollManagementSystem.Controllers
             };
 
             return View(summary);
+        }
+
+        // GET: Get employee shift information for real-time calculation (AJAX)
+        [HttpGet]
+        [Route("/api/GetEmployeeShift/{employeeId}")]
+        public async Task<IActionResult> GetEmployeeShift(int employeeId)
+        {
+            var employee = await _context.Employees
+                .Include(e => e.ShiftNavigation)
+                .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
+
+            if (employee?.ShiftNavigation == null)
+            {
+                return Json(new { hasShift = false });
+            }
+
+            var shift = employee.ShiftNavigation;
+            return Json(new
+            {
+                hasShift = true,
+                shift = new
+                {
+                    shiftName = shift.ShiftName,
+                    startTime = shift.StartTime.ToString(@"hh\:mm"),
+                    endTime = shift.EndTime.ToString(@"hh\:mm"),
+                    gracePeriod = shift.GracePeriod,
+                    breakDuration = shift.BreakDuration,
+                    fullDayHours = shift.FullDayHours,
+                    halfDayHours = shift.HalfDayHours,
+                    isNightShift = shift.IsNightShift
+                }
+            });
         }
 
         private bool AttendanceExists(int id)

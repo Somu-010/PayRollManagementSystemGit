@@ -1,0 +1,463 @@
+﻿@model IEnumerable<PayRollManagementSystem.Models.Employee>
+
+@{
+    ViewData["Title"] = "Bulk Mark Attendance";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+        .btn-back:hover {
+            background: #d1e9f0;
+            color: #2193b0;
+        }
+
+    .stats-banner {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 20px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 15px;
+        border-radius: 10px;
+        background: #f8fafb;
+    }
+
+        .stat-item .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: #2193b0;
+            margin-bottom: 8px;
+        }
+
+        .stat-item .stat-label {
+            font-size: 14px;
+            color: #5a6c7d;
+            font-weight: 600;
+        }
+
+    .info-box {
+        background: rgba(109, 213, 237, 0.1);
+        border: 2px solid rgba(109, 213, 237, 0.2);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        display: flex;
+        gap: 15px;
+        align-items: start;
+    }
+
+    .info-icon {
+        font-size: 28px;
+        flex-shrink: 0;
+    }
+
+    .info-content h3 {
+        color: #2193b0;
+        font-size: 16px;
+        font-weight: 600;
+        margin: 0 0 8px 0;
+    }
+
+    .info-content p {
+        color: #5a6c7d;
+        font-size: 14px;
+        margin: 0;
+        line-height: 1.6;
+    }
+
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .form-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .select-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-select {
+        padding: 8px 16px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 6px;
+        font-size: 13px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .btn-select:hover {
+            background: #d1e9f0;
+        }
+
+    .employee-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .employee-card {
+        border: 2px solid #e8f4f8;
+        border-radius: 10px;
+        padding: 15px;
+        transition: all 0.3s;
+        cursor: pointer;
+    }
+
+        .employee-card:hover {
+            border-color: #6dd5ed;
+            background: rgba(109, 213, 237, 0.05);
+        }
+
+        .employee-card.selected {
+            border-color: #2193b0;
+            background: rgba(109, 213, 237, 0.1);
+        }
+
+    .employee-checkbox {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+        .employee-checkbox input[type="checkbox"] {
+            width: 20px;
+            height: 20px;
+            cursor: pointer;
+            accent-color: #2193b0;
+        }
+
+    .employee-avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 16px;
+    }
+
+    .employee-details {
+        flex: 1;
+    }
+
+        .employee-details .name {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 15px;
+            margin-bottom: 4px;
+        }
+
+        .employee-details .info {
+            font-size: 12px;
+            color: #5a6c7d;
+        }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        align-items: center;
+        padding-top: 20px;
+        border-top: 2px solid #e8f4f8;
+    }
+
+    .status-selector {
+        flex: 1;
+        max-width: 300px;
+    }
+
+        .status-selector label {
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .status-selector select {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e8f4f8;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s;
+        }
+
+            .status-selector select:focus {
+                border-color: #6dd5ed;
+                box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.1);
+                outline: none;
+            }
+
+    .btn-submit {
+        padding: 12px 30px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(33, 147, 176, 0.4);
+        }
+
+        .btn-submit:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+    .no-records {
+        text-align: center;
+        padding: 60px 20px;
+        color: #5a6c7d;
+    }
+
+        .no-records h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .no-records p {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+
+    .selected-count {
+        font-size: 14px;
+        color: #2193b0;
+        font-weight: 600;
+        padding: 10px 15px;
+        background: rgba(109, 213, 237, 0.1);
+        border-radius: 8px;
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">👥 Bulk Mark Attendance</h1>
+    <a asp-action="Index" class="btn-back">← Back to List</a>
+</div>
+
+<!-- Statistics Banner -->
+<div class="stats-banner">
+    <div class="stat-item">
+        <div class="stat-value">@ViewBag.TodayDate</div>
+        <div class="stat-label">📅 Today's Date</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value">@ViewBag.MarkedCount</div>
+        <div class="stat-label">✓ Already Marked</div>
+    </div>
+    <div class="stat-item">
+        <div class="stat-value">@ViewBag.UnmarkedCount</div>
+        <div class="stat-label">⏳ Pending</div>
+    </div>
+</div>
+
+<!-- Info Box -->
+<div class="info-box">
+    <span class="info-icon">💡</span>
+    <div class="info-content">
+        <h3>Bulk Attendance Marking</h3>
+        <p>Select employees and mark their attendance for today all at once. Already marked employees will not appear in this list. The system will automatically calculate late arrivals based on shift timings.</p>
+    </div>
+</div>
+
+<!-- Form Card -->
+<div class="form-card">
+    @if (Model.Any())
+    {
+        <form asp-action="BulkMarkAttendance" method="post">
+            <div class="form-header">
+                <h3 class="form-title">Select Employees (@ViewBag.UnmarkedCount employees)</h3>
+                <div class="select-actions">
+                    <button type="button" class="btn-select" onclick="selectAll()">✓ Select All</button>
+                    <button type="button" class="btn-select" onclick="deselectAll()">✕ Deselect All</button>
+                </div>
+            </div>
+
+            <div class="employee-list" id="employeeList">
+                @foreach (var employee in Model)
+                {
+                    <div class="employee-card" onclick="toggleCard(this)">
+                        <div class="employee-checkbox">
+                            <input type="checkbox"
+                                   name="selectedEmployees"
+                                   value="@employee.EmployeeId"
+                                   onchange="updateSelectedCount()" />
+                            <div class="employee-avatar">@employee.Name.Substring(0, Math.Min(2, employee.Name.Length)).ToUpper()</div>
+                            <div class="employee-details">
+                                <div class="name">@employee.Name</div>
+                                <div class="info">
+                                    @employee.EmployeeCode • @employee.Department<br />
+                                    @if (employee.ShiftNavigation != null)
+                                    {
+                                        <span style="color: #2193b0; font-weight: 600;">
+                                            ⏰ @employee.ShiftNavigation.ShiftName: @employee.ShiftNavigation.StartTime.ToString(@"hh\:mm") - @employee.ShiftNavigation.EndTime.ToString(@"hh\:mm")
+                                        </span>
+                                    }
+                                    else
+                                    {
+                                        <span style="color: #ef4444;">⚠️ No Shift Assigned</span>
+                                    }
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="form-actions">
+                <div class="status-selector">
+                    <label>Attendance Status</label>
+                    <select name="bulkStatus" required>
+                        <option value="Present">✓ Present</option>
+                        <option value="Absent">✕ Absent</option>
+                        <option value="Late">⏰ Late</option>
+                        <option value="OnLeave">🏖️ On Leave</option>
+                        <option value="HalfDay">⏱️ Half Day</option>
+                    </select>
+                </div>
+                <span class="selected-count" id="selectedCount">0 employees selected</span>
+                <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                    ✓ Mark Attendance for Selected
+                </button>
+            </div>
+        </form>
+    }
+    else
+    {
+        <div class="no-records">
+            <h3>🎉 All Done!</h3>
+            <p>Attendance has been marked for all active employees today.</p>
+            <a asp-action="Index" class="btn-back">View Attendance Records →</a>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        function toggleCard(card) {
+            const checkbox = card.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            updateCard(card, checkbox.checked);
+            updateSelectedCount();
+        }
+
+        function updateCard(card, isSelected) {
+            if (isSelected) {
+                card.classList.add('selected');
+            } else {
+                card.classList.remove('selected');
+            }
+        }
+
+        function selectAll() {
+            const checkboxes = document.querySelectorAll('input[name="selectedEmployees"]');
+            const cards = document.querySelectorAll('.employee-card');
+
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.checked = true;
+                updateCard(cards[index], true);
+            });
+
+            updateSelectedCount();
+        }
+
+        function deselectAll() {
+            const checkboxes = document.querySelectorAll('input[name="selectedEmployees"]');
+            const cards = document.querySelectorAll('.employee-card');
+
+            checkboxes.forEach((checkbox, index) => {
+                checkbox.checked = false;
+                updateCard(cards[index], false);
+            });
+
+            updateSelectedCount();
+        }
+
+        function updateSelectedCount() {
+            const checkboxes = document.querySelectorAll('input[name="selectedEmployees"]:checked');
+            const count = checkboxes.length;
+            const countElement = document.getElementById('selectedCount');
+            const submitBtn = document.getElementById('submitBtn');
+
+            countElement.textContent = `${count} employee${count !== 1 ? 's' : ''} selected`;
+
+            if (count > 0) {
+                submitBtn.disabled = false;
+            } else {
+                submitBtn.disabled = true;
+            }
+        }
+
+        // Prevent card click when clicking checkbox directly
+        document.querySelectorAll('input[name="selectedEmployees"]').forEach(checkbox => {
+            checkbox.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const card = checkbox.closest('.employee-card');
+                updateCard(card, checkbox.checked);
+                updateSelectedCount();
+            });
+        });
+    </script>
+}

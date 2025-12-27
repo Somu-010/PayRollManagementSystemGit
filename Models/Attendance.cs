@@ -38,6 +38,12 @@ namespace PayRollManagementSystem.Models
         [Display(Name = "Late By (Minutes)")]
         public int? LateByMinutes { get; set; }
 
+        [Display(Name = "Early Leave")]
+        public bool IsEarlyLeave { get; set; } = false;
+
+        [Display(Name = "Early Leave By (Minutes)")]
+        public int? EarlyLeaveByMinutes { get; set; }
+
         [Display(Name = "Half Day")]
         public bool IsHalfDay { get; set; } = false;
 
