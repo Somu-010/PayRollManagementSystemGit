@@ -121,6 +121,41 @@ namespace PayRollManagementSystem.Controllers
                 })
                 .ToListAsync();
 
+            // Get attendance statistics for today
+            var today = DateTime.Today;
+            var todayAttendance = await _context.Attendances
+                .Where(a => a.Date == today)
+                .ToListAsync();
+
+            var presentToday = todayAttendance.Count(a => a.Status == AttendanceStatus.Present);
+            var absentToday = todayAttendance.Count(a => a.Status == AttendanceStatus.Absent);
+            var lateToday = todayAttendance.Count(a => a.IsLate);
+            var onLeaveToday = todayAttendance.Count(a => a.Status == AttendanceStatus.OnLeave);
+
+            // Calculate attendance percentage
+            var attendancePercentage = activeEmployees > 0 
+                ? (presentToday / (double)activeEmployees * 100) 
+                : 0;
+
+            // Get recent attendance records (last 5)
+            var recentAttendance = await _context.Attendances
+                .Include(a => a.Employee)
+                .OrderByDescending(a => a.Date)
+                .ThenByDescending(a => a.CreatedAt)
+                .Take(5)
+                .Select(a => new {
+                    a.AttendanceId,
+                    EmployeeName = a.Employee!.Name,
+                    a.Date,
+                    a.CheckInTime,
+                    a.CheckOutTime,
+                    a.Status,
+                    a.IsLate,
+                    a.LateByMinutes,
+                    a.TotalHours
+                })
+                .ToListAsync();
+
             // Employee statistics
             ViewBag.TotalEmployees = totalEmployees;
             ViewBag.ActiveEmployees = activeEmployees;
@@ -142,6 +177,15 @@ namespace PayRollManagementSystem.Controllers
             ViewBag.TotalShifts = totalShifts;
             ViewBag.ActiveShifts = activeShifts;
             ViewBag.TopShifts = topShifts;
+
+            // Attendance statistics
+            ViewBag.TodayAttendanceCount = todayAttendance.Count;
+            ViewBag.PresentToday = presentToday;
+            ViewBag.AbsentToday = absentToday;
+            ViewBag.LateToday = lateToday;
+            ViewBag.OnLeaveToday = onLeaveToday;
+            ViewBag.AttendancePercentage = attendancePercentage;
+            ViewBag.RecentAttendance = recentAttendance;
 
             return View();
         }

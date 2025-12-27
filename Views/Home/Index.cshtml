@@ -272,6 +272,39 @@
         text-align: right;
     }
 
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-present {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .badge-absent {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .badge-late {
+        background: rgba(251, 146, 60, 0.1);
+        color: #fb923c;
+    }
+
+    .badge-leave {
+        background: rgba(99, 102, 241, 0.1);
+        color: #6366f1;
+    }
+
+    .badge-halfday {
+        background: rgba(234, 179, 8, 0.1);
+        color: #eab308;
+    }
+
     .quick-actions-section {
         grid-column: 1 / -1;
     }
@@ -345,6 +378,17 @@
             </div>
         </div>
 
+        <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Attendance")'">
+            <div class="stat-header">
+                <span class="stat-title">Today's Attendance</span>
+                <div class="stat-icon green">✓</div>
+            </div>
+            <div class="stat-value">@ViewBag.PresentToday/@ViewBag.ActiveEmployees</div>
+            <div class="stat-change @(ViewBag.AttendancePercentage >= 75 ? "" : ViewBag.AttendancePercentage >= 50 ? "neutral" : "negative")">
+                @ViewBag.AttendancePercentage.ToString("F1")% attendance rate
+            </div>
+        </div>
+
         <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Department")'">
             <div class="stat-header">
                 <span class="stat-title">Total Departments</span>
@@ -381,22 +425,31 @@
             <div class="stat-change">@ViewBag.ActiveEmployees active employees</div>
         </div>
 
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Attendance", new { status = "Late" })'">
             <div class="stat-header">
-                <span class="stat-title">Pending Approvals</span>
-                <div class="stat-icon orange">⏳</div>
+                <span class="stat-title">Late Arrivals Today</span>
+                <div class="stat-icon orange">⏰</div>
             </div>
-            <div class="stat-value">24</div>
-            <div class="stat-change negative">↑ 3 new requests</div>
+            <div class="stat-value">@ViewBag.LateToday</div>
+            <div class="stat-change @(ViewBag.LateToday > 0 ? "negative" : "")">
+                @if (ViewBag.LateToday > 0)
+                {
+                    <span>⚠️ @ViewBag.LateToday employees late</span>
+                }
+                else
+                {
+                    <span>✓ No late arrivals</span>
+                }
+            </div>
         </div>
 
-        <div class="stat-card">
+        <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Attendance", new { status = "OnLeave" })'">
             <div class="stat-header">
                 <span class="stat-title">On Leave Today</span>
                 <div class="stat-icon cyan">🏖️</div>
             </div>
-            <div class="stat-value">12</div>
-            <div class="stat-change">4 departments affected</div>
+            <div class="stat-value">@ViewBag.OnLeaveToday</div>
+            <div class="stat-change">@ViewBag.AbsentToday absent employees</div>
         </div>
     </div>
 
@@ -433,6 +486,61 @@
             {
                 <div class="no-data">
                     <p>No employees found. <a asp-controller="Employee" asp-action="Create">Add your first employee</a></p>
+                </div>
+            }
+        </div>
+
+        <!-- Recent Attendance -->
+        <div class="content-card">
+            <div class="card-header">
+                <h2 class="card-title">📅 Recent Attendance</h2>
+                <a asp-controller="Attendance" asp-action="Index" class="view-all-link">View All →</a>
+            </div>
+
+            @if (ViewBag.RecentAttendance != null && ViewBag.RecentAttendance.Count > 0)
+            {
+                @foreach (var att in ViewBag.RecentAttendance)
+                {
+                    string employeeName = att.EmployeeName ?? "Unknown";
+                    string[] nameParts = employeeName.Split(' ');
+                    string initials = nameParts.Length > 1 
+                        ? nameParts[0].Substring(0, 1) + nameParts[1].Substring(0, 1)
+                        : employeeName.Substring(0, Math.Min(2, employeeName.Length));
+                    
+                    string statusValue = att.Status.ToString();
+                    string statusClass = statusValue == "Present" ? "badge-present" : 
+                                        statusValue == "Absent" ? "badge-absent" : 
+                                        statusValue == "Late" ? "badge-late" :
+                                        statusValue == "OnLeave" ? "badge-leave" : "badge-halfday";
+                    string statusText = statusValue == "Present" ? "✓ Present" : 
+                                       statusValue == "Absent" ? "✕ Absent" : 
+                                       statusValue == "Late" ? "⏰ Late" :
+                                       statusValue == "OnLeave" ? "🏖️ Leave" : "⏱️ Half Day";
+                    
+                    decimal? totalHours = att.TotalHours as decimal?;
+                    
+                    <div class="recent-item">
+                        <div class="item-info">
+                            <div class="item-avatar">@initials.ToUpper()</div>
+                            <div class="item-details">
+                                <h4>@employeeName</h4>
+                                <p>@att.Date.ToString("MMM dd, yyyy") • @att.CheckInTime.ToString(@"hh\:mm")</p>
+                            </div>
+                        </div>
+                        <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                            <span class="badge @statusClass">@statusText</span>
+                            @if (totalHours.HasValue)
+                            {
+                                <span style="font-size: 12px; color: #2193b0; font-weight: 600;">@totalHours.Value.ToString("0.00") hrs</span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no-data">
+                    <p>No attendance records found. <a asp-controller="Attendance" asp-action="Create">Mark attendance</a></p>
                 </div>
             }
         </div>
@@ -551,6 +659,11 @@
                     <span class="action-label">Add Employee</span>
                 </a>
 
+                <a asp-controller="Attendance" asp-action="Create" class="action-btn">
+                    <span class="action-icon">📅</span>
+                    <span class="action-label">Mark Attendance</span>
+                </a>
+
                 <a asp-controller="Department" asp-action="Create" class="action-btn">
                     <span class="action-icon">🏢</span>
                     <span class="action-label">Add Department</span>
@@ -566,14 +679,19 @@
                     <span class="action-label">Add Shift</span>
                 </a>
 
+                <a asp-controller="Attendance" asp-action="BulkMarkAttendance" class="action-btn">
+                    <span class="action-icon">👥</span>
+                    <span class="action-label">Bulk Attendance</span>
+                </a>
+
                 <a href="#" class="action-btn">
                     <span class="action-icon">💵</span>
                     <span class="action-label">Process Payroll</span>
                 </a>
 
-                <a href="#" class="action-btn">
+                <a asp-controller="Attendance" asp-action="MonthlyReport" class="action-btn">
                     <span class="action-icon">📋</span>
-                    <span class="action-label">Generate Report</span>
+                    <span class="action-label">Monthly Report</span>
                 </a>
 
                 <a href="#" class="action-btn">
