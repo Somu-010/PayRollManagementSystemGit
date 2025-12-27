@@ -16,6 +16,8 @@ namespace PayRollManagementSystem.Data
         public DbSet<Designation> Designations { get; set; }
         public DbSet<Shift> Shifts { get; set; }
         public DbSet<Attendance> Attendances { get; set; }
+        public DbSet<Leave> Leaves { get; set; }
+        public DbSet<LeaveBalance> LeaveBalances { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -69,6 +71,32 @@ namespace PayRollManagementSystem.Data
                 entity.HasKey(s => s.ShiftId);
                 entity.HasIndex(s => s.ShiftCode).IsUnique();
                 entity.HasIndex(s => s.ShiftName).IsUnique();
+            });
+            // Configure Leave entity
+            modelBuilder.Entity<Leave>(entity =>
+            {
+                entity.HasKey(l => l.LeaveId);
+
+                // Configure relationship with Employee
+                entity.HasOne(l => l.Employee)
+                    .WithMany()
+                    .HasForeignKey(l => l.EmployeeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure LeaveBalance entity
+            modelBuilder.Entity<LeaveBalance>(entity =>
+            {
+                entity.HasKey(lb => lb.LeaveBalanceId);
+
+                // Configure relationship with Employee
+                entity.HasOne(lb => lb.Employee)
+                    .WithMany()
+                    .HasForeignKey(lb => lb.EmployeeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                // Create unique index on EmployeeId and Year
+                entity.HasIndex(lb => new { lb.EmployeeId, lb.Year }).IsUnique();
             });
         }
     }

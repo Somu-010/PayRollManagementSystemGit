@@ -1,0 +1,520 @@
+﻿@model dynamic
+
+@{
+    ViewData["Title"] = "Leave Balance";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+        .btn-back:hover {
+            background: #d1e9f0;
+            color: #2193b0;
+        }
+
+    .filters-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .filters-row {
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 15px;
+        align-items: end;
+    }
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        padding: 10px 15px;
+        border: 2px solid #e8f4f8;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+        .form-control:focus {
+            border-color: #6dd5ed;
+            box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.1);
+            outline: none;
+        }
+
+    .btn-generate {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(33, 147, 176, 0.4);
+        }
+
+    .balance-container {
+        display: grid;
+        gap: 20px;
+    }
+
+    .employee-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .employee-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .employee-avatar {
+        width: 80px;
+        height: 80px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 32px;
+        box-shadow: 0 4px 15px rgba(33, 147, 176, 0.3);
+    }
+
+    .employee-info h2 {
+        font-size: 24px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0 0 5px 0;
+    }
+
+    .employee-info p {
+        color: #5a6c7d;
+        margin: 0;
+        font-size: 14px;
+    }
+
+    .balance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .balance-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        border: 2px solid #e8f4f8;
+        transition: all 0.3s;
+    }
+
+        .balance-card:hover {
+            border-color: #6dd5ed;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 20px rgba(33, 147, 176, 0.15);
+        }
+
+    .balance-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+    }
+
+    .balance-type {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .balance-icon {
+        width: 48px;
+        height: 48px;
+        border-radius: 12px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    .casual-icon {
+        background: rgba(109, 213, 237, 0.15);
+    }
+
+    .sick-icon {
+        background: rgba(251, 146, 60, 0.15);
+    }
+
+    .annual-icon {
+        background: rgba(16, 185, 129, 0.15);
+    }
+
+    .maternity-icon {
+        background: rgba(236, 72, 153, 0.15);
+    }
+
+    .balance-stats {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 15px;
+    }
+
+    .stat-item {
+        text-align: center;
+        padding: 12px;
+        background: #f8fafb;
+        border-radius: 8px;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: #5a6c7d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 5px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2c3e50;
+    }
+
+        .stat-value.remaining {
+            color: #10b981;
+        }
+
+        .stat-value.used {
+            color: #ef4444;
+        }
+
+    .history-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .history-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .history-item {
+        padding: 15px;
+        background: #f8fafb;
+        border-radius: 10px;
+        margin-bottom: 12px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .history-info {
+        flex: 1;
+    }
+
+    .history-type {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 4px;
+    }
+
+    .history-dates {
+        font-size: 13px;
+        color: #5a6c7d;
+    }
+
+    .history-days {
+        font-weight: 600;
+        color: #2193b0;
+        margin-right: 15px;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-approved {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .badge-pending {
+        background: rgba(251, 146, 60, 0.1);
+        color: #fb923c;
+    }
+
+    .badge-rejected {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .no-report {
+        text-align: center;
+        padding: 60px 20px;
+        color: #5a6c7d;
+    }
+
+        .no-report h3 {
+            font-size: 20px;
+            margin-bottom: 10px;
+            color: #2c3e50;
+        }
+
+        .no-report p {
+            font-size: 14px;
+        }
+
+    .no-history {
+        text-align: center;
+        padding: 40px 20px;
+        color: #5a6c7d;
+        font-size: 14px;
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">📋 Leave Balance</h1>
+    <a asp-action="Index" class="btn-back">← Back to List</a>
+</div>
+
+<!-- Filters -->
+<div class="filters-card">
+    <form asp-action="LeaveBalance" method="get">
+        <div class="filters-row">
+            <div class="form-group">
+                <label>Select Employee</label>
+                <select name="employeeId" class="form-control" required>
+                    <option value="">-- Select Employee --</option>
+                    @foreach (var emp in ViewBag.Employees)
+                    {
+                        <option value="@emp.EmployeeId" selected="@(emp.EmployeeId == ViewBag.SelectedEmployeeId)">
+                            @emp.Name (@emp.EmployeeCode)
+                        </option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn-generate">📊 View Balance</button>
+        </div>
+    </form>
+</div>
+
+<!-- Report Content -->
+@if (Model != null)
+{
+    <div class="balance-container">
+        <!-- Employee Information -->
+        <div class="employee-card">
+            <div class="employee-header">
+                <div class="employee-avatar">@Model.Employee.Name.Substring(0, Math.Min(2, Model.Employee.Name.Length)).ToUpper()</div>
+                <div class="employee-info">
+                    <h2>@Model.Employee.Name</h2>
+                    <p>@Model.Employee.EmployeeCode • @Model.Employee.Department • @Model.Employee.Designation</p>
+                </div>
+            </div>
+
+            <h3 style="font-size: 18px; font-weight: 600; color: #2c3e50; margin-bottom: 20px;">
+                Leave Balance Summary - Year @Model.Year
+            </h3>
+
+            <!-- Balance Cards -->
+            <div class="balance-grid">
+                <!-- Casual Leave -->
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <span class="balance-type">Casual Leave</span>
+                        <div class="balance-icon casual-icon">🏖️</div>
+                    </div>
+                    <div class="balance-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Total</div>
+                            <div class="stat-value">@Model.LeaveBalance.CasualLeaveBalance.ToString("0.0")</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Used</div>
+                            <div class="stat-value used">@Model.LeaveBalance.CasualLeaveUsed.ToString("0.0")</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Remaining</div>
+                            <div class="stat-value remaining">@Model.LeaveBalance.RemainingCasualLeave.ToString("0.0")</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Sick Leave -->
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <span class="balance-type">Sick Leave</span>
+                        <div class="balance-icon sick-icon">🤒</div>
+                    </div>
+                    <div class="balance-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Total</div>
+                            <div class="stat-value">@Model.LeaveBalance.SickLeaveBalance.ToString("0.0")</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Used</div>
+                            <div class="stat-value used">@Model.LeaveBalance.SickLeaveUsed.ToString("0.0")</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Remaining</div>
+                            <div class="stat-value remaining">@Model.LeaveBalance.RemainingSickLeave.ToString("0.0")</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Annual Leave -->
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <span class="balance-type">Annual Leave</span>
+                        <div class="balance-icon annual-icon">📅</div>
+                    </div>
+                    <div class="balance-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Total</div>
+                            <div class="stat-value">@Model.LeaveBalance.AnnualLeaveBalance.ToString("0.0")</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Used</div>
+                            <div class="stat-value used">@Model.LeaveBalance.AnnualLeaveUsed.ToString("0.0")</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Remaining</div>
+                            <div class="stat-value remaining">@Model.LeaveBalance.RemainingAnnualLeave.ToString("0.0")</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Maternity Leave -->
+                <div class="balance-card">
+                    <div class="balance-header">
+                        <span class="balance-type">Maternity Leave</span>
+                        <div class="balance-icon maternity-icon">👶</div>
+                    </div>
+                    <div class="balance-stats">
+                        <div class="stat-item">
+                            <div class="stat-label">Total</div>
+                            <div class="stat-value">@Model.LeaveBalance.MaternityLeaveBalance.ToString("0.0")</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Used</div>
+                            <div class="stat-value used">@Model.LeaveBalance.MaternityLeaveUsed.ToString("0.0")</div>
+                        </div>
+                        <div class="stat-item">
+                            <div class="stat-label">Remaining</div>
+                            <div class="stat-value remaining">@Model.LeaveBalance.RemainingMaternityLeave.ToString("0.0")</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Leave History -->
+        <div class="history-card">
+            <h3 class="history-title">📜 Leave History - @Model.Year</h3>
+
+            @if (Model.LeaveHistory != null && Model.LeaveHistory.Count > 0)
+            {
+                @foreach (var leave in Model.LeaveHistory)
+                {
+                    <div class="history-item">
+                        <div class="history-info">
+                            <div class="history-type">@leave.LeaveType.ToString().Replace("Leave", " Leave")</div>
+                            <div class="history-dates">
+                                @leave.StartDate.ToString("MMM dd") - @leave.EndDate.ToString("MMM dd, yyyy")
+                                @if (leave.IsHalfDay)
+                                {
+                                    <span> • Half Day</span>
+                                }
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <span class="history-days">@(leave.IsHalfDay ? "0.5" : leave.NumberOfDays.ToString()) days</span>
+                            @if (leave.Status == PayRollManagementSystem.Models.LeaveStatus.Approved)
+                            {
+                                <span class="badge badge-approved">✓ Approved</span>
+                            }
+                            else if (leave.Status == PayRollManagementSystem.Models.LeaveStatus.Pending)
+                            {
+                                <span class="badge badge-pending">⏳ Pending</span>
+                            }
+                            else if (leave.Status == PayRollManagementSystem.Models.LeaveStatus.Rejected)
+                            {
+                                <span class="badge badge-rejected">✕ Rejected</span>
+                            }
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="no-history">
+                    <p>No leave history found for this year.</p>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <div class="employee-card">
+        <div class="no-report">
+            <h3>📋 View Employee Leave Balance</h3>
+            <p>Select an employee from the dropdown above to view their leave balance and history.</p>
+        </div>
+    </div>
+}

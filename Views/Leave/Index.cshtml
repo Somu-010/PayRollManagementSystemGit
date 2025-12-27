@@ -1,0 +1,835 @@
+﻿@model IEnumerable<PayRollManagementSystem.Models.Leave>
+
+@{
+    ViewData["Title"] = "Leave Management";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .header-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-add {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+        .btn-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(33, 147, 176, 0.4);
+            color: white;
+        }
+
+    .btn-secondary {
+        padding: 12px 24px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+    }
+
+        .btn-secondary:hover {
+            background: #d1e9f0;
+            color: #2193b0;
+        }
+
+    .filters-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        align-items: end;
+    }
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        padding: 10px 15px;
+        border: 2px solid #e8f4f8;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+        .form-control:focus {
+            border-color: #6dd5ed;
+            box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.1);
+            outline: none;
+        }
+
+    .btn-filter {
+        padding: 10px 20px;
+        background: #2193b0;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+        .btn-filter:hover {
+            background: #1a7a94;
+            transform: translateY(-2px);
+        }
+
+    .btn-clear {
+        padding: 10px 20px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+        .btn-clear:hover {
+            background: #d1e9f0;
+            color: #2193b0;
+        }
+
+    .leave-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .table-responsive {
+        overflow-x: auto;
+    }
+
+    .leave-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+        .leave-table thead {
+            background: #f8fafb;
+        }
+
+        .leave-table th {
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 14px;
+            border-bottom: 2px solid #e8f4f8;
+        }
+
+        .leave-table td {
+            padding: 15px;
+            border-bottom: 1px solid #f8fafb;
+            font-size: 14px;
+            color: #5a6c7d;
+        }
+
+        .leave-table tbody tr {
+            transition: all 0.3s;
+        }
+
+            .leave-table tbody tr:hover {
+                background: #f8fafb;
+            }
+
+    .employee-avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 600;
+        font-size: 14px;
+        margin-right: 10px;
+    }
+
+    .employee-info {
+        display: flex;
+        align-items: center;
+    }
+
+    .employee-name {
+        font-weight: 600;
+        color: #2c3e50;
+        display: block;
+    }
+
+    .employee-code {
+        font-size: 12px;
+        color: #5a6c7d;
+    }
+
+    .badge {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        display: inline-block;
+    }
+
+    .badge-pending {
+        background: rgba(251, 146, 60, 0.1);
+        color: #fb923c;
+    }
+
+    .badge-approved {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .badge-rejected {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .badge-cancelled {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+    }
+
+    .badge-leave-type {
+        padding: 4px 10px;
+        border-radius: 6px;
+        font-size: 11px;
+        font-weight: 600;
+        background: rgba(109, 213, 237, 0.1);
+        color: #2193b0;
+        display: inline-block;
+    }
+
+    .action-btns {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        padding: 6px 12px;
+        border-radius: 6px;
+        text-decoration: none;
+        font-size: 12px;
+        font-weight: 500;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+        background: #e8f4f8;
+        color: #2193b0;
+    }
+
+    .btn-view {
+        background: #e8f4f8;
+        color: #2193b0;
+    }
+
+        .btn-view:hover {
+            background: #d1e9f0;
+            color: #2193b0;
+        }
+
+    .btn-approve {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+        .btn-approve:hover {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
+
+    .btn-reject {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+        .btn-reject:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+    .btn-edit {
+        background: rgba(109, 213, 237, 0.1);
+        color: #2193b0;
+    }
+
+        .btn-edit:hover {
+            background: rgba(109, 213, 237, 0.2);
+            color: #2193b0;
+        }
+
+    .btn-delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+        .btn-delete:hover {
+            background: rgba(239, 68, 68, 0.2);
+            color: #ef4444;
+        }
+
+    .no-records {
+        text-align: center;
+        padding: 40px;
+        color: #5a6c7d;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9998;
+        animation: fadeIn 0.3s;
+    }
+
+        .modal-overlay.active {
+            display: block;
+        }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        max-width: 600px;
+        width: 90%;
+        max-height: 90vh;
+        overflow-y: auto;
+        animation: slideDown 0.3s;
+    }
+
+        .modal.active {
+            display: block;
+        }
+
+    .modal-header {
+        padding: 20px 25px;
+        border-bottom: 2px solid #e8f4f8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #5a6c7d;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.3s;
+    }
+
+        .modal-close:hover {
+            background: #f8fafb;
+            color: #2c3e50;
+        }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .modal-footer {
+        padding: 20px 25px;
+        border-top: 2px solid #e8f4f8;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn-modal {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-modal-cancel {
+        background: #e8f4f8;
+        color: #2193b0;
+    }
+
+        .btn-modal-cancel:hover {
+            background: #d1e9f0;
+        }
+
+    .btn-modal-approve {
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+    }
+
+        .btn-modal-approve:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+        }
+
+    .btn-modal-reject {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+        .btn-modal-reject:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+
+    .text-danger {
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">🏖️ Leave Management</h1>
+    <div class="header-actions">
+        <a asp-action="Report" class="btn-secondary">📊 Leave Report</a>
+        <a asp-action="LeaveBalance" class="btn-secondary">📋 Leave Balance</a>
+        <a asp-action="Create" class="btn-add">➕ Apply for Leave</a>
+    </div>
+</div>
+
+<div id="alertContainer"></div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        <span>✓</span>
+        <span>@TempData["Success"]</span>
+    </div>
+}
+
+<!-- Filters -->
+<div class="filters-card">
+    <form asp-action="Index" method="get">
+        <div class="filters-row">
+            <div class="form-group">
+                <label>Search Employee</label>
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"
+                       class="form-control" placeholder="Employee name or code..." />
+            </div>
+            <div class="form-group">
+                <label>Leave Type</label>
+                <select name="leaveType" class="form-control">
+                    <option value="">All Types</option>
+                    <option value="CasualLeave" selected="@("CasualLeave" == ViewData["CurrentLeaveType"])">Casual Leave</option>
+                    <option value="SickLeave" selected="@("SickLeave" == ViewData["CurrentLeaveType"])">Sick Leave</option>
+                    <option value="AnnualLeave" selected="@("AnnualLeave" == ViewData["CurrentLeaveType"])">Annual Leave</option>
+                    <option value="MaternityLeave" selected="@("MaternityLeave" == ViewData["CurrentLeaveType"])">Maternity Leave</option>
+                    <option value="UnpaidLeave" selected="@("UnpaidLeave" == ViewData["CurrentLeaveType"])">Unpaid Leave</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Status</label>
+                <select name="status" class="form-control">
+                    <option value="">All Status</option>
+                    <option value="Pending" selected="@("Pending" == ViewData["CurrentStatus"])">Pending</option>
+                    <option value="Approved" selected="@("Approved" == ViewData["CurrentStatus"])">Approved</option>
+                    <option value="Rejected" selected="@("Rejected" == ViewData["CurrentStatus"])">Rejected</option>
+                    <option value="Cancelled" selected="@("Cancelled" == ViewData["CurrentStatus"])">Cancelled</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-filter">🔍 Filter</button>
+                <a asp-action="Index" class="btn-clear">✕ Clear</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Leave Table -->
+<div class="leave-card">
+    <div class="table-responsive">
+        <table class="leave-table">
+            <thead>
+                <tr>
+                    <th>Employee</th>
+                    <th>Leave Type</th>
+                    <th>Duration</th>
+                    <th>Days</th>
+                    <th>Applied On</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model.Any())
+                {
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="employee-info">
+                                    <div class="employee-avatar">@(item.Employee?.Name?.Substring(0, Math.Min(2, item.Employee.Name.Length)).ToUpper() ?? "NA")</div>
+                                    <div>
+                                        <span class="employee-name">@(item.Employee?.Name ?? "N/A")</span>
+                                        <span class="employee-code">@(item.Employee?.EmployeeCode ?? "N/A") • @(item.Employee?.Department ?? "N/A")</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge-leave-type">
+                                    @item.LeaveType.ToString().Replace("Leave", " Leave")
+                                </span>
+                                @if (item.IsHalfDay)
+                                {
+                                    <br /><small style="color: #fb923c; font-weight: 600;">⏰ Half Day</small>
+                                }
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: #2c3e50;">@item.StartDate.ToString("MMM dd") - @item.EndDate.ToString("MMM dd, yyyy")</div>
+                            </td>
+                            <td>
+                                <div style="font-weight: 600; color: #2193b0;">
+                                    @(item.IsHalfDay ? "0.5" : item.NumberOfDays.ToString()) @(item.NumberOfDays == 1 && !item.IsHalfDay ? "day" : "days")
+                                </div>
+                            </td>
+                            <td>@item.AppliedOn.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                @if (item.Status == PayRollManagementSystem.Models.LeaveStatus.Pending)
+                                {
+                                    <span class="badge badge-pending">⏳ Pending</span>
+                                }
+                                else if (item.Status == PayRollManagementSystem.Models.LeaveStatus.Approved)
+                                {
+                                    <span class="badge badge-approved">✓ Approved</span>
+                                }
+                                else if (item.Status == PayRollManagementSystem.Models.LeaveStatus.Rejected)
+                                {
+                                    <span class="badge badge-rejected">✕ Rejected</span>
+                                }
+                                else
+                                {
+                                    <span class="badge badge-cancelled">🚫 Cancelled</span>
+                                }
+                            </td>
+                            <td>
+                                <div class="action-btns">
+                                    <a asp-action="Details" asp-route-id="@item.LeaveId" class="btn-action btn-view">👁️ View</a>
+                                    @if (item.Status == PayRollManagementSystem.Models.LeaveStatus.Pending)
+                                    {
+                                        <button onclick="openApproveModal(@item.LeaveId, '@(item.Employee?.Name ?? "Employee")')" class="btn-action btn-approve">✓ Approve</button>
+                                        <button onclick="openRejectModal(@item.LeaveId, '@(item.Employee?.Name ?? "Employee")')" class="btn-action btn-reject">✕ Reject</button>
+                                    }
+                                    <button onclick="openDeleteModal(@item.LeaveId, '@(item.Employee?.Name ?? "Employee")', '@item.LeaveType.ToString()')" class="btn-action btn-delete">🗑️ Delete</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="7" class="no-records">
+                            <h3>No leave records found</h3>
+                            <p>Start by applying for leave</p>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal-overlay" id="approveModalOverlay" onclick="closeApproveModal()"></div>
+<div class="modal" id="approveModal">
+    <div class="modal-header">
+        <h3 class="modal-title">✓ Approve Leave</h3>
+        <button class="modal-close" onclick="closeApproveModal()">×</button>
+    </div>
+    <form id="approveForm" onsubmit="handleApprove(event)">
+        <div class="modal-body">
+            <input type="hidden" id="approve_LeaveId" name="id" />
+            
+            <p style="margin-bottom: 20px;">
+                Are you sure you want to approve leave for <strong id="approve_employeeName"></strong>?
+            </p>
+
+            <div class="form-group">
+                <label>Admin Remarks (Optional)</label>
+                <textarea id="approve_adminRemarks" name="adminRemarks" class="form-control" placeholder="Enter any remarks..."></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-modal btn-modal-cancel" onclick="closeApproveModal()">Cancel</button>
+            <button type="submit" class="btn-modal btn-modal-approve">✓ Approve Leave</button>
+        </div>
+    </form>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" id="rejectModalOverlay" onclick="closeRejectModal()"></div>
+<div class="modal" id="rejectModal">
+    <div class="modal-header">
+        <h3 class="modal-title">✕ Reject Leave</h3>
+        <button class="modal-close" onclick="closeRejectModal()">×</button>
+    </div>
+    <form id="rejectForm" onsubmit="handleReject(event)">
+        <div class="modal-body">
+            <input type="hidden" id="reject_LeaveId" name="id" />
+            
+            <p style="margin-bottom: 20px;">
+                Are you sure you want to reject leave for <strong id="reject_employeeName"></strong>?
+            </p>
+
+            <div class="form-group">
+                <label>Reason for Rejection <span style="color: #ef4444;">*</span></label>
+                <textarea id="reject_adminRemarks" name="adminRemarks" class="form-control" placeholder="Enter reason for rejection..." required></textarea>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-modal btn-modal-cancel" onclick="closeRejectModal()">Cancel</button>
+            <button type="submit" class="btn-modal btn-modal-reject">✕ Reject Leave</button>
+        </div>
+    </form>
+</div>
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModalOverlay" onclick="closeDeleteModal()"></div>
+<div class="modal" id="deleteModal">
+    <div class="modal-header">
+        <h3 class="modal-title">🗑️ Delete Leave</h3>
+        <button class="modal-close" onclick="closeDeleteModal()">×</button>
+    </div>
+    <form id="deleteForm" onsubmit="handleDelete(event)">
+        <div class="modal-body">
+            <input type="hidden" id="delete_LeaveId" name="id" />
+
+            <div style="background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #7f1d1d;">
+                    <strong>⚠️ Warning:</strong> Are you sure you want to delete this leave record for <strong id="delete_employeeName"></strong>?
+                </p>
+            </div>
+
+            <p style="margin: 0; color: #5a6c7d;">
+                <strong>Leave Type:</strong> <span id="delete_leaveType"></span><br>
+                This action cannot be undone.
+            </p>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-modal btn-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button type="submit" class="btn-modal btn-modal-reject">🗑️ Delete Leave</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span><span>${message}</span>`;
+            alertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        }
+
+        // Approve Modal Functions
+        function openApproveModal(id, employeeName) {
+            document.getElementById('approve_LeaveId').value = id;
+            document.getElementById('approve_employeeName').textContent = employeeName;
+            document.getElementById('approveModal').classList.add('active');
+            document.getElementById('approveModalOverlay').classList.add('active');
+        }
+
+        function closeApproveModal() {
+            document.getElementById('approveModal').classList.remove('active');
+            document.getElementById('approveModalOverlay').classList.remove('active');
+            document.getElementById('approveForm').reset();
+        }
+
+        async function handleApprove(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('approve_LeaveId').value;
+            const adminRemarks = document.getElementById('approve_adminRemarks').value;
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('adminRemarks', adminRemarks);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            try {
+                const response = await fetch('/Leave/Approve', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeApproveModal();
+                    showAlert(result.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error approving leave', 'error');
+            }
+        }
+
+        // Reject Modal Functions
+        function openRejectModal(id, employeeName) {
+            document.getElementById('reject_LeaveId').value = id;
+            document.getElementById('reject_employeeName').textContent = employeeName;
+            document.getElementById('rejectModal').classList.add('active');
+            document.getElementById('rejectModalOverlay').classList.add('active');
+        }
+
+        function closeRejectModal() {
+            document.getElementById('rejectModal').classList.remove('active');
+            document.getElementById('rejectModalOverlay').classList.remove('active');
+            document.getElementById('rejectForm').reset();
+        }
+
+        async function handleReject(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('reject_LeaveId').value;
+            const adminRemarks = document.getElementById('reject_adminRemarks').value;
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('adminRemarks', adminRemarks);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            try {
+                const response = await fetch('/Leave/Reject', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeRejectModal();
+                    showAlert(result.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error rejecting leave', 'error');
+            }
+        }
+
+        // Delete Modal Functions
+        function openDeleteModal(id, employeeName, leaveType) {
+            document.getElementById('delete_LeaveId').value = id;
+            document.getElementById('delete_employeeName').textContent = employeeName;
+            document.getElementById('delete_leaveType').textContent = leaveType.replace(/([A-Z])/g, ' $1').trim();
+            document.getElementById('deleteModal').classList.add('active');
+            document.getElementById('deleteModalOverlay').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            document.getElementById('deleteModalOverlay').classList.remove('active');
+        }
+
+        async function handleDelete(event) {
+            event.preventDefault();
+
+            const id = document.getElementById('delete_LeaveId').value;
+            const form

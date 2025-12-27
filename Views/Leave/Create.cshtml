@@ -1,0 +1,433 @@
+﻿@model PayRollManagementSystem.Models.Leave
+
+@{
+    ViewData["Title"] = "Apply for Leave";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+        .btn-back:hover {
+            background: #d1e9f0;
+            color: #2193b0;
+        }
+
+    .form-card {
+        background: white;
+        border-radius: 12px;
+        padding: 30px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .form-section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 25px;
+    }
+
+    .form-group {
+        margin-bottom: 0;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+
+            .form-group label .required {
+                color: #ef4444;
+            }
+
+    .form-control {
+        width: 100%;
+        padding: 12px 15px;
+        border: 2px solid #e8f4f8;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+        .form-control:focus {
+            border-color: #6dd5ed;
+            box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.1);
+            outline: none;
+        }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 120px;
+    }
+
+    .text-danger {
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 5px;
+        display: block;
+    }
+
+    .checkbox-wrapper {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-top: 10px;
+    }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #2193b0;
+        }
+
+        .checkbox-wrapper label {
+            margin: 0;
+            cursor: pointer;
+            font-weight: 500;
+        }
+
+    .form-actions {
+        display: flex;
+        gap: 15px;
+        justify-content: flex-end;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 2px solid #e8f4f8;
+    }
+
+    .btn-submit {
+        padding: 12px 30px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+        .btn-submit:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(33, 147, 176, 0.4);
+        }
+
+    .btn-cancel {
+        padding: 12px 30px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+        .btn-cancel:hover {
+            background: #d1e9f0;
+            color: #2193b0;
+        }
+
+    .validation-summary-errors {
+        background: rgba(239, 68, 68, 0.1);
+        border: 2px solid rgba(239, 68, 68, 0.2);
+        border-radius: 10px;
+        padding: 15px 20px;
+        margin-bottom: 20px;
+    }
+
+        .validation-summary-errors ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
+
+        .validation-summary-errors li {
+            color: #ef4444;
+            font-size: 14px;
+            margin-bottom: 5px;
+        }
+
+    .info-box {
+        background: rgba(109, 213, 237, 0.1);
+        border: 2px solid rgba(109, 213, 237, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        color: #2193b0;
+        display: flex;
+        align-items: start;
+        gap: 12px;
+    }
+
+    .leave-balance-box {
+        background: rgba(16, 185, 129, 0.1);
+        border: 2px solid rgba(16, 185, 129, 0.2);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+        display: none;
+    }
+
+    .balance-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-top: 10px;
+    }
+
+    .balance-item {
+        text-align: center;
+        padding: 12px;
+        background: white;
+        border-radius: 8px;
+    }
+
+        .balance-item .label {
+            font-size: 12px;
+            color: #5a6c7d;
+            margin-bottom: 5px;
+        }
+
+        .balance-item .value {
+            font-size: 20px;
+            font-weight: 700;
+            color: #10b981;
+        }
+
+    .days-calculation {
+        background: rgba(251, 146, 60, 0.1);
+        border: 2px solid rgba(251, 146, 60, 0.2);
+        border-radius: 10px;
+        padding: 15px;
+        margin-top: 15px;
+        display: none;
+    }
+
+        .days-calculation .label {
+            font-size: 14px;
+            color: #5a6c7d;
+            margin-bottom: 8px;
+        }
+
+        .days-calculation .value {
+            font-size: 24px;
+            font-weight: 700;
+            color: #fb923c;
+        }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">➕ Apply for Leave</h1>
+    <a asp-action="Index" class="btn-back">← Back to List</a>
+</div>
+
+<div class="form-card">
+    <form asp-action="Create" method="post" id="leaveForm">
+        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
+
+        <!-- Leave Information -->
+        <h3 class="form-section-title">📋 Leave Information</h3>
+
+        <div class="info-box">
+            <span style="font-size: 20px;">💡</span>
+            <div>
+                <strong>Important:</strong> Please ensure you check your leave balance before applying. Leave requests are subject to approval by your manager.
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="form-group">
+                <label asp-for="EmployeeId">Employee <span class="required">*</span></label>
+                <select asp-for="EmployeeId" class="form-control" id="employeeSelect" required onchange="loadLeaveBalance()">
+                    <option value="">-- Select Employee --</option>
+                    @foreach (var emp in ViewBag.Employees)
+                    {
+                        <option value="@emp.EmployeeId">@emp.Name (@emp.EmployeeCode)</option>
+                    }
+                </select>
+                <span asp-validation-for="EmployeeId" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="LeaveType">Leave Type <span class="required">*</span></label>
+                <select asp-for="LeaveType" class="form-control" required>
+                    <option value="">-- Select Leave Type --</option>
+                    <option value="CasualLeave">Casual Leave</option>
+                    <option value="SickLeave">Sick Leave</option>
+                    <option value="AnnualLeave">Annual Leave</option>
+                    <option value="MaternityLeave">Maternity Leave</option>
+                    <option value="UnpaidLeave">Unpaid Leave</option>
+                </select>
+                <span asp-validation-for="LeaveType" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Leave Balance Display -->
+        <div class="leave-balance-box" id="leaveBalanceBox">
+            <div style="font-weight: 600; color: #10b981; margin-bottom: 10px;">📊 Your Leave Balance (Current Year)</div>
+            <div class="balance-grid">
+                <div class="balance-item">
+                    <div class="label">Casual Leave</div>
+                    <div class="value" id="casualBalance">-</div>
+                </div>
+                <div class="balance-item">
+                    <div class="label">Sick Leave</div>
+                    <div class="value" id="sickBalance">-</div>
+                </div>
+                <div class="balance-item">
+                    <div class="label">Annual Leave</div>
+                    <div class="value" id="annualBalance">-</div>
+                </div>
+                <div class="balance-item">
+                    <div class="label">Maternity Leave</div>
+                    <div class="value" id="maternityBalance">-</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Duration -->
+        <h3 class="form-section-title">📅 Leave Duration</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label asp-for="StartDate">Start Date <span class="required">*</span></label>
+                <input asp-for="StartDate" class="form-control" type="date" required id="startDate" onchange="calculateDays()" />
+                <span asp-validation-for="StartDate" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EndDate">End Date <span class="required">*</span></label>
+                <input asp-for="EndDate" class="form-control" type="date" required id="endDate" onchange="calculateDays()" />
+                <span asp-validation-for="EndDate" class="text-danger"></span>
+            </div>
+        </div>
+
+        <div class="checkbox-wrapper">
+            <input asp-for="IsHalfDay" type="checkbox" id="halfDayCheck" onchange="calculateDays()" />
+            <label for="halfDayCheck">This is a half-day leave</label>
+        </div>
+
+        <!-- Days Calculation -->
+        <div class="days-calculation" id="daysCalculation">
+            <div class="label">Total Leave Days</div>
+            <div class="value" id="totalDays">0</div>
+        </div>
+
+        <!-- Reason -->
+        <h3 class="form-section-title">📝 Reason for Leave</h3>
+        <div class="form-group">
+            <label asp-for="Reason">Reason <span class="required">*</span></label>
+            <textarea asp-for="Reason" class="form-control" placeholder="Please provide a detailed reason for your leave request..." required></textarea>
+            <span asp-validation-for="Reason" class="text-danger"></span>
+        </div>
+
+        <div class="form-actions">
+            <a asp-action="Index" class="btn-cancel">Cancel</a>
+            <button type="submit" class="btn-submit">✓ Submit Leave Request</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        async function loadLeaveBalance() {
+            const employeeId = document.getElementById('employeeSelect').value;
+            if (!employeeId) {
+                document.getElementById('leaveBalanceBox').style.display = 'none';
+                return;
+            }
+
+            try {
+                const response = await fetch(`/api/GetLeaveBalance/${employeeId}`);
+                const data = await response.json();
+
+                if (data.hasBalance) {
+                    document.getElementById('casualBalance').textContent = data.casualLeave.toFixed(1);
+                    document.getElementById('sickBalance').textContent = data.sickLeave.toFixed(1);
+                    document.getElementById('annualBalance').textContent = data.annualLeave.toFixed(1);
+                    document.getElementById('maternityBalance').textContent = data.maternityLeave.toFixed(1);
+                    document.getElementById('leaveBalanceBox').style.display = 'block';
+                } else {
+                    document.getElementById('leaveBalanceBox').style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Error loading leave balance:', error);
+            }
+        }
+
+        function calculateDays() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const isHalfDay = document.getElementById('halfDayCheck').checked;
+
+            if (!startDate || !endDate) {
+                document.getElementById('daysCalculation').style.display = 'none';
+                return;
+            }
+
+            const start = new Date(startDate);
+            const end = new Date(endDate);
+
+            if (end < start) {
+                document.getElementById('daysCalculation').style.display = 'none';
+                return;
+            }
+
+            let days;
+            if (isHalfDay) {
+                days = 0.5;
+            } else {
+                const diffTime = Math.abs(end - start);
+                days = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+            }
+
+            document.getElementById('totalDays').textContent = days + (days === 1 ? ' day' : ' days');
+            document.getElementById('daysCalculation').style.display = 'block';
+        }
+
+        // Set minimum date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('startDate').setAttribute('min', today);
+        document.getElementById('endDate').setAttribute('min', today);
+    </script>
+}

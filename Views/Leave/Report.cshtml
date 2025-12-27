@@ -1,0 +1,483 @@
+﻿@model dynamic
+
+@{
+    ViewData["Title"] = "Leave Report";
+}
+
+<style>
+    body {
+        font-family: 'Times New Roman', serif;
+        color: #000;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+        .btn-back:hover {
+            background: #d1e9f0;
+            color: #2193b0;
+        }
+
+    .filters-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        align-items: end;
+    }
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        padding: 10px 15px;
+        border: 2px solid #e8f4f8;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+        .form-control:focus {
+            border-color: #6dd5ed;
+            box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.1);
+            outline: none;
+        }
+
+    .btn-generate {
+        padding: 10px 20px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+        .btn-generate:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(33, 147, 176, 0.4);
+        }
+
+    /* Formal Report Styles */
+    .report-card {
+        background: white;
+        padding: 40px;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    .report-header {
+        text-align: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 3px solid #000;
+    }
+
+    .company-name {
+        font-size: 28px;
+        font-weight: bold;
+        color: #000;
+        margin: 0 0 10px 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .report-title {
+        font-size: 20px;
+        font-weight: bold;
+        color: #333;
+        margin: 10px 0;
+    }
+
+    .report-period {
+        font-size: 14px;
+        color: #666;
+        margin: 5px 0;
+    }
+
+    .summary-section {
+        margin: 30px 0;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: bold;
+        color: #000;
+        margin-bottom: 15px;
+        padding-bottom: 8px;
+        border-bottom: 2px solid #000;
+        text-transform: uppercase;
+    }
+
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+    }
+
+        .summary-table th,
+        .summary-table td {
+            border: 1px solid #000;
+            padding: 10px;
+            text-align: center;
+            font-size: 13px;
+        }
+
+        .summary-table th {
+            background: #f0f0f0;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .summary-table td {
+            color: #333;
+        }
+
+    .leave-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 20px;
+    }
+
+        .leave-table th,
+        .leave-table td {
+            border: 1px solid #000;
+            padding: 8px;
+            text-align: left;
+            font-size: 12px;
+        }
+
+        .leave-table th {
+            background: #f0f0f0;
+            font-weight: bold;
+            color: #000;
+            text-align: center;
+        }
+
+        .leave-table td {
+            color: #333;
+        }
+
+        .leave-table tbody tr:nth-child(even) {
+            background: #fafafa;
+        }
+
+    .status-badge {
+        padding: 3px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        font-weight: bold;
+        display: inline-block;
+    }
+
+    .status-approved {
+        background: #e8f5e9;
+        color: #2e7d32;
+        border: 1px solid #2e7d32;
+    }
+
+    .status-pending {
+        background: #fff3e0;
+        color: #e65100;
+        border: 1px solid #e65100;
+    }
+
+    .status-rejected {
+        background: #ffebee;
+        color: #c62828;
+        border: 1px solid #c62828;
+    }
+
+    .report-footer {
+        margin-top: 50px;
+        padding-top: 20px;
+        border-top: 2px solid #000;
+    }
+
+    .signature-section {
+        display: flex;
+        justify-content: space-between;
+        margin-top: 60px;
+    }
+
+    .signature-box {
+        text-align: center;
+    }
+
+    .signature-line {
+        border-top: 2px solid #000;
+        width: 200px;
+        margin: 0 auto 5px;
+        padding-top: 5px;
+    }
+
+    .signature-label {
+        font-size: 12px;
+        font-weight: bold;
+        color: #000;
+    }
+
+    .text-center {
+        text-align: center;
+    }
+
+    /* Print Styles */
+    @@media print {
+        body {
+            font-family: 'Times New Roman', serif;
+            color: #000;
+        }
+
+        .dashboard-sidebar,
+        .dashboard-header,
+        .dashboard-footer,
+        .sidebar-overlay,
+        .page-header,
+        .filters-card,
+        .btn-generate,
+        .btn-back {
+            display: none !important;
+        }
+
+        .dashboard-main {
+            margin-left: 0 !important;
+        }
+
+        .dashboard-content {
+            padding: 0 !important;
+        }
+
+        .report-card {
+            padding: 20px;
+            box-shadow: none;
+        }
+
+        .leave-table,
+        .summary-table {
+            page-break-inside: avoid;
+        }
+
+            .leave-table th,
+            .leave-table td,
+            .summary-table th,
+            .summary-table td {
+                border: 1px solid #000 !important;
+            }
+
+        @@page {
+            margin: 20mm;
+            size: A4;
+        }
+
+        main,
+        .container,
+        .report-card {
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">📊 Leave Report</h1>
+    <div style="display: flex; gap: 10px;">
+        @if (Model != null)
+        {
+            <button onclick="window.print()" class="btn-back" style="background: #2193b0; color: white;">
+                🖨️ Print Report
+            </button>
+        }
+        <a asp-action="Index" class="btn-back">← Back to List</a>
+    </div>
+</div>
+
+<!-- Filters -->
+<div class="filters-card">
+    <form asp-action="Report" method="get">
+        <div class="filters-row">
+            <div class="form-group">
+                <label>Month</label>
+                <select name="month" class="form-control">
+                    @for (int i = 1; i <= 12; i++)
+                    {
+                        <option value="@i" selected="@(i == ViewBag.SelectedMonth)">
+                            @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)
+                        </option>
+                    }
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Year</label>
+                <select name="year" class="form-control">
+                    @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                    {
+                        <option value="@i" selected="@(i == ViewBag.SelectedYear)">@i</option>
+                    }
+                </select>
+            </div>
+            <button type="submit" class="btn-generate">📊 Generate Report</button>
+        </div>
+    </form>
+</div>
+
+<!-- Report Content -->
+@if (Model != null)
+{
+    <div class="report-card">
+        <!-- Report Header -->
+        <div class="report-header">
+            <h1 class="company-name">Payroll Management System</h1>
+            <h2 class="report-title">Monthly Leave Report</h2>
+            <p class="report-period">Period: @Model.Month</p>
+            <p class="report-period">Generated on: @DateTime.Now.ToString("MMMM dd, yyyy")</p>
+        </div>
+
+        <!-- Summary Section -->
+        <div class="summary-section">
+            <h3 class="section-title">Leave Summary</h3>
+            <table class="summary-table">
+                <thead>
+                    <tr>
+                        <th>Total Leaves</th>
+                        <th>Pending</th>
+                        <th>Approved</th>
+                        <th>Rejected</th>
+                        <th>Total Days (Approved)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>@Model.TotalLeaves</strong></td>
+                        <td><strong>@Model.PendingLeaves</strong></td>
+                        <td><strong>@Model.ApprovedLeaves</strong></td>
+                        <td><strong>@Model.RejectedLeaves</strong></td>
+                        <td><strong>@Model.TotalLeaveDays</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Detailed Leave Records -->
+        <div class="summary-section">
+            <h3 class="section-title">Detailed Leave Records</h3>
+            @if (Model.Leaves != null && Model.Leaves.Count > 0)
+            {
+                <table class="leave-table">
+                    <thead>
+                        <tr>
+                            <th>S.No</th>
+                            <th>Employee</th>
+                            <th>Department</th>
+                            <th>Leave Type</th>
+                            <th>Start Date</th>
+                            <th>End Date</th>
+                            <th>Days</th>
+                            <th>Applied On</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{
+                            int serialNo = 1;
+                        }
+                        @foreach (PayRollManagementSystem.Models.Leave leave in Model.Leaves)
+                        {
+                            <tr>
+                                <td class="text-center">@serialNo</td>
+                                <td>@leave.Employee?.Name (@leave.Employee?.EmployeeCode)</td>
+                                <td>@leave.Employee?.Department</td>
+                                <td>@leave.LeaveType.ToString().Replace("Leave", " ")</td>
+                                <td class="text-center">@leave.StartDate.ToString("dd-MMM-yyyy")</td>
+                                <td class="text-center">@leave.EndDate.ToString("dd-MMM-yyyy")</td>
+                                <td class="text-center">@(leave.IsHalfDay ? "0.5" : leave.NumberOfDays.ToString())</td>
+                                <td class="text-center">@leave.AppliedOn.ToString("dd-MMM-yyyy")</td>
+                                <td class="text-center">
+                                    @if (leave.Status == PayRollManagementSystem.Models.LeaveStatus.Approved)
+                                    {
+                                        <span class="status-badge status-approved">Approved</span>
+                                    }
+                                    else if (leave.Status == PayRollManagementSystem.Models.LeaveStatus.Pending)
+                                    {
+                                        <span class="status-badge status-pending">Pending</span>
+                                    }
+                                    else if (leave.Status == PayRollManagementSystem.Models.LeaveStatus.Rejected)
+                                    {
+                                        <span class="status-badge status-rejected">Rejected</span>
+                                    }
+                                </td>
+                            </tr>
+                            serialNo++;
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <p style="text-align: center; padding: 20px; color: #666;">No leave records found for this period.</p>
+            }
+        </div>
+
+        <!-- Report Footer -->
+        <div class="report-footer">
+            <div class="signature-section">
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Prepared By</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 5px;">HR Department</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Verified By</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 5px;">Department Head</div>
+                </div>
+                <div class="signature-box">
+                    <div class="signature-line"></div>
+                    <div class="signature-label">Approved By</div>
+                    <div style="font-size: 11px; color: #666; margin-top: 5px;">Management</div>
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 30px; font-size: 11px; color: #666;">
+                <p>This is a computer-generated document and does not require a signature.</p>
+                <p>Report generated on @DateTime.Now.ToString("MMMM dd, yyyy 'at' hh:mm tt")</p>
+            </div>
+        </div>
+    </div>
+}
