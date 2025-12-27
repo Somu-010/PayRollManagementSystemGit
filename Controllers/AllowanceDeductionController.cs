@@ -157,7 +157,7 @@ namespace PayRollManagementSystem.Controllers
         // POST: AllowanceDeduction/Edit (AJAX)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit([FromForm] AllowanceDeduction component)
+        public async Task<IActionResult> Edit(AllowanceDeduction component)
         {
             if (ModelState.IsValid)
             {
@@ -194,7 +194,7 @@ namespace PayRollManagementSystem.Controllers
 
                     await _context.SaveChangesAsync();
 
-                    return Json(new { success = true, message = $"{component.TypeDisplay} '{component.Name}' updated successfully!" });
+                    return Json(new { success = true, message = $"{existingComponent.TypeDisplay} '{existingComponent.Name}' updated successfully!" });
                 }
                 catch (DbUpdateConcurrencyException)
                 {

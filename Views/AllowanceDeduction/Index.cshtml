@@ -480,7 +480,7 @@
         min-height: 80px;
     }
 
-    @keyframes fadeIn {
+    @@keyframes fadeIn {
         from {
             opacity: 0;
         }
@@ -489,7 +489,7 @@
         }
     }
 
-    @keyframes slideDown {
+    @@keyframes slideDown {
         from {
             transform: translate(-50%, -60%);
             opacity: 0;
@@ -661,6 +661,7 @@
         <button class="modal-close" onclick="closeEditModal()">×</button>
     </div>
     <form id="editForm" onsubmit="handleEdit(event)">
+        @Html.AntiForgeryToken()
         <div class="modal-body">
             <input type="hidden" id="edit_AllowanceDeductionId" name="AllowanceDeductionId" />
 
@@ -769,6 +770,7 @@
         <button class="modal-close" onclick="closeDeleteModal()">×</button>
     </div>
     <form id="deleteForm" onsubmit="handleDelete(event)">
+        @Html.AntiForgeryToken()
         <div class="modal-body">
             <input type="hidden" id="delete_Id" name="id" />
             
@@ -844,4 +846,74 @@
             event.preventDefault();
 
             const formData = new FormData(event.target);
-            formData.append('__Request
+
+            try {
+                const response = await fetch('/AllowanceDeduction/Edit', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeEditModal();
+                    showAlert(result.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error updating component', 'error');
+            }
+        }
+
+        function openDeleteModal(id, name, code) {
+            document.getElementById('delete_Id').value = id;
+            document.getElementById('delete_name').textContent = name;
+            document.getElementById('delete_code').textContent = code;
+
+            document.getElementById('deleteModal').classList.add('active');
+            document.getElementById('deleteModalOverlay').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            document.getElementById('deleteModalOverlay').classList.remove('active');
+        }
+
+        async function handleDelete(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+
+            try {
+                const response = await fetch('/AllowanceDeduction/Delete', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeDeleteModal();
+                    showAlert(result.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error deleting component', 'error');
+            }
+        }
+
+        // Show success message from TempData
+        @if (TempData["Success"] != null)
+        {
+            <text>
+            document.addEventListener('DOMContentLoaded', function() {
+                showAlert('@TempData["Success"]', 'success');
+            });
+            </text>
+        }
+    </script>
+}

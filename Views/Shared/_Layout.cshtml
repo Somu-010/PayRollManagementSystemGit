@@ -392,6 +392,13 @@
                             Leave Management
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "AllowanceDeduction" ? "active" : "")"
+                           asp-controller="AllowanceDeduction" asp-action="Index">
+                            <span class="nav-icon">💰</span>
+                            Allowances & Deductions
+                        </a>
+                    </li>
                 </ul>
 
                 <div class="nav-section-title">Reports & Analytics</div>
