@@ -1,0 +1,679 @@
+﻿@model IEnumerable<PayRollManagementSystem.Models.ComponentTemplate>
+
+@{
+    ViewData["Title"] = "Component Templates";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .btn-add {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        text-decoration: none;
+        font-weight: 600;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(33, 147, 176, 0.4);
+        color: white;
+    }
+
+    .filters-card {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    }
+
+    .filters-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 15px;
+        align-items: end;
+    }
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        padding: 10px 15px;
+        border: 2px solid #e8f4f8;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: all 0.3s;
+        width: 100%;
+    }
+
+    .form-control:focus {
+        border-color: #6dd5ed;
+        box-shadow: 0 0 0 3px rgba(109, 213, 237, 0.1);
+        outline: none;
+    }
+
+    .btn-filter {
+        padding: 10px 20px;
+        background: #2193b0;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .btn-filter:hover {
+        background: #1a7a94;
+        transform: translateY(-2px);
+    }
+
+    .btn-clear {
+        padding: 10px 20px;
+        background: #e8f4f8;
+        color: #2193b0;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+    }
+
+    .btn-clear:hover {
+        background: #d1e9f0;
+        color: #2193b0;
+    }
+
+    .templates-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+
+    .template-card {
+        background: white;
+        border-radius: 12px;
+        padding: 24px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+
+    .template-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 8px 20px rgba(33, 147, 176, 0.15);
+        border-color: #6dd5ed;
+    }
+
+    .template-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: start;
+        margin-bottom: 15px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .template-info {
+        flex: 1;
+    }
+
+    .template-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .template-meta {
+        font-size: 13px;
+        color: #5a6c7d;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+    }
+
+    .meta-item {
+        display: flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .template-status {
+        padding: 6px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+        flex-shrink: 0;
+    }
+
+    .status-active {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+    .status-inactive {
+        background: rgba(107, 114, 128, 0.1);
+        color: #6b7280;
+    }
+
+    .template-badges {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .badge {
+        padding: 5px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .badge-industry {
+        background: rgba(109, 213, 237, 0.1);
+        color: #2193b0;
+    }
+
+    .badge-level {
+        background: rgba(168, 85, 247, 0.1);
+        color: #a855f7;
+    }
+
+    .template-stats {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+        margin-bottom: 15px;
+    }
+
+    .stat-box {
+        padding: 12px;
+        background: #f8fafb;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .stat-label {
+        font-size: 11px;
+        color: #5a6c7d;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+    }
+
+    .stat-value {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2193b0;
+    }
+
+    .template-description {
+        font-size: 14px;
+        color: #5a6c7d;
+        line-height: 1.5;
+        margin-bottom: 15px;
+        display: -webkit-box;
+        -webkit-line-clamp: 2;
+        -webkit-box-orient: vertical;
+        overflow: hidden;
+    }
+
+    .template-actions {
+        display: flex;
+        gap: 8px;
+    }
+
+    .btn-action {
+        flex: 1;
+        padding: 10px 16px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-size: 13px;
+        font-weight: 600;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+        text-align: center;
+    }
+
+    .btn-view {
+        background: #e8f4f8;
+        color: #2193b0;
+    }
+
+    .btn-view:hover {
+        background: #d1e9f0;
+        color: #2193b0;
+    }
+
+    .btn-clone {
+        background: rgba(109, 213, 237, 0.1);
+        color: #2193b0;
+    }
+
+    .btn-clone:hover {
+        background: rgba(109, 213, 237, 0.2);
+        color: #2193b0;
+    }
+
+    .btn-delete {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+    .btn-delete:hover {
+        background: rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+    }
+
+    .no-records {
+        text-align: center;
+        padding: 60px 20px;
+        color: #5a6c7d;
+        background: white;
+        border-radius: 12px;
+    }
+
+    .no-records h3 {
+        font-size: 20px;
+        margin-bottom: 10px;
+        color: #2c3e50;
+    }
+
+    .no-records p {
+        font-size: 14px;
+        margin-bottom: 20px;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    /* Modal Styles */
+    .modal-overlay {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        z-index: 9998;
+        animation: fadeIn 0.3s;
+    }
+
+    .modal-overlay.active {
+        display: block;
+    }
+
+    .modal {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        z-index: 9999;
+        max-width: 500px;
+        width: 90%;
+        animation: slideDown 0.3s;
+    }
+
+    .modal.active {
+        display: block;
+    }
+
+    .modal-header {
+        padding: 20px 25px;
+        border-bottom: 2px solid #e8f4f8;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .modal-title {
+        font-size: 20px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .modal-close {
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        color: #5a6c7d;
+        padding: 0;
+        width: 30px;
+        height: 30px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 6px;
+        transition: all 0.3s;
+    }
+
+    .modal-close:hover {
+        background: #f8fafb;
+        color: #2c3e50;
+    }
+
+    .modal-body {
+        padding: 25px;
+    }
+
+    .modal-footer {
+        padding: 20px 25px;
+        border-top: 2px solid #e8f4f8;
+        display: flex;
+        gap: 10px;
+        justify-content: flex-end;
+    }
+
+    .btn-modal {
+        padding: 10px 24px;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-modal-cancel {
+        background: #e8f4f8;
+        color: #2193b0;
+    }
+
+    .btn-modal-cancel:hover {
+        background: #d1e9f0;
+    }
+
+    .btn-modal-delete {
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-modal-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+    }
+
+    @@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+    }
+
+    @@keyframes slideDown {
+        from {
+            transform: translate(-50%, -60%);
+            opacity: 0;
+        }
+        to {
+            transform: translate(-50%, -50%);
+            opacity: 1;
+        }
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title">📦 Component Templates</h1>
+    <a asp-action="Create" class="btn-add">➕ Create Template</a>
+</div>
+
+<div id="alertContainer"></div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success">
+        <span>✓</span>
+        <span>@TempData["Success"]</span>
+    </div>
+}
+
+<!-- Filters -->
+<div class="filters-card">
+    <form asp-action="Index" method="get">
+        <div class="filters-row">
+            <div class="form-group">
+                <label>Search</label>
+                <input type="text" name="searchString" value="@ViewData["CurrentFilter"]"
+                       class="form-control" placeholder="Template name..." />
+            </div>
+            <div class="form-group">
+                <label>Industry Type</label>
+                <select name="industryType" class="form-control">
+                    <option value="">All Industries</option>
+                    <option value="IT" selected="@("IT" == ViewData["CurrentIndustry"])">Information Technology</option>
+                    <option value="Manufacturing" selected="@("Manufacturing" == ViewData["CurrentIndustry"])">Manufacturing</option>
+                    <option value="Healthcare" selected="@("Healthcare" == ViewData["CurrentIndustry"])">Healthcare</option>
+                    <option value="Finance" selected="@("Finance" == ViewData["CurrentIndustry"])">Finance & Banking</option>
+                    <option value="Retail" selected="@("Retail" == ViewData["CurrentIndustry"])">Retail</option>
+                    <option value="Education" selected="@("Education" == ViewData["CurrentIndustry"])">Education</option>
+                    <option value="Government" selected="@("Government" == ViewData["CurrentIndustry"])">Government</option>
+                    <option value="Startup" selected="@("Startup" == ViewData["CurrentIndustry"])">Startup</option>
+                    <option value="Other" selected="@("Other" == ViewData["CurrentIndustry"])">Other</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Employee Level</label>
+                <select name="employeeLevel" class="form-control">
+                    <option value="">All Levels</option>
+                    <option value="EntryLevel" selected="@("EntryLevel" == ViewData["CurrentLevel"])">Entry Level</option>
+                    <option value="Junior" selected="@("Junior" == ViewData["CurrentLevel"])">Junior</option>
+                    <option value="MidLevel" selected="@("MidLevel" == ViewData["CurrentLevel"])">Mid Level</option>
+                    <option value="Senior" selected="@("Senior" == ViewData["CurrentLevel"])">Senior</option>
+                    <option value="Lead" selected="@("Lead" == ViewData["CurrentLevel"])">Lead</option>
+                    <option value="Manager" selected="@("Manager" == ViewData["CurrentLevel"])">Manager</option>
+                    <option value="SeniorManager" selected="@("SeniorManager" == ViewData["CurrentLevel"])">Senior Manager</option>
+                    <option value="Director" selected="@("Director" == ViewData["CurrentLevel"])">Director</option>
+                    <option value="Executive" selected="@("Executive" == ViewData["CurrentLevel"])">Executive</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 10px;">
+                <button type="submit" class="btn-filter">🔍 Filter</button>
+                <a asp-action="Index" class="btn-clear">✕ Clear</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<!-- Templates Grid -->
+@if (Model.Any())
+{
+    <div class="templates-grid">
+        @foreach (var template in Model)
+        {
+            <div class="template-card">
+                <div class="template-header">
+                    <div class="template-info">
+                        <h3 class="template-name">@template.Name</h3>
+                        <div class="template-meta">
+                            <span class="meta-item">
+                                <span>📦</span> @(template.TemplateItems?.Count ?? 0) components
+                            </span>
+                            <span class="meta-item">
+                                <span>👥</span> Used @template.UsageCount times
+                            </span>
+                        </div>
+                    </div>
+                    <span class="template-status @(template.IsActive ? "status-active" : "status-inactive")">
+                        @(template.IsActive ? "Active" : "Inactive")
+                    </span>
+                </div>
+
+                <div class="template-badges">
+                    <span class="badge badge-industry">
+                        @template.IndustryType.ToString()
+                    </span>
+                    <span class="badge badge-level">
+                        @template.EmployeeLevel.ToString().Replace("Level", " Level")
+                    </span>
+                </div>
+
+                @if (!string.IsNullOrEmpty(template.Description))
+                {
+                    <p class="template-description">@template.Description</p>
+                }
+
+                <div class="template-stats">
+                    <div class="stat-box">
+                        <div class="stat-label">Components</div>
+                        <div class="stat-value">@(template.TemplateItems?.Count ?? 0)</div>
+                    </div>
+                    <div class="stat-box">
+                        <div class="stat-label">Times Used</div>
+                        <div class="stat-value">@template.UsageCount</div>
+                    </div>
+                </div>
+
+                <div class="template-actions">
+                    <a asp-action="Details" asp-route-id="@template.TemplateId" class="btn-action btn-view">
+                        👁️ View
+                    </a>
+                    <a asp-action="Clone" asp-route-id="@template.TemplateId" class="btn-action btn-clone">
+                        📋 Clone
+                    </a>
+                    <button onclick="openDeleteModal(@template.TemplateId, '@template.Name')" class="btn-action btn-delete">
+                        🗑️ Delete
+                    </button>
+                </div>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="no-records">
+        <h3>📦 No Templates Found</h3>
+        <p>Create your first component template to get started</p>
+        <a asp-action="Create" class="btn-add">➕ Create Template</a>
+    </div>
+}
+
+<!-- Delete Modal -->
+<div class="modal-overlay" id="deleteModalOverlay" onclick="closeDeleteModal()"></div>
+<div class="modal" id="deleteModal">
+    <div class="modal-header">
+        <h3 class="modal-title">🗑️ Delete Template</h3>
+        <button class="modal-close" onclick="closeDeleteModal()">×</button>
+    </div>
+    <form id="deleteForm" onsubmit="handleDelete(event)">
+        @Html.AntiForgeryToken()
+        <div class="modal-body">
+            <input type="hidden" id="delete_Id" name="id" />
+
+            <div style="background: rgba(239, 68, 68, 0.1); border: 2px solid rgba(239, 68, 68, 0.2); border-radius: 10px; padding: 15px; margin-bottom: 20px;">
+                <p style="margin: 0; color: #7f1d1d;">
+                    <strong>⚠️ Warning:</strong> Are you sure you want to delete this template?
+                </p>
+            </div>
+
+            <div style="background: #f8fafb; border-radius: 10px; padding: 20px;">
+                <h3 style="margin: 0 0 5px 0; font-size: 18px; color: #2c3e50;" id="delete_name"></h3>
+                <p style="margin: 0; font-size: 14px; color: #5a6c7d;">This action cannot be undone.</p>
+            </div>
+        </div>
+        <div class="modal-footer">
+            <button type="button" class="btn-modal btn-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
+            <button type="submit" class="btn-modal btn-modal-delete">🗑️ Delete Template</button>
+        </div>
+    </form>
+</div>
+
+@section Scripts {
+    <script>
+        function showAlert(message, type) {
+            const alertContainer = document.getElementById('alertContainer');
+            const alert = document.createElement('div');
+            alert.className = `alert alert-${type}`;
+            alert.innerHTML = `<span>${type === 'success' ? '✓' : '✕'}</span><span>${message}</span>`;
+            alertContainer.appendChild(alert);
+
+            setTimeout(() => {
+                alert.style.opacity = '0';
+                setTimeout(() => alert.remove(), 300);
+            }, 5000);
+        }
+
+        function openDeleteModal(id, name) {
+            document.getElementById('delete_Id').value = id;
+            document.getElementById('delete_name').textContent = name;
+
+            document.getElementById('deleteModal').classList.add('active');
+            document.getElementById('deleteModalOverlay').classList.add('active');
+        }
+
+        function closeDeleteModal() {
+            document.getElementById('deleteModal').classList.remove('active');
+            document.getElementById('deleteModalOverlay').classList.remove('active');
+        }
+
+        async function handleDelete(event) {
+            event.preventDefault();
+
+            const formData = new FormData(event.target);
+
+            try {
+                const response = await fetch('/ComponentTemplate/Delete', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    closeDeleteModal();
+                    showAlert(result.message, 'success');
+                    setTimeout(() => location.reload(), 1000);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error deleting template', 'error');
+            }
+        }
+    </script>
+}

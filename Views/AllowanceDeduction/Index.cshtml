@@ -502,8 +502,12 @@
 </style>
 
 <div class="page-header">
-    <h1 class="page-title">💰 Allowances & Deductions</h1>
-    <a asp-action="Create" class="btn-add">➕ Add Component</a>
+    <h1 class="page-title">&#128176; Allowances & Deductions</h1>
+    <div style="display: flex; gap: 10px;">
+        <a asp-action="Analytics" style="padding: 10px 20px; background: linear-gradient(135deg, #a855f7 0%, #7e22ce 100%); color: white; border: none; border-radius: 8px; text-decoration: none; font-weight: 500; transition: all 0.3s;">&#128202; Analytics</a>
+        <a asp-action="CostAnalysis" style="padding: 10px 20px; background: linear-gradient(135deg, #fb923c 0%, #f97316 100%); color: white; border: none; border-radius: 8px; text-decoration: none; font-weight: 500; transition: all 0.3s;">&#128181; Cost Analysis</a>
+        <a asp-action="Create" class="btn-add">&#10133; Add Component</a>
+    </div>
 </div>
 
 <div id="alertContainer"></div>
