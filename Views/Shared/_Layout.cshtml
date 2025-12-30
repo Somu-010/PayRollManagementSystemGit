@@ -11,6 +11,8 @@
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PayRollManagementSystem.styles.css" asp-append-version="true" />
+    <!-- Font Awesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
         :root {
             --sidebar-width: 260px;
@@ -405,13 +407,14 @@
                 <div class="nav-section-title">Reports & Analytics</div>
                 <ul class="list-unstyled">
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Reports" ? "active" : "")"
+                           asp-controller="Reports" asp-action="Index">
                             <span class="nav-icon">📈</span>
                             Reports
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="#">
+                        <a class="nav-link" asp-controller="Payroll" asp-action="Index">
                             <span class="nav-icon">📄</span>
                             Payslips
                         </a>

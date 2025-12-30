@@ -1,0 +1,425 @@
+@model IEnumerable<PayRollManagementSystem.Models.Attendance>
+
+@{
+    ViewData["Title"] = "Monthly Attendance Report";
+    var selectedMonth = (int)ViewData["SelectedMonth"];
+    var selectedYear = (int)ViewData["SelectedYear"];
+    var selectedEmployee = ViewData["SelectedEmployee"] as int?;
+    var currentDepartment = ViewData["CurrentDepartment"]?.ToString();
+    var employeeSummary = ViewBag.EmployeeSummary as IEnumerable<dynamic>;
+}
+
+<style>
+    .report-container {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .report-title-section h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .report-subtitle {
+        color: #5a6c7d;
+        font-size: 14px;
+    }
+
+    .report-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-back {
+        background: #e8f4f8;
+        color: #2193b0;
+    }
+
+    .btn-print {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+    }
+
+    .filters-section {
+        background: #f8fafb;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: 1fr 1fr 2fr 1fr 1fr;
+        gap: 15px;
+    }
+
+    .filter-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+
+    .filter-group select {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #dfe6e9;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .summary-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-bottom: 30px;
+    }
+
+    .summary-table thead {
+        background: #f8fafb;
+    }
+
+    .summary-table th {
+        padding: 15px;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2c3e50;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .summary-table td {
+        padding: 15px;
+        border-bottom: 1px solid #f1f3f5;
+        font-size: 14px;
+        color: #5a6c7d;
+    }
+
+    .summary-table tbody tr:hover {
+        background: #f8fafb;
+    }
+
+    .employee-info {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .employee-code {
+        font-size: 12px;
+        color: #95a5a6;
+    }
+
+    .attendance-badge {
+        display: inline-block;
+        padding: 4px 10px;
+        border-radius: 4px;
+        font-size: 13px;
+        font-weight: 600;
+    }
+
+    .present-badge {
+        background: #d1f4e0;
+        color: #10b981;
+    }
+
+    .absent-badge {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+
+    .late-badge {
+        background: #fef3c7;
+        color: #f59e0b;
+    }
+
+    .leave-badge {
+        background: #dbeafe;
+        color: #3b82f6;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 30px 0 15px 0;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #95a5a6;
+    }
+
+    @@media print {
+        body {
+            font-family: 'Times New Roman', serif !important;
+            color: #000 !important;
+            background: white !important;
+        }
+
+        .report-actions,
+        .filters-section,
+        .btn-action,
+        .dashboard-sidebar,
+        .dashboard-header,
+        .dashboard-footer,
+        .sidebar-overlay {
+            display: none !important;
+        }
+
+        .dashboard-main {
+            margin-left: 0 !important;
+        }
+
+        .dashboard-content {
+            padding: 0 !important;
+        }
+
+        .report-container {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 20px !important;
+        }
+
+        .report-header {
+            text-align: center !important;
+            border-bottom: 3px solid #000 !important;
+            margin-bottom: 20px !important;
+        }
+
+        .report-title-section h1 {
+            font-size: 22px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            margin-bottom: 10px !important;
+        }
+
+        .report-subtitle {
+            font-size: 14px !important;
+            color: #333 !important;
+        }
+
+        .section-title {
+            font-size: 16px !important;
+            border-bottom: 2px solid #000 !important;
+            text-transform: uppercase !important;
+        }
+
+        .summary-table,
+        .summary-table th,
+        .summary-table td {
+            border: 1px solid #000 !important;
+            font-family: 'Times New Roman', serif !important;
+        }
+
+        .summary-table thead {
+            background: #f0f0f0 !important;
+        }
+
+        .summary-table th {
+            font-size: 11px !important;
+            padding: 8px 5px !important;
+        }
+
+        .summary-table td {
+            font-size: 11px !important;
+            padding: 8px 5px !important;
+            color: #000 !important;
+        }
+
+        .summary-table tbody tr:hover {
+            background: transparent !important;
+        }
+
+        @@page {
+            margin: 15mm;
+            size: A4 landscape;
+        }
+
+        .summary-table {
+            page-break-inside: avoid;
+        }
+
+        main, .container {
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        .attendance-badge {
+            border: 1px solid #000 !important;
+            color: #000 !important;
+            background: white !important;
+            padding: 2px 6px !important;
+            font-size: 10px !important;
+        }
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <div class="report-title-section">
+            <h1>?? Monthly Attendance Report</h1>
+            <p class="report-subtitle">@(new DateTime(selectedYear, selectedMonth, 1).ToString("MMMM yyyy"))</p>
+        </div>
+        <div class="report-actions">
+            <button onclick="window.print()" class="btn-action btn-print">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <a asp-action="Index" class="btn-action btn-back">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="get" asp-action="MonthlyAttendance">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Month</label>
+                    <select name="month" class="form-control">
+                        @for (int i = 1; i <= 12; i++)
+                        {
+                            <option value="@i" selected="@(i == selectedMonth)">@(new DateTime(2000, i, 1).ToString("MMMM"))</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Year</label>
+                    <select name="year" class="form-control">
+                        @for (int i = DateTime.Now.Year; i >= DateTime.Now.Year - 5; i--)
+                        {
+                            <option value="@i" selected="@(i == selectedYear)">@i</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Employee</label>
+                    <select name="employeeId" class="form-control">
+                        <option value="">All Employees</option>
+                        @foreach (var emp in ViewBag.Employees as List<PayRollManagementSystem.Models.Employee>)
+                        {
+                            <option value="@emp.EmployeeId" selected="@(emp.EmployeeId == selectedEmployee)">
+                                @emp.Name (@emp.EmployeeCode)
+                            </option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Department</label>
+                    <select name="department" class="form-control">
+                        <option value="">All Departments</option>
+                        @foreach (var dept in ViewBag.Departments as List<string>)
+                        {
+                            <option value="@dept" selected="@(dept == currentDepartment)">@dept</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn-action" style="width: 100%; background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); color: white;">
+                        <i class="fas fa-filter"></i> Apply
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    @if (employeeSummary != null && employeeSummary.Any())
+    {
+        <h3 class="section-title">Employee-wise Summary</h3>
+        <table class="summary-table">
+            <thead>
+                <tr>
+                    <th>S.No</th>
+                    <th>Employee</th>
+                    <th>Department</th>
+                    <th>Designation</th>
+                    <th>Total Days</th>
+                    <th>Present</th>
+                    <th>Absent</th>
+                    <th>Late</th>
+                    <th>Leave</th>
+                    <th>Half Day</th>
+                    <th>Total Hours</th>
+                    <th>Overtime</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int serialNo = 1;
+                    foreach (var summary in employeeSummary)
+                    {
+                        <tr>
+                            <td>@serialNo</td>
+                            <td>
+                                <div class="employee-info">@summary.EmployeeName</div>
+                                <div class="employee-code">@summary.EmployeeCode</div>
+                            </td>
+                            <td>@summary.Department</td>
+                            <td>@summary.Designation</td>
+                            <td><strong>@summary.TotalDays</strong></td>
+                            <td><span class="attendance-badge present-badge">@summary.PresentDays</span></td>
+                            <td><span class="attendance-badge absent-badge">@summary.AbsentDays</span></td>
+                            <td><span class="attendance-badge late-badge">@summary.LateDays</span></td>
+                            <td><span class="attendance-badge leave-badge">@summary.OnLeaveDays</span></td>
+                            <td><strong>@summary.HalfDays</strong></td>
+                            <td><strong>@summary.TotalHours.ToString("0.00") hrs</strong></td>
+                            <td>
+                                @if (summary.OvertimeHours > 0)
+                                {
+                                    <strong style="color: #10b981;">@summary.OvertimeHours.ToString("0.00") hrs</strong>
+                                }
+                                else
+                                {
+                                    <span>-</span>
+                                }
+                            </td>
+                        </tr>
+                        serialNo++;
+                    }
+                }
+            </tbody>
+        </table>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>
+            <h3>No attendance records found</h3>
+            <p>No attendance data available for @(new DateTime(selectedYear, selectedMonth, 1).ToString("MMMM yyyy"))</p>
+            <p style="font-size: 14px; margin-top: 10px;">
+                Try selecting a different month, year, or employee to view attendance data.
+            </p>
+        </div>
+    }
+</div>

@@ -1,0 +1,508 @@
+@model IEnumerable<PayRollManagementSystem.Models.Attendance>
+
+@{
+    ViewData["Title"] = "Daily Attendance Report";
+    var selectedDate = (DateTime)ViewData["SelectedDate"];
+    var currentDepartment = ViewData["CurrentDepartment"]?.ToString();
+    var currentStatus = ViewData["CurrentStatus"]?.ToString();
+}
+
+<style>
+    .report-container {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+    }
+
+    .report-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .report-title-section h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .report-subtitle {
+        color: #5a6c7d;
+        font-size: 14px;
+    }
+
+    .report-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-action {
+        padding: 10px 20px;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s ease;
+        border: none;
+        cursor: pointer;
+        font-size: 14px;
+    }
+
+    .btn-back {
+        background: #e8f4f8;
+        color: #2193b0;
+    }
+
+    .btn-print {
+        background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%);
+        color: white;
+    }
+
+    .filters-section {
+        background: #f8fafb;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+    }
+
+    .filters-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+        margin-bottom: 15px;
+    }
+
+    .filter-group label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+
+    .filter-group select,
+    .filter-group input {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #dfe6e9;
+        border-radius: 8px;
+        font-size: 14px;
+    }
+
+    .stats-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin-bottom: 25px;
+    }
+
+    .stat-card {
+        padding: 20px;
+        border-radius: 12px;
+        color: white;
+        text-align: center;
+    }
+
+    .stat-card.total {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .stat-card.present {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .stat-card.absent {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .stat-card.late {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    }
+
+    .stat-card.leave {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    }
+
+    .stat-card.halfday {
+        background: linear-gradient(135deg, #fccb90 0%, #d57eeb 100%);
+    }
+
+    .stat-label {
+        font-size: 12px;
+        opacity: 0.9;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .stat-percentage {
+        font-size: 14px;
+        opacity: 0.9;
+    }
+
+    .attendance-table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    .attendance-table thead {
+        background: #f8fafb;
+    }
+
+    .attendance-table th {
+        padding: 15px;
+        text-align: left;
+        font-size: 13px;
+        font-weight: 600;
+        color: #2c3e50;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        border-bottom: 2px solid #e8f4f8;
+    }
+
+    .attendance-table td {
+        padding: 15px;
+        border-bottom: 1px solid #f1f3f5;
+        font-size: 14px;
+        color: #5a6c7d;
+    }
+
+    .attendance-table tbody tr:hover {
+        background: #f8fafb;
+    }
+
+    .employee-info {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .employee-code {
+        font-size: 12px;
+        color: #95a5a6;
+    }
+
+    .status-badge {
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+
+    .status-present {
+        background: #d1f4e0;
+        color: #10b981;
+    }
+
+    .status-absent {
+        background: #fee2e2;
+        color: #ef4444;
+    }
+
+    .status-late {
+        background: #fef3c7;
+        color: #f59e0b;
+    }
+
+    .status-leave {
+        background: #dbeafe;
+        color: #3b82f6;
+    }
+
+    .late-indicator {
+        color: #ef4444;
+        font-weight: 600;
+    }
+
+    .early-leave-indicator {
+        color: #f59e0b;
+        font-weight: 600;
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        color: #95a5a6;
+    }
+
+    @@media print {
+        body {
+            font-family: 'Times New Roman', serif !important;
+            color: #000 !important;
+            background: white !important;
+        }
+
+        .report-actions,
+        .filters-section,
+        .btn-action,
+        .stats-cards,
+        .dashboard-sidebar,
+        .dashboard-header,
+        .dashboard-footer,
+        .sidebar-overlay {
+            display: none !important;
+        }
+
+        .dashboard-main {
+            margin-left: 0 !important;
+        }
+
+        .dashboard-content {
+            padding: 0 !important;
+        }
+
+        .report-container {
+            box-shadow: none !important;
+            border-radius: 0 !important;
+            padding: 20px !important;
+        }
+
+        .report-header {
+            text-align: center !important;
+            border-bottom: 3px solid #000 !important;
+            margin-bottom: 20px !important;
+        }
+
+        .report-title-section h1 {
+            font-size: 22px !important;
+            text-transform: uppercase !important;
+            letter-spacing: 1px !important;
+            margin-bottom: 10px !important;
+        }
+
+        .report-subtitle {
+            font-size: 14px !important;
+            color: #333 !important;
+        }
+
+        .attendance-table,
+        .attendance-table th,
+        .attendance-table td {
+            border: 1px solid #000 !important;
+            font-family: 'Times New Roman', serif !important;
+        }
+
+        .attendance-table thead {
+            background: #f0f0f0 !important;
+        }
+
+        .attendance-table th {
+            font-size: 11px !important;
+            padding: 8px 5px !important;
+        }
+
+        .attendance-table td {
+            font-size: 11px !important;
+            padding: 8px 5px !important;
+            color: #000 !important;
+        }
+
+        .attendance-table tbody tr:hover {
+            background: transparent !important;
+        }
+
+        @@page {
+            margin: 15mm;
+            size: A4 landscape;
+        }
+
+        .attendance-table {
+            page-break-inside: avoid;
+        }
+
+        main, .container {
+            margin: 0 !important;
+            width: 100% !important;
+            max-width: 100% !important;
+        }
+
+        .status-badge {
+            border: 1px solid #000 !important;
+            color: #000 !important;
+            background: white !important;
+            padding: 2px 6px !important;
+            font-size: 10px !important;
+        }
+
+        .late-indicator,
+        .early-leave-indicator {
+            color: #000 !important;
+        }
+    }
+</style>
+
+<div class="report-container">
+    <div class="report-header">
+        <div class="report-title-section">
+            <h1>?? Daily Attendance Report</h1>
+            <p class="report-subtitle">@selectedDate.ToString("dddd, MMMM dd, yyyy")</p>
+        </div>
+        <div class="report-actions">
+            <button onclick="window.print()" class="btn-action btn-print">
+                <i class="fas fa-print"></i> Print
+            </button>
+            <a asp-action="Index" class="btn-action btn-back">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters-section">
+        <form method="get" asp-action="DailyAttendance">
+            <div class="filters-grid">
+                <div class="filter-group">
+                    <label>Date</label>
+                    <input type="date" name="date" value="@selectedDate.ToString("yyyy-MM-dd")" class="form-control" />
+                </div>
+                <div class="filter-group">
+                    <label>Department</label>
+                    <select name="department" class="form-control">
+                        <option value="">All Departments</option>
+                        @foreach (var dept in ViewBag.Departments as List<string>)
+                        {
+                            <option value="@dept" selected="@(dept == currentDepartment)">@dept</option>
+                        }
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>Status</label>
+                    <select name="status" class="form-control">
+                        <option value="">All Status</option>
+                        <option value="Present" selected="@(currentStatus == "Present")">Present</option>
+                        <option value="Absent" selected="@(currentStatus == "Absent")">Absent</option>
+                        <option value="Late" selected="@(currentStatus == "Late")">Late</option>
+                        <option value="OnLeave" selected="@(currentStatus == "OnLeave")">On Leave</option>
+                    </select>
+                </div>
+                <div class="filter-group">
+                    <label>&nbsp;</label>
+                    <button type="submit" class="btn-action" style="width: 100%; background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); color: white;">
+                        <i class="fas fa-filter"></i> Apply Filters
+                    </button>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <!-- Statistics -->
+    <div class="stats-cards">
+        <div class="stat-card total">
+            <div class="stat-label">Total Employees</div>
+            <div class="stat-value">@ViewBag.TotalEmployees</div>
+        </div>
+        <div class="stat-card present">
+            <div class="stat-label">Present</div>
+            <div class="stat-value">@ViewBag.PresentCount</div>
+            <div class="stat-percentage">@ViewBag.AttendancePercentage%</div>
+        </div>
+        <div class="stat-card absent">
+            <div class="stat-label">Absent</div>
+            <div class="stat-value">@ViewBag.AbsentCount</div>
+        </div>
+        <div class="stat-card late">
+            <div class="stat-label">Late Arrivals</div>
+            <div class="stat-value">@ViewBag.LateCount</div>
+        </div>
+        <div class="stat-card leave">
+            <div class="stat-label">On Leave</div>
+            <div class="stat-value">@ViewBag.OnLeaveCount</div>
+        </div>
+        <div class="stat-card halfday">
+            <div class="stat-label">Half Day</div>
+            <div class="stat-value">@ViewBag.HalfDayCount</div>
+        </div>
+    </div>
+
+    <!-- Table -->
+    <table class="attendance-table">
+        <thead>
+            <tr>
+                <th>S.No</th>
+                <th>Employee</th>
+                <th>Department</th>
+                <th>Designation</th>
+                <th>Check-In</th>
+                <th>Check-Out</th>
+                <th>Total Hours</th>
+                <th>Status</th>
+                <th>Remarks</th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model != null && Model.Any())
+            {
+                int serialNo = 1;
+                @foreach (var attendance in Model)
+                {
+                    <tr>
+                        <td>@serialNo</td>
+                        <td>
+                            <div class="employee-info">@(attendance.Employee?.Name ?? "Unknown")</div>
+                            <div class="employee-code">@(attendance.Employee?.EmployeeCode ?? "N/A")</div>
+                        </td>
+                        <td>@(attendance.Employee?.DepartmentNavigation?.Name ?? "N/A")</td>
+                        <td>@(attendance.Employee?.DesignationNavigation?.Title ?? "N/A")</td>
+                        <td>
+                            @attendance.CheckInTime.ToString(@"hh\:mm\ tt")
+                            @if (attendance.IsLate && attendance.LateByMinutes.HasValue)
+                            {
+                                <span class="late-indicator"> (Late by @attendance.LateByMinutes min)</span>
+                            }
+                        </td>
+                        <td>
+                            @(attendance.CheckOutTime?.ToString(@"hh\:mm\ tt") ?? "-")
+                            @if (attendance.IsEarlyLeave && attendance.EarlyLeaveByMinutes.HasValue)
+                            {
+                                <span class="early-leave-indicator"> (Early by @attendance.EarlyLeaveByMinutes min)</span>
+                            }
+                        </td>
+                        <td>
+                            <strong>@(attendance.TotalHours?.ToString("0.00") ?? "0.00") hrs</strong>
+                            @if (attendance.OvertimeHours.HasValue && attendance.OvertimeHours.Value > 0)
+                            {
+                                <span style="color: #10b981;"> (+@attendance.OvertimeHours.Value.ToString("0.00") OT)</span>
+                            }
+                        </td>
+                        <td>
+                            @{
+                                var statusClass = attendance.Status switch
+                                {
+                                    PayRollManagementSystem.Models.AttendanceStatus.Present => "status-present",
+                                    PayRollManagementSystem.Models.AttendanceStatus.Absent => "status-absent",
+                                    PayRollManagementSystem.Models.AttendanceStatus.Late => "status-late",
+                                    PayRollManagementSystem.Models.AttendanceStatus.OnLeave => "status-leave",
+                                    _ => "status-present"
+                                };
+                            }
+                            <span class="status-badge @statusClass">@attendance.Status</span>
+                            @if (attendance.IsHalfDay)
+                            {
+                                <span class="status-badge" style="background: #fef3c7; color: #f59e0b; margin-left: 5px;">Half Day</span>
+                            }
+                        </td>
+                        <td>@(attendance.Remarks ?? "-")</td>
+                    </tr>
+                    serialNo++;
+                }
+            }
+            else
+            {
+                <tr>
+                    <td colspan="9" class="empty-state">
+                        <i class="fas fa-calendar-times" style="font-size: 48px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>
+                        <h3>No attendance records found</h3>
+                        <p>No attendance has been marked for @selectedDate.ToString("MMMM dd, yyyy")</p>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
