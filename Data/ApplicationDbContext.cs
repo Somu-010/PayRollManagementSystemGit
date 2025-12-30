@@ -19,9 +19,10 @@ namespace PayRollManagementSystem.Data
         public DbSet<Leave> Leaves { get; set; }
         public DbSet<LeaveBalance> LeaveBalances { get; set; }
         public DbSet<AllowanceDeduction> AllowanceDeductions { get; set; }
-        // Add these properties to your ApplicationDbContext class
         public DbSet<ComponentTemplate> ComponentTemplates { get; set; }
         public DbSet<ComponentTemplateItem> ComponentTemplateItems { get; set; }
+        public DbSet<Payroll> Payrolls { get; set; }
+        public DbSet<PayrollDetail> PayrollDetails { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -127,6 +128,35 @@ namespace PayRollManagementSystem.Data
                 entity.HasOne(ti => ti.Component)
                     .WithMany()
                     .HasForeignKey(ti => ti.AllowanceDeductionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure Payroll entity
+            modelBuilder.Entity<Payroll>(entity =>
+            {
+                entity.HasKey(p => p.PayrollId);
+                entity.HasIndex(p => p.PayrollNumber).IsUnique();
+                entity.HasIndex(p => new { p.EmployeeId, p.Month, p.Year }).IsUnique();
+
+                entity.HasOne(p => p.Employee)
+                    .WithMany()
+                    .HasForeignKey(p => p.EmployeeId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure PayrollDetail entity
+            modelBuilder.Entity<PayrollDetail>(entity =>
+            {
+                entity.HasKey(pd => pd.PayrollDetailId);
+
+                entity.HasOne(pd => pd.Payroll)
+                    .WithMany(p => p.PayrollDetails)
+                    .HasForeignKey(pd => pd.PayrollId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(pd => pd.AllowanceDeduction)
+                    .WithMany()
+                    .HasForeignKey(pd => pd.AllowanceDeductionId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
         }
