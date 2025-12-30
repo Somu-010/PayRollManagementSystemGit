@@ -19,7 +19,9 @@ namespace PayRollManagementSystem.Data
         public DbSet<Leave> Leaves { get; set; }
         public DbSet<LeaveBalance> LeaveBalances { get; set; }
         public DbSet<AllowanceDeduction> AllowanceDeductions { get; set; }
-
+        // Add these properties to your ApplicationDbContext class
+        public DbSet<ComponentTemplate> ComponentTemplates { get; set; }
+        public DbSet<ComponentTemplateItem> ComponentTemplateItems { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -104,6 +106,28 @@ namespace PayRollManagementSystem.Data
             {
                 entity.HasKey(a => a.AllowanceDeductionId);
                 entity.HasIndex(a => a.Code).IsUnique();
+            });
+            // Configure ComponentTemplate
+            modelBuilder.Entity<ComponentTemplate>(entity =>
+            {
+                entity.HasKey(t => t.TemplateId);
+                entity.HasIndex(t => t.Name);
+            });
+
+            // Configure ComponentTemplateItem
+            modelBuilder.Entity<ComponentTemplateItem>(entity =>
+            {
+                entity.HasKey(ti => ti.TemplateItemId);
+
+                entity.HasOne(ti => ti.Template)
+                    .WithMany(t => t.TemplateItems)
+                    .HasForeignKey(ti => ti.TemplateId)
+                    .OnDelete(DeleteBehavior.Cascade);
+
+                entity.HasOne(ti => ti.Component)
+                    .WithMany()
+                    .HasForeignKey(ti => ti.AllowanceDeductionId)
+                    .OnDelete(DeleteBehavior.Restrict);
             });
         }
     }

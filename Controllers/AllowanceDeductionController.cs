@@ -293,4 +293,199 @@ namespace PayRollManagementSystem.Controllers
             return "COMP001";
         }
     }
+    // Add these methods to your AllowanceDeductionController.cs
+
+// GET: AllowanceDeduction/Analytics
+public async Task<IActionResult> Analytics()
+{
+    // Get all components with statistics
+    var components = await _context.AllowanceDeductions
+        .OrderBy(c => c.Type)
+        .ThenBy(c => c.Name)
+        .ToListAsync();
+
+    // Calculate usage statistics (you'll implement employee assignment later)
+    var totalComponents = components.Count;
+    var activeComponents = components.Count(c => c.Status == ComponentStatus.Active);
+    var inactiveComponents = components.Count(c => c.Status == ComponentStatus.Inactive);
+    var allowanceCount = components.Count(c => c.Type == ComponentType.Allowance);
+    var deductionCount = components.Count(c => c.Type == ComponentType.Deduction);
+
+    // Taxable vs Non-taxable
+    var taxableCount = components.Count(c => c.IsTaxable);
+    var nonTaxableCount = components.Count(c => !c.IsTaxable);
+
+    // Mandatory vs Optional
+    var mandatoryCount = components.Count(c => c.IsMandatory);
+    var optionalCount = components.Count(c => !c.IsMandatory);
+
+    // Calculation methods breakdown
+    var fixedAmountCount = components.Count(c => c.CalculationMethod == CalculationMethod.FixedAmount);
+    var percentageBasicCount = components.Count(c => c.CalculationMethod == CalculationMethod.PercentageOfBasic);
+    var percentageGrossCount = components.Count(c => c.CalculationMethod == CalculationMethod.PercentageOfGross);
+
+    // Top components by value (fixed amount only)
+    var topAllowances = components
+        .Where(c => c.Type == ComponentType.Allowance && c.CalculationMethod == CalculationMethod.FixedAmount)
+        .OrderByDescending(c => c.Value)
+        .Take(5)
+        .ToList();
+
+    var topDeductions = components
+        .Where(c => c.Type == ComponentType.Deduction && c.CalculationMethod == CalculationMethod.FixedAmount)
+        .OrderByDescending(c => c.Value)
+        .Take(5)
+        .ToList();
+
+    // Pass data to view
+    ViewBag.TotalComponents = totalComponents;
+    ViewBag.ActiveComponents = activeComponents;
+    ViewBag.InactiveComponents = inactiveComponents;
+    ViewBag.AllowanceCount = allowanceCount;
+    ViewBag.DeductionCount = deductionCount;
+    ViewBag.TaxableCount = taxableCount;
+    ViewBag.NonTaxableCount = nonTaxableCount;
+    ViewBag.MandatoryCount = mandatoryCount;
+    ViewBag.OptionalCount = optionalCount;
+    ViewBag.FixedAmountCount = fixedAmountCount;
+    ViewBag.PercentageBasicCount = percentageBasicCount;
+    ViewBag.PercentageGrossCount = percentageGrossCount;
+    ViewBag.TopAllowances = topAllowances;
+    ViewBag.TopDeductions = topDeductions;
+    ViewBag.AllComponents = components;
+
+    return View();
+}
+
+// GET: AllowanceDeduction/CostAnalysis
+public async Task<IActionResult> CostAnalysis()
+{
+    // Get active employees
+    var activeEmployees = await _context.Employees
+        .Where(e => e.Status == EmploymentStatus.Active)
+        .ToListAsync();
+
+    var totalEmployees = activeEmployees.Count;
+    var totalBasicSalary = activeEmployees.Sum(e => e.BasicSalary);
+    var averageBasicSalary = totalEmployees > 0 ? totalBasicSalary / totalEmployees : 0;
+
+    // Get all active components
+    var components = await _context.AllowanceDeductions
+        .Where(c => c.Status == ComponentStatus.Active)
+        .OrderBy(c => c.Type)
+        .ThenBy(c => c.Name)
+        .ToListAsync();
+
+    // Calculate estimated costs for each component
+    var costAnalysis = new List<ComponentCostAnalysis>();
+
+    foreach (var component in components)
+    {
+        decimal totalCost = 0;
+        decimal averageCostPerEmployee = 0;
+
+        foreach (var employee in activeEmployees)
+        {
+            decimal componentCost = CalculateComponentAmount(component, employee.BasicSalary);
+            totalCost += componentCost;
+        }
+
+        averageCostPerEmployee = totalEmployees > 0 ? totalCost / totalEmployees : 0;
+
+        costAnalysis.Add(new ComponentCostAnalysis
+        {
+            ComponentCode = component.Code,
+            ComponentName = component.Name,
+            ComponentType = component.Type.ToString(),
+            CalculationMethod = component.CalculationMethod.ToString(),
+            Value = component.Value,
+            TotalMonthlyCost = totalCost,
+            TotalAnnualCost = totalCost * 12,
+            AverageCostPerEmployee = averageCostPerEmployee,
+            ApplicableEmployees = totalEmployees, // For now, all employees
+            IsTaxable = component.IsTaxable
+        });
+    }
+
+    // Summary calculations
+    var totalAllowanceCost = costAnalysis
+        .Where(c => c.ComponentType == "Allowance")
+        .Sum(c => c.TotalMonthlyCost);
+
+    var totalDeductionCost = costAnalysis
+        .Where(c => c.ComponentType == "Deduction")
+        .Sum(c => c.TotalMonthlyCost);
+
+    var totalTaxableAmount = costAnalysis
+        .Where(c => c.IsTaxable)
+        .Sum(c => c.TotalMonthlyCost);
+
+    var totalNonTaxableAmount = costAnalysis
+        .Where(c => !c.IsTaxable)
+        .Sum(c => c.TotalMonthlyCost);
+
+    ViewBag.TotalEmployees = totalEmployees;
+    ViewBag.TotalBasicSalary = totalBasicSalary;
+    ViewBag.AverageBasicSalary = averageBasicSalary;
+    ViewBag.TotalAllowanceCost = totalAllowanceCost;
+    ViewBag.TotalDeductionCost = totalDeductionCost;
+    ViewBag.TotalTaxableAmount = totalTaxableAmount;
+    ViewBag.TotalNonTaxableAmount = totalNonTaxableAmount;
+    ViewBag.NetMonthlyCost = totalAllowanceCost - totalDeductionCost;
+    ViewBag.NetAnnualCost = (totalAllowanceCost - totalDeductionCost) * 12;
+    ViewBag.CostAnalysis = costAnalysis;
+
+    return View();
+}
+
+// Helper method to calculate component amount
+private decimal CalculateComponentAmount(AllowanceDeduction component, decimal basicSalary)
+{
+    decimal amount = 0;
+
+    switch (component.CalculationMethod)
+    {
+        case CalculationMethod.FixedAmount:
+            amount = component.Value;
+            break;
+
+        case CalculationMethod.PercentageOfBasic:
+            amount = (basicSalary * component.Value) / 100;
+            break;
+
+        case CalculationMethod.PercentageOfGross:
+            // For now, use basic salary as approximation
+            amount = (basicSalary * component.Value) / 100;
+            break;
+    }
+
+    // Apply minimum threshold
+    if (component.MinimumSalaryThreshold.HasValue && basicSalary < component.MinimumSalaryThreshold.Value)
+    {
+        return 0;
+    }
+
+    // Apply maximum cap
+    if (component.MaximumCap.HasValue && amount > component.MaximumCap.Value)
+    {
+        amount = component.MaximumCap.Value;
+    }
+
+    return amount;
+}
+
+// Helper class for cost analysis
+public class ComponentCostAnalysis
+{
+    public string ComponentCode { get; set; } = string.Empty;
+    public string ComponentName { get; set; } = string.Empty;
+    public string ComponentType { get; set; } = string.Empty;
+    public string CalculationMethod { get; set; } = string.Empty;
+    public decimal Value { get; set; }
+    public decimal TotalMonthlyCost { get; set; }
+    public decimal TotalAnnualCost { get; set; }
+    public decimal AverageCostPerEmployee { get; set; }
+    public int ApplicableEmployees { get; set; }
+    public bool IsTaxable { get; set; }
+}
 }
