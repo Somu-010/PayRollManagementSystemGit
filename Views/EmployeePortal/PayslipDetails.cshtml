@@ -1,0 +1,309 @@
+@model PayRollManagementSystem.Models.Payroll
+
+@{
+    ViewData["Title"] = "Payslip Details";
+    Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
+}
+
+<style>
+    .payslip-container {
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    .payslip-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+    }
+
+    .payslip-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .payslip-header h1 {
+        font-size: 24px;
+        margin-bottom: 10px;
+    }
+
+    .payslip-header .period {
+        font-size: 18px;
+        opacity: 0.9;
+    }
+
+    .employee-section {
+        padding: 25px 30px;
+        background: #f8fafb;
+        border-bottom: 1px solid #e8e8e8;
+    }
+
+    .employee-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 15px;
+    }
+
+    .employee-field {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .employee-field .label {
+        font-size: 12px;
+        color: #5a6c7d;
+        margin-bottom: 3px;
+    }
+
+    .employee-field .value {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .earnings-deductions {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 30px;
+        padding: 30px;
+    }
+
+    .section-title {
+        font-size: 16px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e8e8e8;
+    }
+
+    .section-title.earnings {
+        border-color: #10b981;
+        color: #10b981;
+    }
+
+    .section-title.deductions {
+        border-color: #ef4444;
+        color: #ef4444;
+    }
+
+    .item-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        font-size: 14px;
+    }
+
+    .item-label {
+        color: #5a6c7d;
+    }
+
+    .item-value {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .item-value.earnings {
+        color: #10b981;
+    }
+
+    .item-value.deductions {
+        color: #ef4444;
+    }
+
+    .total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 12px 0;
+        margin-top: 10px;
+        border-top: 2px solid #e8e8e8;
+        font-weight: 600;
+    }
+
+    .net-salary-section {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        text-align: center;
+    }
+
+    .net-salary-section .label {
+        font-size: 16px;
+        opacity: 0.9;
+        margin-bottom: 10px;
+    }
+
+    .net-salary-section .amount {
+        font-size: 40px;
+        font-weight: 700;
+    }
+
+    .actions-section {
+        padding: 20px 30px;
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        background: #f8fafb;
+    }
+
+    .btn-action {
+        padding: 12px 24px;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s;
+        cursor: pointer;
+        border: none;
+    }
+
+    .btn-print {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
+    .btn-back {
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+    }
+
+    @@media print {
+        body * {
+            visibility: hidden;
+        }
+
+        .payslip-container, .payslip-container * {
+            visibility: visible;
+        }
+
+        .payslip-container {
+            position: absolute;
+            left: 0;
+            top: 0;
+            width: 100%;
+            max-width: 100%;
+        }
+
+        .actions-section, .portal-sidebar, .portal-header, .portal-footer {
+            display: none !important;
+        }
+
+        .payslip-card {
+            box-shadow: none;
+        }
+    }
+
+    @@media (max-width: 768px) {
+        .employee-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .earnings-deductions {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+
+<div class="payslip-container">
+    <div class="payslip-card">
+        <!-- Header -->
+        <div class="payslip-header">
+            <h1>?? PAYSLIP</h1>
+            <div class="period">@Model.PayPeriod</div>
+        </div>
+
+        <!-- Employee Info -->
+        <div class="employee-section">
+            <div class="employee-grid">
+                <div class="employee-field">
+                    <span class="label">Employee Name</span>
+                    <span class="value">@Model.Employee?.Name</span>
+                </div>
+                <div class="employee-field">
+                    <span class="label">Employee Code</span>
+                    <span class="value">@Model.Employee?.EmployeeCode</span>
+                </div>
+                <div class="employee-field">
+                    <span class="label">Department</span>
+                    <span class="value">@(Model.Employee?.DepartmentNavigation?.Name ?? "N/A")</span>
+                </div>
+                <div class="employee-field">
+                    <span class="label">Designation</span>
+                    <span class="value">@(Model.Employee?.DesignationNavigation?.Title ?? "N/A")</span>
+                </div>
+                <div class="employee-field">
+                    <span class="label">Payment Date</span>
+                    <span class="value">@Model.PaymentDate.ToString("dd MMM yyyy")</span>
+                </div>
+                <div class="employee-field">
+                    <span class="label">Payroll Number</span>
+                    <span class="value">@Model.PayrollNumber</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Earnings & Deductions -->
+        <div class="earnings-deductions">
+            <!-- Earnings -->
+            <div class="earnings-section">
+                <h3 class="section-title earnings">?? Earnings</h3>
+                <div class="item-row">
+                    <span class="item-label">Basic Salary</span>
+                    <span class="item-value earnings">@Model.BasicSalary.ToString("C2")</span>
+                </div>
+                @if (Model.PayrollDetails != null)
+                {
+                    @foreach (var detail in Model.PayrollDetails.Where(d => d.AllowanceDeduction?.Type == PayRollManagementSystem.Models.ComponentType.Allowance))
+                    {
+                        <div class="item-row">
+                            <span class="item-label">@detail.AllowanceDeduction?.Name</span>
+                            <span class="item-value earnings">@detail.Amount.ToString("C2")</span>
+                        </div>
+                    }
+                }
+                <div class="total-row">
+                    <span>Gross Salary</span>
+                    <span class="earnings">@Model.GrossSalary.ToString("C2")</span>
+                </div>
+            </div>
+
+            <!-- Deductions -->
+            <div class="deductions-section">
+                <h3 class="section-title deductions">?? Deductions</h3>
+                @if (Model.PayrollDetails != null)
+                {
+                    @foreach (var detail in Model.PayrollDetails.Where(d => d.AllowanceDeduction?.Type == PayRollManagementSystem.Models.ComponentType.Deduction))
+                    {
+                        <div class="item-row">
+                            <span class="item-label">@detail.AllowanceDeduction?.Name</span>
+                            <span class="item-value deductions">@detail.Amount.ToString("C2")</span>
+                        </div>
+                    }
+                }
+                <div class="total-row">
+                    <span>Total Deductions</span>
+                    <span class="deductions">@Model.TotalDeductions.ToString("C2")</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Net Salary -->
+        <div class="net-salary-section">
+            <div class="label">NET SALARY</div>
+            <div class="amount">@Model.NetSalary.ToString("C2")</div>
+        </div>
+
+        <!-- Actions -->
+        <div class="actions-section">
+            <button onclick="window.print()" class="btn-action btn-print">
+                <i class="fas fa-print"></i> Print Payslip
+            </button>
+            <a asp-action="Payslips" class="btn-action btn-back">
+                <i class="fas fa-arrow-left"></i> Back to Payslips
+            </a>
+        </div>
+    </div>
+</div>

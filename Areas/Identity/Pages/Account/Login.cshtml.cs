@@ -20,11 +20,13 @@ namespace PayRollManagementSystem.Areas.Identity.Pages.Account
     public class LoginModel : PageModel
     {
         private readonly SignInManager<IdentityUser> _signInManager;
+        private readonly UserManager<IdentityUser> _userManager;
         private readonly ILogger<LoginModel> _logger;
 
-        public LoginModel(SignInManager<IdentityUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(SignInManager<IdentityUser> signInManager, UserManager<IdentityUser> userManager, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
+            _userManager = userManager;
             _logger = logger;
         }
 
@@ -103,8 +105,6 @@ namespace PayRollManagementSystem.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/Home");
-
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
 
             if (ModelState.IsValid)
@@ -115,7 +115,33 @@ namespace PayRollManagementSystem.Areas.Identity.Pages.Account
                 if (result.Succeeded)
                 {
                     _logger.LogInformation("User logged in.");
-                    return LocalRedirect(returnUrl);
+                    
+                    // Get the user and check their role
+                    var user = await _userManager.FindByEmailAsync(Input.Email);
+                    if (user != null)
+                    {
+                        var roles = await _userManager.GetRolesAsync(user);
+                        
+                        // Redirect based on role
+                        if (roles.Contains("Admin") || roles.Contains("HR"))
+                        {
+                            // Admin/HR goes to admin dashboard
+                            return LocalRedirect("~/Home");
+                        }
+                        else if (roles.Contains("Employee"))
+                        {
+                            // Employee goes to employee portal
+                            return LocalRedirect("~/EmployeePortal");
+                        }
+                        else
+                        {
+                            // No role assigned - redirect to employee portal to link account
+                            return LocalRedirect("~/EmployeePortal/LinkAccount");
+                        }
+                    }
+                    
+                    // Default redirect
+                    return LocalRedirect(returnUrl ?? "~/Home");
                 }
                 if (result.RequiresTwoFactor)
                 {

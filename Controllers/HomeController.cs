@@ -7,7 +7,7 @@ using PayRollManagementSystem.Models;
 
 namespace PayRollManagementSystem.Controllers
 {
-    [Authorize]
+    [Authorize(Roles = "Admin,HR")]  // Only Admin and HR can access admin dashboard
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;

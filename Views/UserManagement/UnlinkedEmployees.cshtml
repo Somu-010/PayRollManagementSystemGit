@@ -1,0 +1,260 @@
+@model IEnumerable<PayRollManagementSystem.Models.Employee>
+
+@{
+    ViewData["Title"] = "Unlinked Employees";
+}
+
+<style>
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .page-title i {
+        color: #2193b0;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: #f8fafb;
+        color: #2c3e50;
+        border: 1px solid #e8e8e8;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-banner {
+        background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+        border-radius: 12px;
+        padding: 20px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+
+    .info-banner-icon {
+        font-size: 32px;
+        color: #f59e0b;
+    }
+
+    .info-banner-text h3 {
+        font-size: 16px;
+        color: #92400e;
+        margin-bottom: 5px;
+    }
+
+    .info-banner-text p {
+        font-size: 14px;
+        color: #a16207;
+        margin: 0;
+    }
+
+    .employees-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
+        gap: 20px;
+    }
+
+    .employee-card {
+        background: white;
+        border-radius: 12px;
+        padding: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+
+    .employee-card:hover {
+        border-color: #2193b0;
+        transform: translateY(-3px);
+        box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .employee-header {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .employee-avatar {
+        width: 60px;
+        height: 60px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+        font-size: 20px;
+    }
+
+    .employee-name {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 5px;
+    }
+
+    .employee-code {
+        font-size: 13px;
+        color: #5a6c7d;
+    }
+
+    .employee-details {
+        margin-bottom: 20px;
+    }
+
+    .detail-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #f1f3f5;
+        font-size: 14px;
+    }
+
+    .detail-row:last-child {
+        border-bottom: none;
+    }
+
+    .detail-label {
+        color: #5a6c7d;
+    }
+
+    .detail-value {
+        font-weight: 600;
+        color: #2c3e50;
+    }
+
+    .btn-create-user {
+        width: 100%;
+        padding: 12px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+
+    .btn-create-user:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(33, 147, 176, 0.3);
+        color: white;
+    }
+
+    .empty-state {
+        background: white;
+        border-radius: 12px;
+        padding: 60px;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state-icon {
+        font-size: 64px;
+        margin-bottom: 20px;
+        color: #10b981;
+    }
+
+    .empty-state h3 {
+        font-size: 20px;
+        color: #2c3e50;
+        margin-bottom: 10px;
+    }
+
+    .empty-state p {
+        color: #5a6c7d;
+        font-size: 14px;
+    }
+</style>
+
+<div class="page-header">
+    <h1 class="page-title"><i class="fas fa-user-plus"></i> Unlinked Employees</h1>
+    <a asp-action="Index" class="btn-back">
+        <i class="fas fa-arrow-left"></i> Back to Users
+    </a>
+</div>
+
+<div class="info-banner">
+    <div class="info-banner-icon"><i class="fas fa-lightbulb"></i></div>
+    <div class="info-banner-text">
+        <h3>Create User Accounts for Employees</h3>
+        <p>These employees don't have user accounts yet. Create accounts so they can access the Employee Portal to view payslips, apply for leaves, and check their attendance.</p>
+    </div>
+</div>
+
+@if (Model.Any())
+{
+    <div class="employees-grid">
+        @foreach (var employee in Model)
+        {
+            <div class="employee-card">
+                <div class="employee-header">
+                    <div class="employee-avatar">
+                        @employee.Name.Substring(0, Math.Min(2, employee.Name.Length)).ToUpper()
+                    </div>
+                    <div>
+                        <div class="employee-name">@employee.Name</div>
+                        <div class="employee-code">@employee.EmployeeCode</div>
+                    </div>
+                </div>
+
+                <div class="employee-details">
+                    <div class="detail-row">
+                        <span class="detail-label">Email</span>
+                        <span class="detail-value">@employee.Email</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Department</span>
+                        <span class="detail-value">@(employee.DepartmentNavigation?.Name ?? employee.Department)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Designation</span>
+                        <span class="detail-value">@(employee.DesignationNavigation?.Title ?? employee.Designation)</span>
+                    </div>
+                    <div class="detail-row">
+                        <span class="detail-label">Status</span>
+                        <span class="detail-value" style="color: @(employee.Status == PayRollManagementSystem.Models.EmploymentStatus.Active ? "#10b981" : "#ef4444")">
+                            @employee.Status
+                        </span>
+                    </div>
+                </div>
+
+                <a asp-action="CreateUserForEmployee" asp-route-id="@employee.EmployeeId" class="btn-create-user">
+                    <i class="fas fa-user-plus"></i> Create User Account
+                </a>
+            </div>
+        }
+    </div>
+}
+else
+{
+    <div class="empty-state">
+        <div class="empty-state-icon"><i class="fas fa-check-circle"></i></div>
+        <h3>All Employees Have User Accounts!</h3>
+        <p>Every employee is linked to a user account. Great job!</p>
+    </div>
+}

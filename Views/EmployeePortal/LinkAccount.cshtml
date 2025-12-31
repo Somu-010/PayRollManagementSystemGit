@@ -1,0 +1,185 @@
+@{
+    ViewData["Title"] = "Link Your Account";
+    Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
+}
+
+<style>
+    .link-container {
+        max-width: 500px;
+        margin: 50px auto;
+    }
+
+    .link-card {
+        background: white;
+        border-radius: 20px;
+        padding: 50px 40px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    .link-icon {
+        width: 100px;
+        height: 100px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 30px;
+        font-size: 48px;
+    }
+
+    .link-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 15px;
+    }
+
+    .link-description {
+        color: #5a6c7d;
+        font-size: 16px;
+        margin-bottom: 30px;
+        line-height: 1.6;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .form-group label {
+        display: block;
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        width: 100%;
+        padding: 14px 18px;
+        border: 2px solid #e8e8e8;
+        border-radius: 12px;
+        font-size: 16px;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #667eea;
+        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    }
+
+    .btn-link-account {
+        width: 100%;
+        padding: 16px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        margin-top: 10px;
+    }
+
+    .btn-link-account:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    }
+
+    .info-box {
+        background: #f8fafb;
+        border-radius: 12px;
+        padding: 20px;
+        margin-top: 25px;
+        text-align: left;
+    }
+
+    .info-box h4 {
+        font-size: 14px;
+        color: #2c3e50;
+        margin-bottom: 10px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .info-box ul {
+        margin: 0;
+        padding-left: 20px;
+        color: #5a6c7d;
+        font-size: 13px;
+    }
+
+    .info-box li {
+        margin-bottom: 5px;
+    }
+
+    .validation-error {
+        background: rgba(239, 68, 68, 0.1);
+        border: 1px solid rgba(239, 68, 68, 0.2);
+        color: #ef4444;
+        padding: 15px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        text-align: left;
+        font-size: 14px;
+    }
+
+    .validation-error i {
+        margin-right: 8px;
+    }
+</style>
+
+<div class="link-container">
+    <div class="link-card">
+        <div class="link-icon">??</div>
+        <h1 class="link-title">Link Your Account</h1>
+        <p class="link-description">
+            To access the Employee Portal, you need to link your user account with your employee record.
+            Please enter your Employee Code and registered Email.
+        </p>
+
+        <form asp-action="LinkAccount" method="post">
+            @Html.AntiForgeryToken()
+
+            <div asp-validation-summary="All" class="validation-error" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none");"></div>
+
+            <div class="form-group">
+                <label for="employeeCode">Employee Code</label>
+                <input type="text" id="employeeCode" name="employeeCode" class="form-control" placeholder="e.g., EMP001" required />
+            </div>
+
+            <div class="form-group">
+                <label for="email">Registered Email</label>
+                <input type="email" id="email" name="email" class="form-control" placeholder="your.email@company.com" required />
+            </div>
+
+            <button type="submit" class="btn-link-account">
+                <i class="fas fa-link"></i> Link Account
+            </button>
+        </form>
+
+        <div class="info-box">
+            <h4><i class="fas fa-info-circle" style="color: #667eea;"></i> How to find your Employee Code?</h4>
+            <ul>
+                <li>Check your employee ID card</li>
+                <li>Look at your welcome email from HR</li>
+                <li>Contact your HR department for assistance</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Show validation errors if present
+        const errorSummary = document.querySelector('.validation-error');
+        if (errorSummary && errorSummary.querySelector('li')) {
+            errorSummary.style.display = 'block';
+        }
+    </script>
+}

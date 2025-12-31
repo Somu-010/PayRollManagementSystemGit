@@ -12,6 +12,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@ViewData["Title"]</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
         * {
             margin: 0;
@@ -94,14 +95,14 @@
             transition: all 0.3s;
         }
 
-            .auth-tab.active {
-                color: #3498db;
-                border-bottom-color: #3498db;
-            }
+        .auth-tab.active {
+            color: #3498db;
+            border-bottom-color: #3498db;
+        }
 
-            .auth-tab:hover {
-                color: #3498db;
-            }
+        .auth-tab:hover {
+            color: #3498db;
+        }
 
         h1 {
             font-size: 32px;
@@ -112,21 +113,68 @@
 
         .subtitle {
             color: #5a6c7d;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
             font-size: 15px;
+        }
+
+        .login-info {
+            background: linear-gradient(135deg, #f8fafb 0%, #e8f4f8 100%);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 25px;
+            border-left: 4px solid #2193b0;
+        }
+
+        .login-info h4 {
+            font-size: 14px;
+            color: #2c3e50;
+            margin-bottom: 10px;
+        }
+
+        .login-info-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .login-type {
+            background: white;
+            padding: 10px 12px;
+            border-radius: 8px;
+            font-size: 12px;
+        }
+
+        .login-type-title {
+            font-weight: 600;
+            color: #2c3e50;
+            margin-bottom: 2px;
+        }
+
+        .login-type-desc {
+            color: #5a6c7d;
+        }
+
+        .admin-creds {
+            background: rgba(239, 68, 68, 0.1);
+            border: 1px dashed #ef4444;
+            border-radius: 8px;
+            padding: 10px;
+            margin-top: 10px;
+            font-size: 11px;
+            color: #ef4444;
         }
 
         .form-group {
             margin-bottom: 24px;
         }
 
-            .form-group label {
-                display: block;
-                color: #2c3e50;
-                font-size: 14px;
-                font-weight: 600;
-                margin-bottom: 8px;
-            }
+        .form-group label {
+            display: block;
+            color: #2c3e50;
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
 
         .input-wrapper {
             position: relative;
@@ -152,12 +200,12 @@
             background: #f8fafb;
         }
 
-            .form-group input:focus {
-                outline: none;
-                border-color: #6dd5ed;
-                background: #ffffff;
-                box-shadow: 0 0 0 4px rgba(109, 213, 237, 0.1);
-            }
+        .form-group input:focus {
+            outline: none;
+            border-color: #6dd5ed;
+            background: #ffffff;
+            box-shadow: 0 0 0 4px rgba(109, 213, 237, 0.1);
+        }
 
         .form-options {
             display: flex;
@@ -173,18 +221,18 @@
             gap: 8px;
         }
 
-            .checkbox-wrapper input[type="checkbox"] {
-                width: 18px;
-                height: 18px;
-                cursor: pointer;
-                accent-color: #3498db;
-            }
+        .checkbox-wrapper input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            cursor: pointer;
+            accent-color: #3498db;
+        }
 
-            .checkbox-wrapper label {
-                color: #5a6c7d;
-                cursor: pointer;
-                margin: 0;
-            }
+        .checkbox-wrapper label {
+            color: #5a6c7d;
+            cursor: pointer;
+            margin: 0;
+        }
 
         .forgot-link {
             color: #3498db;
@@ -193,9 +241,9 @@
             transition: color 0.3s;
         }
 
-            .forgot-link:hover {
-                color: #2193b0;
-            }
+        .forgot-link:hover {
+            color: #2193b0;
+        }
 
         .btn-primary {
             width: 100%;
@@ -211,14 +259,10 @@
             box-shadow: 0 4px 20px rgba(33, 147, 176, 0.3);
         }
 
-            .btn-primary:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 6px 25px rgba(33, 147, 176, 0.4);
-            }
-
-            .btn-primary:active {
-                transform: translateY(0);
-            }
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 25px rgba(33, 147, 176, 0.4);
+        }
 
         .text-danger {
             color: #e74c3c;
@@ -235,16 +279,16 @@
             margin-bottom: 24px;
         }
 
-            .validation-summary-errors ul {
-                list-style: none;
-                margin: 0;
-                padding: 0;
-            }
+        .validation-summary-errors ul {
+            list-style: none;
+            margin: 0;
+            padding: 0;
+        }
 
-            .validation-summary-errors li {
-                color: #e74c3c;
-                font-size: 14px;
-            }
+        .validation-summary-errors li {
+            color: #e74c3c;
+            font-size: 14px;
+        }
 
         .visual-section {
             background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
@@ -259,27 +303,27 @@
             overflow: hidden;
         }
 
-            .visual-section::before {
-                content: '';
-                position: absolute;
-                width: 500px;
-                height: 500px;
-                background: rgba(255, 255, 255, 0.1);
-                border-radius: 50%;
-                top: -250px;
-                right: -250px;
-            }
+        .visual-section::before {
+            content: '';
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            top: -250px;
+            right: -250px;
+        }
 
-            .visual-section::after {
-                content: '';
-                position: absolute;
-                width: 400px;
-                height: 400px;
-                background: rgba(255, 255, 255, 0.08);
-                border-radius: 50%;
-                bottom: -200px;
-                left: -200px;
-            }
+        .visual-section::after {
+            content: '';
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+            bottom: -200px;
+            left: -200px;
+        }
 
         .visual-content {
             position: relative;
@@ -296,13 +340,8 @@
             justify-content: center;
             margin: 0 auto 30px;
             backdrop-filter: blur(10px);
+            font-size: 60px;
         }
-
-            .visual-icon svg {
-                width: 60px;
-                height: 60px;
-                fill: white;
-            }
 
         .visual-section h2 {
             font-size: 36px;
@@ -362,6 +401,10 @@
             h1 {
                 font-size: 26px;
             }
+
+            .login-info-grid {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -381,13 +424,31 @@
             <h1>Welcome Back</h1>
             <p class="subtitle">Please enter your credentials to access your account</p>
 
+            <!-- Login Type Info -->
+            <div class="login-info">
+                <h4><i class="fas fa-lock" style="margin-right: 8px;"></i> Login Types</h4>
+                <div class="login-info-grid">
+                    <div class="login-type">
+                        <div class="login-type-title"><i class="fas fa-user-tie"></i> Admin/HR</div>
+                        <div class="login-type-desc">Full system access</div>
+                    </div>
+                    <div class="login-type">
+                        <div class="login-type-title"><i class="fas fa-user"></i> Employee</div>
+                        <div class="login-type-desc">Personal portal access</div>
+                    </div>
+                </div>
+                <div class="admin-creds">
+                    <strong>Demo Admin:</strong> admin@payrollpro.com / Admin@123
+                </div>
+            </div>
+
             <form method="post">
                 <div asp-validation-summary="ModelOnly" class="text-danger" role="alert"></div>
 
                 <div class="form-group">
                     <label asp-for="Input.Email">Email Address</label>
                     <div class="input-wrapper">
-                        <span class="input-icon">📧</span>
+                        <span class="input-icon"><i class="fas fa-envelope"></i></span>
                         <input asp-for="Input.Email" type="email" placeholder="Enter your email" autocomplete="username" />
                     </div>
                     <span asp-validation-for="Input.Email" class="text-danger"></span>
@@ -396,7 +457,7 @@
                 <div class="form-group">
                     <label asp-for="Input.Password">Password</label>
                     <div class="input-wrapper">
-                        <span class="input-icon">🔒</span>
+                        <span class="input-icon"><i class="fas fa-lock"></i></span>
                         <input asp-for="Input.Password" type="password" placeholder="Enter your password" autocomplete="current-password" />
                     </div>
                     <span asp-validation-for="Input.Password" class="text-danger"></span>
@@ -416,31 +477,29 @@
 
         <div class="visual-section">
             <div class="visual-content">
-                <div class="visual-icon">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z" />
-                    </svg>
-                </div>
+                <div class="visual-icon"><i class="fas fa-briefcase"></i></div>
                 <h2>PayRoll Management</h2>
                 <p>Streamline your payroll process with our comprehensive management system</p>
 
                 <div class="features">
                     <div class="feature-item">
-                        <div class="feature-icon">✓</div>
-                        <span>Automated Salary Processing</span>
+                        <div class="feature-icon"><i class="fas fa-user-tie"></i></div>
+                        <span>Admin: Manage all HR operations</span>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon">✓</div>
-                        <span>Real-time Reports & Analytics</span>
+                        <div class="feature-icon"><i class="fas fa-user"></i></div>
+                        <span>Employee: View payslips & apply leaves</span>
                     </div>
                     <div class="feature-item">
-                        <div class="feature-icon">✓</div>
-                        <span>Secure & Compliant</span>
+                        <div class="feature-icon"><i class="fas fa-shield-alt"></i></div>
+                        <span>Secure & Role-based Access</span>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
 
     @section Scripts {
         <partial name="_ValidationScriptsPartial" />

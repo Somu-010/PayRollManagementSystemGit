@@ -108,8 +108,9 @@ namespace PayRollManagementSystem.Areas.Identity.Pages.Account
 
         public async Task<IActionResult> OnPostAsync(string returnUrl = null)
         {
-            returnUrl ??= Url.Content("~/Identity/Account/Register");
+            returnUrl ??= Url.Content("~/EmployeePortal/LinkAccount");  // Redirect to Link Account by default
             ExternalLogins = (await _signInManager.GetExternalAuthenticationSchemesAsync()).ToList();
+            
             if (ModelState.IsValid)
             {
                 var user = CreateUser();
@@ -141,7 +142,8 @@ namespace PayRollManagementSystem.Areas.Identity.Pages.Account
                     else
                     {
                         await _signInManager.SignInAsync(user, isPersistent: false);
-                        return LocalRedirect(returnUrl);
+                        // Redirect new users to link their employee account
+                        return LocalRedirect("~/EmployeePortal/LinkAccount");
                     }
                 }
                 foreach (var error in result.Errors)

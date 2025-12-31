@@ -70,6 +70,11 @@ namespace PayRollManagementSystem.Models
         [Display(Name = "Postal Code")]
         public string? PostalCode { get; set; }
 
+        // Link to Identity User for Employee Portal
+        [StringLength(450)]
+        [Display(Name = "User Account")]
+        public string? UserId { get; set; }
+
         // Foreign Key to Department
         [Display(Name = "Department")]
         public int? DepartmentId { get; set; }
@@ -78,11 +83,11 @@ namespace PayRollManagementSystem.Models
         [ForeignKey("DepartmentId")]
         public virtual Department? DepartmentNavigation { get; set; }
 
-        // Foreign Key to Designation (ADD THIS - IT'S MISSING!)
+        // Foreign Key to Designation
         [Display(Name = "Designation")]
         public int? DesignationId { get; set; }
 
-        // Navigation property to Designation (ADD THIS - IT'S MISSING!)
+        // Navigation property to Designation
         [ForeignKey("DesignationId")]
         public virtual Designation? DesignationNavigation { get; set; }
 
