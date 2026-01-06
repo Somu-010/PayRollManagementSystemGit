@@ -1,0 +1,441 @@
+@model PayRollManagementSystem.Models.CompanySetting
+
+@{
+    ViewData["Title"] = "Company Settings";
+}
+
+<style>
+    .settings-container {
+        max-width: 1000px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .page-title {
+        font-size: 28px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .settings-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        margin-bottom: 25px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e8f4f8;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .form-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 20px;
+    }
+
+    .form-group {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .form-group label {
+        font-size: 14px;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+    }
+
+    .form-control {
+        padding: 12px 15px;
+        border: 2px solid #e8e8e8;
+        border-radius: 10px;
+        font-size: 14px;
+        transition: all 0.3s;
+    }
+
+    .form-control:focus {
+        outline: none;
+        border-color: #2193b0;
+        box-shadow: 0 0 0 3px rgba(33, 147, 176, 0.1);
+    }
+
+    .form-control:disabled {
+        background: #f8fafb;
+        cursor: not-allowed;
+    }
+
+    textarea.form-control {
+        resize: vertical;
+        min-height: 80px;
+    }
+
+    .text-danger {
+        color: #ef4444;
+        font-size: 13px;
+        margin-top: 5px;
+    }
+
+    .logo-upload-section {
+        background: #f8fafb;
+        border-radius: 12px;
+        padding: 25px;
+        text-align: center;
+    }
+
+    .current-logo {
+        margin-bottom: 20px;
+    }
+
+    .current-logo img {
+        max-width: 300px;
+        max-height: 150px;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    }
+
+    .no-logo {
+        padding: 40px;
+        background: white;
+        border-radius: 8px;
+        border: 2px dashed #e8e8e8;
+        color: #5a6c7d;
+    }
+
+    .file-input-wrapper {
+        position: relative;
+        display: inline-block;
+        margin-top: 15px;
+    }
+
+    .file-input {
+        position: absolute;
+        left: -9999px;
+    }
+
+    .file-input-label {
+        padding: 12px 24px;
+        background: #2193b0;
+        color: white;
+        border-radius: 10px;
+        cursor: pointer;
+        transition: all 0.3s;
+        display: inline-block;
+        font-weight: 600;
+    }
+
+    .file-input-label:hover {
+        background: #1a7a94;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+    .selected-file {
+        margin-top: 10px;
+        color: #2193b0;
+        font-size: 14px;
+    }
+
+    .btn-remove-logo {
+        padding: 8px 16px;
+        background: #ef4444;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: 14px;
+        margin-left: 10px;
+        transition: all 0.3s;
+    }
+
+    .btn-remove-logo:hover {
+        background: #dc2626;
+    }
+
+    .form-actions {
+        margin-top: 30px;
+        display: flex;
+        gap: 15px;
+    }
+
+    .btn-save {
+        padding: 14px 30px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
+    }
+
+    .btn-save:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(33, 147, 176, 0.4);
+    }
+
+    .btn-cancel {
+        padding: 14px 30px;
+        background: #f1f3f5;
+        color: #5a6c7d;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+    .btn-cancel:hover {
+        background: #e8e8e8;
+        color: #2c3e50;
+    }
+
+    .alert {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .alert-success {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+        border: 1px solid rgba(16, 185, 129, 0.2);
+    }
+
+    .alert-error {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+        border: 1px solid rgba(239, 68, 68, 0.2);
+    }
+</style>
+
+<div class="settings-container">
+    <div class="page-header">
+        <h1 class="page-title">
+            <i class="fas fa-building"></i> Company Settings
+        </h1>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">
+            <i class="fas fa-check-circle"></i>
+            <span>@TempData["Success"]</span>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span>@TempData["Error"]</span>
+        </div>
+    }
+
+    <form asp-action="Edit" method="post" enctype="multipart/form-data">
+        @Html.AntiForgeryToken()
+
+        <!-- Company Information -->
+        <div class="settings-card">
+            <h3 class="section-title">
+                <i class="fas fa-info-circle"></i> Company Information
+            </h3>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="CompanyName">Company Name <span style="color: #ef4444;">*</span></label>
+                    <input asp-for="CompanyName" class="form-control" placeholder="Enter company name" required />
+                    <span asp-validation-for="CompanyName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="TaxNumber">Tax/Registration Number</label>
+                    <input asp-for="TaxNumber" class="form-control" placeholder="Enter tax number" />
+                    <span asp-validation-for="TaxNumber" class="text-danger"></span>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Address">Address</label>
+                <textarea asp-for="Address" class="form-control" placeholder="Enter complete address"></textarea>
+                <span asp-validation-for="Address" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Contact Information -->
+        <div class="settings-card">
+            <h3 class="section-title">
+                <i class="fas fa-phone"></i> Contact Information
+            </h3>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="Phone">Phone Number</label>
+                    <input asp-for="Phone" class="form-control" placeholder="+1 (555) 123-4567" type="tel" />
+                    <span asp-validation-for="Phone" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Email">Email Address</label>
+                    <input asp-for="Email" class="form-control" placeholder="info@company.com" type="email" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Website">Website</label>
+                    <input asp-for="Website" class="form-control" placeholder="www.company.com" />
+                    <span asp-validation-for="Website" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Company Logo -->
+        <div class="settings-card">
+            <h3 class="section-title">
+                <i class="fas fa-image"></i> Company Logo
+            </h3>
+
+            <div class="logo-upload-section">
+                @if (!string.IsNullOrEmpty(Model.LogoPath))
+                {
+                    <div class="current-logo">
+                        <p style="font-weight: 600; margin-bottom: 10px;">Current Logo:</p>
+                        <img src="@Model.LogoPath" alt="Company Logo" />
+                        <div style="margin-top: 15px;">
+                            <button type="button" class="btn-remove-logo" onclick="if(confirm('Are you sure you want to remove the logo?')) { document.getElementById('removeLogo Form').submit(); }">
+                                <i class="fas fa-trash"></i> Remove Logo
+                            </button>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="no-logo">
+                        <i class="fas fa-image" style="font-size: 48px; opacity: 0.3; display: block; margin-bottom: 10px;"></i>
+                        <p style="margin: 0;">No logo uploaded yet</p>
+                    </div>
+                }
+
+                <div class="file-input-wrapper">
+                    <input type="file" name="logoFile" id="logoFile" class="file-input" accept="image/*" onchange="showFileName(this)" />
+                    <label for="logoFile" class="file-input-label">
+                        <i class="fas fa-upload"></i> Choose Logo
+                    </label>
+                </div>
+                <div id="selectedFile" class="selected-file"></div>
+                <p style="margin-top: 10px; font-size: 13px; color: #5a6c7d;">
+                    Recommended: PNG or JPG, max 2MB, min 200x100px
+                </p>
+            </div>
+        </div>
+
+        <!-- Financial Settings -->
+        <div class="settings-card">
+            <h3 class="section-title">
+                <i class="fas fa-dollar-sign"></i> Financial Settings
+            </h3>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="Currency">Currency</label>
+                    <select asp-for="Currency" class="form-control">
+                        <option value="USD">US Dollar (USD)</option>
+                        <option value="EUR">Euro (EUR)</option>
+                        <option value="GBP">British Pound (GBP)</option>
+                        <option value="INR">Indian Rupee (INR)</option>
+                        <option value="AUD">Australian Dollar (AUD)</option>
+                        <option value="CAD">Canadian Dollar (CAD)</option>
+                    </select>
+                    <span asp-validation-for="Currency" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="CurrencySymbol">Currency Symbol</label>
+                    <input asp-for="CurrencySymbol" class="form-control" placeholder="$" />
+                    <span asp-validation-for="CurrencySymbol" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="FiscalYearStartMonth">Fiscal Year Start Month</label>
+                    <select asp-for="FiscalYearStartMonth" class="form-control">
+                        <option value="1">January</option>
+                        <option value="2">February</option>
+                        <option value="3">March</option>
+                        <option value="4">April</option>
+                        <option value="5">May</option>
+                        <option value="6">June</option>
+                        <option value="7">July</option>
+                        <option value="8">August</option>
+                        <option value="9">September</option>
+                        <option value="10">October</option>
+                        <option value="11">November</option>
+                        <option value="12">December</option>
+                    </select>
+                    <span asp-validation-for="FiscalYearStartMonth" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Timezone">Timezone</label>
+                    <input asp-for="Timezone" class="form-control" placeholder="UTC" />
+                    <span asp-validation-for="Timezone" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Form Actions -->
+        <div class="form-actions">
+            <button type="submit" class="btn-save">
+                <i class="fas fa-save"></i> Save Settings
+            </button>
+            <a asp-controller="Home" asp-action="Index" class="btn-cancel">
+                <i class="fas fa-times"></i> Cancel
+            </a>
+        </div>
+    </form>
+
+    <!-- Hidden form for removing logo -->
+    <form id="removeLogoForm" asp-action="RemoveLogo" method="post" style="display: none;">
+        @Html.AntiForgeryToken()
+    </form>
+</div>
+
+<script>
+    function showFileName(input) {
+        const fileNameDiv = document.getElementById('selectedFile');
+        if (input.files && input.files[0]) {
+            fileNameDiv.textContent = `Selected: ${input.files[0].name}`;
+        } else {
+            fileNameDiv.textContent = '';
+        }
+    }
+</script>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

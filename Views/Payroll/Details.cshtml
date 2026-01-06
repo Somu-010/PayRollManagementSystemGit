@@ -112,24 +112,72 @@
         text-align: center;
         margin-bottom: 30px;
         padding-bottom: 20px;
-        border-bottom: 3px solid #000;
+        border-bottom: 3px double #2c3e50;
+    }
+
+    .company-info {
+        margin-bottom: 20px;
+    }
+
+    .company-logo {
+        max-width: 200px;
+        max-height: 80px;
+        margin-bottom: 15px;
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
     }
 
     .company-name {
         font-size: 28px;
-        font-weight: bold;
-        color: #000;
-        margin: 0 0 10px 0;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0 0 8px 0;
         text-transform: uppercase;
         letter-spacing: 1px;
     }
 
-    .payslip-title {
-        font-size: 20px;
-        font-weight: bold;
-        color: #333;
+    .company-address {
+        font-size: 14px;
+        color: #5a6c7d;
+        margin: 5px 0;
+        line-height: 1.6;
+    }
+
+    .company-contact {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
         margin: 10px 0;
+        font-size: 13px;
+        color: #5a6c7d;
+    }
+
+    .company-contact span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .company-contact i {
+        color: #2193b0;
+    }
+
+    .company-tax {
+        font-size: 13px;
+        color: #5a6c7d;
+        margin: 8px 0 0 0;
+        font-weight: 600;
+    }
+
+    .payslip-title {
+        font-size: 22px;
+        font-weight: 700;
+        color: #2193b0;
+        margin: 20px 0 0 0;
         text-transform: uppercase;
+        letter-spacing: 1.5px;
     }
 
     .document-meta {
@@ -402,9 +450,53 @@
 }
 
 <div class="payslip-container">
-    <!-- Payslip Header -->
+    <!-- Payslip Header with Company Info -->
     <div class="payslip-header">
-        <h1 class="company-name">Payroll Management System</h1>
+        @{
+            var companySetting = ViewBag.CompanySetting as PayRollManagementSystem.Models.CompanySetting;
+        }
+        
+        @if (companySetting != null)
+        {
+            <div class="company-info">
+                @if (!string.IsNullOrEmpty(companySetting.LogoPath))
+                {
+                    <img src="@companySetting.LogoPath" alt="@companySetting.CompanyName Logo" class="company-logo" />
+                }
+                
+                <h1 class="company-name">@companySetting.CompanyName</h1>
+                
+                @if (!string.IsNullOrEmpty(companySetting.Address))
+                {
+                    <p class="company-address">@companySetting.Address</p>
+                }
+                
+                <div class="company-contact">
+                    @if (!string.IsNullOrEmpty(companySetting.Phone))
+                    {
+                        <span><i class="fas fa-phone"></i> @companySetting.Phone</span>
+                    }
+                    @if (!string.IsNullOrEmpty(companySetting.Email))
+                    {
+                        <span><i class="fas fa-envelope"></i> @companySetting.Email</span>
+                    }
+                    @if (!string.IsNullOrEmpty(companySetting.Website))
+                    {
+                        <span><i class="fas fa-globe"></i> @companySetting.Website</span>
+                    }
+                </div>
+                
+                @if (!string.IsNullOrEmpty(companySetting.TaxNumber))
+                {
+                    <p class="company-tax">Tax/Reg. No: @companySetting.TaxNumber</p>
+                }
+            </div>
+        }
+        else
+        {
+            <h1 class="company-name">Payroll Management System</h1>
+        }
+        
         <h2 class="payslip-title">Salary Statement</h2>
         <div class="document-meta">
             <div class="meta-item">

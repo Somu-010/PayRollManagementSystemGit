@@ -57,7 +57,7 @@
 
     .btn-filter {
         padding: 10px 20px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         color: white;
         border: none;
         border-radius: 8px;
@@ -66,10 +66,12 @@
         display: flex;
         align-items: center;
         gap: 8px;
+        transition: all 0.3s;
     }
 
     .btn-filter:hover {
-        opacity: 0.9;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 15px rgba(33, 147, 176, 0.3);
     }
 
     .stats-row {
@@ -90,7 +92,7 @@
     .stat-box.absent { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
     .stat-box.late { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
     .stat-box.leave { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
-    .stat-box.hours { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+    .stat-box.hours { background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); }
     .stat-box.overtime { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); }
 
     .stat-box .value {
@@ -160,7 +162,7 @@
 
 <div class="attendance-container">
     <div class="page-header">
-        <i class="fas fa-calendar-alt" style="font-size: 24px; color: #667eea;"></i>
+        <i class="fas fa-calendar-alt" style="font-size: 24px; color: #2193b0;"></i>
         <h2>My Attendance - @(new DateTime(selectedYear, selectedMonth, 1).ToString("MMMM yyyy"))</h2>
     </div>
 
@@ -277,7 +279,7 @@
     else
     {
         <div class="empty-state">
-            <i class="fas fa-calendar-times"></i>
+            <i class="fas fa-calendar-times" style="font-size: 48px; opacity: 0.3;"></i>
             <h3>No attendance records</h3>
             <p>No attendance data found for this month.</p>
         </div>

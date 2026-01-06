@@ -328,6 +328,165 @@
         border: 1px solid rgba(239, 68, 68, 0.2);
     }
 
+    /* Pending Requests Card */
+    .pending-requests-card {
+        background: linear-gradient(135deg, rgba(251, 146, 60, 0.1) 0%, rgba(249, 115, 22, 0.05) 100%);
+        border: 2px solid rgba(251, 146, 60, 0.3);
+        border-radius: 16px;
+        padding: 25px;
+        margin-bottom: 25px;
+        box-shadow: 0 4px 16px rgba(251, 146, 60, 0.15);
+        animation: pulseGlow 3s infinite;
+    }
+
+    @@keyframes pulseGlow {
+        0%, 100% { box-shadow: 0 4px 16px rgba(251, 146, 60, 0.15); }
+        50% { box-shadow: 0 6px 20px rgba(251, 146, 60, 0.25); }
+    }
+
+    .pending-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 20px;
+        padding-bottom: 15px;
+        border-bottom: 2px solid rgba(251, 146, 60, 0.2);
+    }
+
+    .pending-header h3 {
+        font-size: 20px;
+        color: #ea580c;
+        margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pending-header i {
+        animation: bounce 2s infinite;
+    }
+
+    @@keyframes bounce {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-5px); }
+    }
+
+    .pending-count {
+        background: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 14px;
+        font-weight: 600;
+        color: #ea580c;
+    }
+
+    .pending-list {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+
+    .pending-item {
+        background: white;
+        border-radius: 12px;
+        padding: 15px 20px;
+        display: grid;
+        grid-template-columns: 250px 1fr auto;
+        gap: 20px;
+        align-items: center;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+    }
+
+    .pending-item:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .pending-employee {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .pending-info {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+
+    .pending-actions {
+        display: flex;
+        gap: 10px;
+    }
+
+    .btn-quick-approve {
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(16, 185, 129, 0.3);
+    }
+
+    .btn-quick-approve:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(16, 185, 129, 0.4);
+    }
+
+    .btn-quick-reject {
+        padding: 8px 16px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        font-size: 13px;
+        cursor: pointer;
+        transition: all 0.3s;
+        box-shadow: 0 2px 8px rgba(239, 68, 68, 0.3);
+    }
+
+    .btn-quick-reject:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(239, 68, 68, 0.4);
+    }
+
+    .view-all-pending {
+        text-align: center;
+        padding-top: 10px;
+    }
+
+    .view-all-pending a {
+        color: #ea580c;
+        font-weight: 600;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+    }
+
+        .view-all-pending a:hover {
+            color: #c2410c;
+            gap: 12px;
+        }
+
+    @@media (max-width: 992px) {
+        .pending-item {
+            grid-template-columns: 1fr;
+            gap: 15px;
+        }
+        
+        .pending-actions {
+            justify-content: flex-end;
+        }
+    }
+
     /* Modal Styles */
     .modal-overlay {
         display: none;
@@ -485,6 +644,111 @@
             opacity: 1;
         }
     }
+
+    .pending-requests-card {
+        background: #fff3cd;
+        border-left: 5px solid #ffc107;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 20px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    .pending-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+    }
+
+    .pending-header h3 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 500;
+        color: #856404;
+    }
+
+    .pending-count {
+        font-size: 14px;
+        color: #856404;
+    }
+
+    .pending-list {
+        max-height: 300px;
+        overflow-y: auto;
+    }
+
+    .pending-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px;
+        border-bottom: 1px solid #ffeeba;
+    }
+
+    .pending-item:last-child {
+        border-bottom: none;
+    }
+
+    .pending-employee {
+        display: flex;
+        align-items: center;
+    }
+
+    .pending-info {
+        text-align: center;
+        flex-grow: 1;
+    }
+
+    .pending-actions {
+        display: flex;
+        gap: 5px;
+    }
+
+    .btn-quick-approve,
+    .btn-quick-reject {
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 500;
+        cursor: pointer;
+        border: none;
+        transition: all 0.3s;
+    }
+
+    .btn-quick-approve {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+        .btn-quick-approve:hover {
+            background: rgba(16, 185, 129, 0.2);
+        }
+
+    .btn-quick-reject {
+        background: rgba(239, 68, 68, 0.1);
+        color: #ef4444;
+    }
+
+        .btn-quick-reject:hover {
+            background: rgba(239, 68, 68, 0.2);
+        }
+
+    .view-all-pending {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .view-all-pending a {
+        color: #217dbb;
+        font-weight: 500;
+        text-decoration: none;
+        transition: all 0.3s;
+    }
+
+        .view-all-pending a:hover {
+            text-decoration: underline;
+        }
 </style>
 
 <div class="page-header">
@@ -506,8 +770,58 @@
     </div>
 }
 
+<!-- Pending Requests Highlight (Admin/HR only) -->
+@{
+    var pendingLeaves = Model.Where(l => l.Status == PayRollManagementSystem.Models.LeaveStatus.Pending).ToList();
+    if (pendingLeaves.Any())
+    {
+        <div class="pending-requests-card">
+            <div class="pending-header">
+                <h3><i class="fas fa-exclamation-circle"></i> Pending Leave Requests</h3>
+                <span class="pending-count">@pendingLeaves.Count() request(s) awaiting approval</span>
+            </div>
+            <div class="pending-list">
+                @foreach (var leave in pendingLeaves.Take(3))
+                {
+                    <div class="pending-item">
+                        <div class="pending-employee">
+                            <div class="employee-avatar">@(leave.Employee?.Name?.Substring(0, Math.Min(2, leave.Employee.Name.Length)).ToUpper() ?? "NA")</div>
+                            <div>
+                                <div class="employee-name">@(leave.Employee?.Name ?? "N/A")</div>
+                                <div class="employee-code">@(leave.Employee?.EmployeeCode ?? "N/A")</div>
+                            </div>
+                        </div>
+                        <div class="pending-info">
+                            <span class="badge-leave-type">@leave.LeaveType.ToString().Replace("Leave", " Leave")</span>
+                            <span style="color: #5a6c7d; font-size: 13px;">
+                                @leave.StartDate.ToString("MMM dd") - @leave.EndDate.ToString("MMM dd, yyyy")
+                            </span>
+                        </div>
+                        <div class="pending-actions">
+                            <button onclick="openApproveModal(@leave.LeaveId, '@(leave.Employee?.Name ?? "Employee")')" class="btn-quick-approve">
+                                <i class="fas fa-check"></i> Approve
+                            </button>
+                            <button onclick="openRejectModal(@leave.LeaveId, '@(leave.Employee?.Name ?? "Employee")')" class="btn-quick-reject">
+                                <i class="fas fa-times"></i> Reject
+                            </button>
+                        </div>
+                    </div>
+                }
+                @if (pendingLeaves.Count() > 3)
+                {
+                    <div class="view-all-pending">
+                        <a href="#all-leaves" onclick="document.querySelector('.filters-row select[name=status]').value='Pending'; document.querySelector('.btn-filter').click();">
+                            View all @pendingLeaves.Count() pending requests <i class="fas fa-arrow-down"></i>
+                        </a>
+                    </div>
+                }
+            </div>
+        </div>
+    }
+}
+
 <!-- Filters -->
-<div class="filters-card">
+<div class="filters-card" id="all-leaves">
     <form asp-action="Index" method="get">
         <div class="filters-row">
             <div class="form-group">

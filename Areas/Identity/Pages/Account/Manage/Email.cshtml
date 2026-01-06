@@ -1,0 +1,111 @@
+@page
+@model EmailModel
+@{
+    ViewData["Title"] = "Manage Email";
+    ViewData["ActivePage"] = "Email";
+}
+
+<div class="manage-container">
+    <div class="manage-sidebar">
+        <h3 class="sidebar-title"><i class="fas fa-cog"></i> Settings</h3>
+        <nav class="settings-nav">
+            <a class="nav-item" asp-page="./Index">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a class="nav-item active" asp-page="./Email">
+                <i class="fas fa-envelope"></i>
+                <span>Email</span>
+            </a>
+            <a class="nav-item" asp-page="./ChangePassword">
+                <i class="fas fa-key"></i>
+                <span>Password</span>
+            </a>
+            <a class="nav-item" asp-page="./TwoFactorAuthentication">
+                <i class="fas fa-shield-alt"></i>
+                <span>Two-Factor</span>
+            </a>
+            <a class="nav-item" asp-page="./PersonalData">
+                <i class="fas fa-database"></i>
+                <span>Personal Data</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="manage-content">
+        <div class="content-header">
+            <div>
+                <h2><i class="fas fa-envelope"></i> Email Management</h2>
+                <p>Manage your email address and verification status</p>
+            </div>
+        </div>
+
+        <partial name="_StatusMessage" for="StatusMessage" />
+
+        <div class="form-card">
+            <div class="current-email">
+                <label>Current Email</label>
+                <div class="email-display">
+                    <span class="email-text">@Model.Email</span>
+                    @if (Model.IsEmailConfirmed)
+                    {
+                        <span class="badge badge-success">
+                            <i class="fas fa-check-circle"></i> Verified
+                        </span>
+                    }
+                    else
+                    {
+                        <span class="badge badge-warning">
+                            <i class="fas fa-exclamation-circle"></i> Not Verified
+                        </span>
+                    }
+                </div>
+            </div>
+
+            @if (!Model.IsEmailConfirmed)
+            {
+                <div class="verification-section">
+                    <div class="info-note warning">
+                        <i class="fas fa-exclamation-triangle"></i>
+                        <div>
+                            <strong>Email not verified</strong>
+                            <p>Please verify your email address to receive important notifications.</p>
+                        </div>
+                    </div>
+                    <form id="email-verification-form" method="post" asp-page-handler="SendVerificationEmail">
+                        <button type="submit" class="btn btn-warning">
+                            <i class="fas fa-paper-plane"></i> Send Verification Email
+                        </button>
+                    </form>
+                </div>
+            }
+
+            <hr class="divider" />
+
+            <h3 class="section-title"><i class="fas fa-edit"></i> Change Email Address</h3>
+            <form id="change-email-form" method="post" asp-page-handler="ChangeEmail">
+                <div asp-validation-summary="ModelOnly" class="text-danger validation-summary" role="alert"></div>
+
+                <div class="form-group">
+                    <label asp-for="Input.NewEmail">
+                        <i class="fas fa-envelope"></i> New Email Address
+                    </label>
+                    <input asp-for="Input.NewEmail" class="form-control" placeholder="Enter new email address" autocomplete="email" type="email" />
+                    <span asp-validation-for="Input.NewEmail" class="text-danger"></span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Change Email
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/account-manage.css" asp-append-version="true" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

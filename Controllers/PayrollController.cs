@@ -79,17 +79,20 @@ namespace PayRollManagementSystem.Controllers
 
             var payroll = await _context.Payrolls
                 .Include(p => p.Employee)
-                    .ThenInclude(e => e.DepartmentNavigation)
+                .ThenInclude(e => e.DepartmentNavigation)
                 .Include(p => p.Employee)
-                    .ThenInclude(e => e.DesignationNavigation)
+                .ThenInclude(e => e.DesignationNavigation)
                 .Include(p => p.PayrollDetails)
-                    .ThenInclude(pd => pd.AllowanceDeduction)
                 .FirstOrDefaultAsync(m => m.PayrollId == id);
 
             if (payroll == null)
             {
                 return NotFound();
             }
+
+            // Get company settings
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            ViewBag.CompanySetting = companySetting;
 
             return View(payroll);
         }

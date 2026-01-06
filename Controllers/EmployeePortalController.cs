@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PayRollManagementSystem.Data;
 using PayRollManagementSystem.Models;
+using PayRollManagementSystem.Services;
 
 namespace PayRollManagementSystem.Controllers
 {
@@ -12,11 +13,16 @@ namespace PayRollManagementSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
+        private readonly IEmailService _emailService;
 
-        public EmployeePortalController(ApplicationDbContext context, UserManager<IdentityUser> userManager)
+        public EmployeePortalController(
+            ApplicationDbContext context, 
+            UserManager<IdentityUser> userManager,
+            IEmailService emailService)
         {
             _context = context;
             _userManager = userManager;
+            _emailService = emailService;
         }
 
         // GET: EmployeePortal - Dashboard
@@ -124,6 +130,18 @@ namespace PayRollManagementSystem.Controllers
             try
             {
                 await _context.SaveChangesAsync();
+                
+                // Send email notification
+                try
+                {
+                    await _emailService.SendProfileUpdateNotificationAsync(employee.Email, employee.Name);
+                }
+                catch (Exception ex)
+                {
+                    // Log email error but don't fail the profile update
+                    Console.WriteLine($"Failed to send email: {ex.Message}");
+                }
+                
                 TempData["Success"] = "Profile updated successfully!";
                 return RedirectToAction(nameof(Profile));
             }
@@ -224,6 +242,10 @@ namespace PayRollManagementSystem.Controllers
             {
                 return NotFound();
             }
+
+            // Get company settings
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            ViewBag.CompanySetting = companySetting;
 
             return View(payroll);
         }
@@ -327,6 +349,24 @@ namespace PayRollManagementSystem.Controllers
 
                 _context.Leaves.Add(leave);
                 await _context.SaveChangesAsync();
+
+                // Send notification email to admin
+                try
+                {
+                    // Get admin email from configuration or database
+                    var adminEmail = "admin@payrollpro.com"; // You can get this from appsettings.json or database
+                    
+                    await _emailService.SendEmailAsync(
+                        adminEmail,
+                        "New Leave Request - PayRoll Pro",
+                        GetAdminLeaveNotificationTemplate(employee.Name, employee.EmployeeCode, leave)
+                    );
+                }
+                catch (Exception ex)
+                {
+                    // Log email error but don't fail the leave application
+                    Console.WriteLine($"Failed to send admin notification: {ex.Message}");
+                }
 
                 TempData["Success"] = "Leave request submitted successfully!";
                 return RedirectToAction(nameof(LeaveRequests));
@@ -469,6 +509,56 @@ namespace PayRollManagementSystem.Controllers
                 .Include(e => e.DesignationNavigation)
                 .Include(e => e.ShiftNavigation)
                 .FirstOrDefaultAsync(e => e.UserId == user.Id);
+        }
+
+        // Helper method to generate admin notification email template
+        private string GetAdminLeaveNotificationTemplate(string employeeName, string employeeCode, Leave leave)
+        {
+            return $@"
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+        .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+        .header {{ background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); color: white; padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }}
+        .content {{ background: #f8fafb; padding: 30px; border-radius: 0 0 10px 10px; }}
+        .info-box {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #f59e0b; }}
+        .footer {{ text-align: center; color: #5a6c7d; font-size: 12px; margin-top: 20px; }}
+        .btn {{ display: inline-block; padding: 12px 30px; background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); color: white; text-decoration: none; border-radius: 8px; margin-top: 20px; }}
+    </style>
+</head>
+<body>
+    <div class='container'>
+        <div class='header'>
+            <h1>?? New Leave Request</h1>
+        </div>
+        <div class='content'>
+            <p><strong>A new leave request requires your attention!</strong></p>
+            
+            <div class='info-box'>
+                <p><strong>Employee:</strong> {employeeName} ({employeeCode})</p>
+                <p><strong>Leave Type:</strong> {leave.LeaveType}</p>
+                <p><strong>Start Date:</strong> {leave.StartDate:MMMM dd, yyyy}</p>
+                <p><strong>End Date:</strong> {leave.EndDate:MMMM dd, yyyy}</p>
+                <p><strong>Duration:</strong> {leave.NumberOfDays} day(s)</p>
+                <p><strong>Reason:</strong> {leave.Reason}</p>
+                <p><strong>Applied On:</strong> {leave.AppliedOn:MMMM dd, yyyy HH:mm}</p>
+            </div>
+            
+            <p>Please login to the admin portal to approve or reject this leave request.</p>
+            
+            <div style='text-align: center;'>
+                <a href='#' class='btn'>Review Leave Request</a>
+            </div>
+            
+            <div class='footer'>
+                <p>&copy; 2025 PayRoll Pro. All rights reserved.</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>";
         }
     }
 }

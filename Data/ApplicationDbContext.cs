@@ -23,6 +23,7 @@ namespace PayRollManagementSystem.Data
         public DbSet<ComponentTemplateItem> ComponentTemplateItems { get; set; }
         public DbSet<Payroll> Payrolls { get; set; }
         public DbSet<PayrollDetail> PayrollDetails { get; set; }
+        public DbSet<CompanySetting> CompanySettings { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

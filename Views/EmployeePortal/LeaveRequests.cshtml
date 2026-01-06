@@ -38,23 +38,26 @@
 
     .btn-apply {
         padding: 12px 24px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         color: white;
         border: none;
         border-radius: 8px;
         font-weight: 600;
         text-decoration: none;
         transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 8px;
     }
 
     .btn-apply:hover {
         transform: translateY(-2px);
-        box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        box-shadow: 0 5px 15px rgba(33, 147, 176, 0.4);
         color: white;
     }
 
     .leave-balance-card {
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         border-radius: 12px;
         padding: 20px;
         color: white;
@@ -149,17 +152,16 @@
         color: #5a6c7d;
     }
 
-    .empty-state i {
+    .empty-state span {
         font-size: 48px;
         opacity: 0.3;
-        margin-bottom: 15px;
     }
 </style>
 
 <div class="leaves-container">
     <div class="header-section">
         <h2 style="margin: 0; color: #2c3e50; display: flex; align-items: center; gap: 10px;">
-            <i class="fas fa-clipboard-list" style="color: #667eea;"></i> My Leave Requests
+            <i class="fas fa-clipboard-list" style="font-size: 24px;"></i> My Leave Requests
         </h2>
         <div style="display: flex; gap: 15px; align-items: center;">
             <form method="get" asp-action="LeaveRequests" class="filters">
@@ -257,7 +259,7 @@
     else
     {
         <div class="empty-state">
-            <i class="fas fa-clipboard-list"></i>
+            <i class="fas fa-clipboard-list" style="font-size: 48px; opacity: 0.3; display: block; margin-bottom: 15px;"></i>
             <h3>No leave requests</h3>
             <p>You haven't applied for any leaves yet.</p>
             <a asp-action="ApplyLeave" class="btn-apply" style="display: inline-block; margin-top: 15px;">Apply Leave</a>

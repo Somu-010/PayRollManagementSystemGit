@@ -211,8 +211,45 @@
     <div class="payslip-card">
         <!-- Header -->
         <div class="payslip-header">
-            <h1>?? PAYSLIP</h1>
-            <div class="period">@Model.PayPeriod</div>
+            @{
+                var companySetting = ViewBag.CompanySetting as PayRollManagementSystem.Models.CompanySetting;
+            }
+            
+            @if (companySetting != null)
+            {
+                @if (!string.IsNullOrEmpty(companySetting.LogoPath))
+                {
+                    <img src="@companySetting.LogoPath" alt="@companySetting.CompanyName Logo" style="max-width: 150px; max-height: 60px; margin-bottom: 10px;" />
+                }
+                
+                <h1>@companySetting.CompanyName</h1>
+                
+                @if (!string.IsNullOrEmpty(companySetting.Address))
+                {
+                    <div style="font-size: 13px; opacity: 0.9; margin: 8px 0;">@companySetting.Address</div>
+                }
+                
+                <div style="font-size: 12px; opacity: 0.9; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap; margin-top: 8px;">
+                    @if (!string.IsNullOrEmpty(companySetting.Phone))
+                    {
+                        <span><i class="fas fa-phone"></i> @companySetting.Phone</span>
+                    }
+                    @if (!string.IsNullOrEmpty(companySetting.Email))
+                    {
+                        <span><i class="fas fa-envelope"></i> @companySetting.Email</span>
+                    }
+                </div>
+                
+                <div style="border-top: 1px solid rgba(255,255,255,0.3); margin: 15px 0; padding-top: 15px;">
+                    <h2 style="font-size: 20px; margin: 0;">PAYSLIP</h2>
+                    <div class="period">@Model.PayPeriod</div>
+                </div>
+            }
+            else
+            {
+                <h1>?? PAYSLIP</h1>
+                <div class="period">@Model.PayPeriod</div>
+            }
         </div>
 
         <!-- Employee Info -->

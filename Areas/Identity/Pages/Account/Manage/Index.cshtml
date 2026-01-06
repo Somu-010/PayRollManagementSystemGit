@@ -1,0 +1,91 @@
+@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Account Settings";
+    ViewData["ActivePage"] = "Index";
+}
+
+<div class="manage-container">
+    <div class="manage-sidebar">
+        <h3 class="sidebar-title"><i class="fas fa-cog"></i> Settings</h3>
+        <nav class="settings-nav">
+            <a class="nav-item active" asp-page="./Index">
+                <i class="fas fa-user-circle"></i>
+                <span>Profile</span>
+            </a>
+            <a class="nav-item" asp-page="./Email">
+                <i class="fas fa-envelope"></i>
+                <span>Email</span>
+            </a>
+            <a class="nav-item" asp-page="./ChangePassword">
+                <i class="fas fa-key"></i>
+                <span>Password</span>
+            </a>
+            <a class="nav-item" asp-page="./TwoFactorAuthentication">
+                <i class="fas fa-shield-alt"></i>
+                <span>Two-Factor</span>
+            </a>
+            <a class="nav-item" asp-page="./PersonalData">
+                <i class="fas fa-database"></i>
+                <span>Personal Data</span>
+            </a>
+        </nav>
+    </div>
+
+    <div class="manage-content">
+        <div class="content-header">
+            <div>
+                <h2><i class="fas fa-user-circle"></i> Profile Information</h2>
+                <p>Manage your account settings and preferences</p>
+            </div>
+        </div>
+
+        <partial name="_StatusMessage" for="StatusMessage" />
+
+        <div class="profile-info-card">
+            <div class="avatar-section">
+                <div class="avatar-large">
+                    @(User.Identity?.Name?.Substring(0, 2).ToUpper() ?? "US")
+                </div>
+                <div class="user-info">
+                    <h3>@User.Identity?.Name</h3>
+                    <p class="text-muted"><i class="fas fa-envelope"></i> @User.Identity?.Name</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-card">
+            <form id="profile-form" method="post">
+                <div asp-validation-summary="ModelOnly" class="text-danger validation-summary" role="alert"></div>
+
+                <div class="form-group">
+                    <label asp-for="Input.Username">
+                        <i class="fas fa-user"></i> Username
+                    </label>
+                    <input asp-for="Input.Username" class="form-control" placeholder="Choose a username" />
+                    <span asp-validation-for="Input.Username" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Input.PhoneNumber">
+                        <i class="fas fa-phone"></i> Phone Number
+                    </label>
+                    <input asp-for="Input.PhoneNumber" class="form-control" placeholder="Enter your phone number" type="tel" />
+                    <span asp-validation-for="Input.PhoneNumber" class="text-danger"></span>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save"></i> Save Changes
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<link rel="stylesheet" href="~/css/account-manage.css" asp-append-version="true" />
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

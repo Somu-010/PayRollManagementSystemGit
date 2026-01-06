@@ -1,6 +1,7 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using PayRollManagementSystem.Data;
+using PayRollManagementSystem.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,6 +13,9 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(connectionString));
 
 builder.Services.AddDatabaseDeveloperPageExceptionFilter();
+
+// Register Email Service
+builder.Services.AddScoped<IEmailService, EmailService>();
 
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {

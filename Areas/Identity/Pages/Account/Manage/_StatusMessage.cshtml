@@ -1,0 +1,80 @@
+@model string
+
+@if (!String.IsNullOrEmpty(Model))
+{
+    var statusMessageClass = Model.StartsWith("Error") ? "alert-error" : "alert-success";
+    var icon = statusMessageClass == "alert-success" ? "fa-check-circle" : "fa-exclamation-circle";
+    
+    <div class="alert @statusMessageClass" role="alert">
+        <i class="fas @icon"></i>
+        <span>@Model</span>
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()">
+            <i class="fas fa-times"></i>
+        </button>
+    </div>
+}
+
+<style>
+    .alert {
+        padding: 15px 20px;
+        border-radius: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        position: relative;
+        animation: slideIn 0.3s ease-out;
+        border: none;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .alert-success {
+        background: linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(16, 185, 129, 0.05) 100%);
+        color: #10b981;
+        border-left: 4px solid #10b981;
+    }
+
+    .alert-error {
+        background: linear-gradient(135deg, rgba(239, 68, 68, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%);
+        color: #ef4444;
+        border-left: 4px solid #ef4444;
+    }
+
+    .alert i:first-child {
+        font-size: 18px;
+    }
+
+    .alert span {
+        flex: 1;
+        font-weight: 500;
+    }
+
+    .alert .btn-close {
+        position: static;
+        background: none;
+        border: none;
+        cursor: pointer;
+        opacity: 0.6;
+        padding: 0;
+        width: auto;
+        height: auto;
+        color: inherit;
+        font-size: 14px;
+        transition: opacity 0.3s;
+    }
+
+    .alert .btn-close:hover {
+        opacity: 1;
+    }
+
+    @@keyframes slideIn {
+        from {
+            opacity: 0;
+            transform: translateY(-10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+</style>

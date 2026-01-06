@@ -10,18 +10,19 @@
     <title>@ViewData["Title"] - Employee Portal</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/PayRollManagementSystem.styles.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css" />
     <style>
         :root {
             --sidebar-width: 260px;
             --header-height: 70px;
-            --primary-color: #667eea;
-            --primary-light: #764ba2;
-            --primary-gradient: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            --sidebar-bg: #1a1a2e;
-            --sidebar-hover: #16213e;
-            --text-muted: #a0a0a0;
-            --bg-light: #f5f7fa;
+            --primary-color: #2193b0;
+            --primary-light: #6dd5ed;
+            --primary-gradient: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+            --sidebar-bg: #2c3e50;
+            --sidebar-hover: #34495e;
+            --text-muted: #bdc3c7;
+            --bg-light: #f8fafb;
         }
 
         * {
@@ -72,18 +73,19 @@
         }
 
         .sidebar-logo {
-            width: 45px;
-            height: 45px;
+            width: 40px;
+            height: 40px;
             background: var(--primary-gradient);
-            border-radius: 12px;
+            border-radius: 10px;
             display: flex;
             align-items: center;
             justify-content: center;
-            font-size: 20px;
+            font-weight: bold;
+            font-size: 18px;
         }
 
         .sidebar-brand {
-            font-size: 18px;
+            font-size: 20px;
             font-weight: 700;
             color: white;
         }
@@ -132,10 +134,10 @@
         .nav-link.active {
             background: var(--primary-gradient);
             color: white;
-            box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 12px rgba(33, 147, 176, 0.3);
         }
 
-        .nav-link i {
+        .nav-icon {
             width: 20px;
             margin-right: 12px;
             font-size: 16px;
@@ -152,9 +154,9 @@
         /* Header Styles */
         .portal-header {
             height: var(--header-height);
-            background: rgba(255, 255, 255, 0.98);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(10px);
-            border-bottom: 1px solid #e8e8e8;
+            border-bottom: 1px solid #e8f4f8;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -162,7 +164,7 @@
             position: sticky;
             top: 0;
             z-index: 100;
-            box-shadow: 0 2px 15px rgba(0, 0, 0, 0.05);
+            box-shadow: 0 2px 15px rgba(52, 152, 219, 0.08);
         }
 
         .header-left {
@@ -181,7 +183,7 @@
         }
 
         .page-title {
-            font-size: 22px;
+            font-size: 24px;
             font-weight: 600;
             color: #2c3e50;
         }
@@ -198,7 +200,7 @@
             gap: 12px;
             padding: 8px 16px;
             border-radius: 10px;
-            background: #f5f7fa;
+            background: #e8f4f8;
         }
 
         .user-avatar {
@@ -240,12 +242,12 @@
             font-size: 14px;
             font-weight: 500;
             transition: all 0.3s ease;
-            box-shadow: 0 2px 10px rgba(102, 126, 234, 0.3);
+            box-shadow: 0 2px 10px rgba(33, 147, 176, 0.2);
         }
 
         .btn-logout:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+            box-shadow: 0 4px 15px rgba(33, 147, 176, 0.3);
         }
 
         /* Content Area */
@@ -258,7 +260,7 @@
         .portal-footer {
             padding: 20px 30px;
             background: white;
-            border-top: 1px solid #e8e8e8;
+            border-top: 1px solid #e8f4f8;
             text-align: center;
             color: #5a6c7d;
             font-size: 14px;
@@ -291,7 +293,7 @@
             }
 
             .page-title {
-                font-size: 18px;
+                font-size: 20px;
             }
         }
 
@@ -343,7 +345,7 @@
         <!-- Sidebar -->
         <aside class="portal-sidebar" id="sidebar">
             <div class="sidebar-header">
-                <div class="sidebar-logo"><i class="fas fa-user-circle"></i></div>
+                <div class="sidebar-logo"><i class="fas fa-user"></i></div>
                 <div class="sidebar-brand">
                     Employee Portal
                     <small>PayRoll Pro</small>
@@ -356,7 +358,7 @@
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Index" ? "active" : "")"
                            asp-controller="EmployeePortal" asp-action="Index">
-                            <i class="fas fa-home"></i>
+                            <i class="fas fa-chart-line nav-icon"></i>
                             Dashboard
                         </a>
                     </li>
@@ -367,7 +369,7 @@
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Attendance" ? "active" : "")"
                            asp-controller="EmployeePortal" asp-action="Attendance">
-                            <i class="fas fa-calendar-check"></i>
+                            <i class="fas fa-calendar-check nav-icon"></i>
                             My Attendance
                         </a>
                     </li>
@@ -378,7 +380,7 @@
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Payslips" ? "active" : "")"
                            asp-controller="EmployeePortal" asp-action="Payslips">
-                            <i class="fas fa-file-invoice-dollar"></i>
+                            <i class="fas fa-money-bill-wave nav-icon"></i>
                             My Payslips
                         </a>
                     </li>
@@ -389,21 +391,21 @@
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "ApplyLeave" ? "active" : "")"
                            asp-controller="EmployeePortal" asp-action="ApplyLeave">
-                            <i class="fas fa-paper-plane"></i>
+                            <i class="fas fa-plane-departure nav-icon"></i>
                             Apply Leave
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "LeaveRequests" ? "active" : "")"
                            asp-controller="EmployeePortal" asp-action="LeaveRequests">
-                            <i class="fas fa-list"></i>
+                            <i class="fas fa-clipboard-list nav-icon"></i>
                             My Requests
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "LeaveBalance" ? "active" : "")"
                            asp-controller="EmployeePortal" asp-action="LeaveBalance">
-                            <i class="fas fa-balance-scale"></i>
+                            <i class="fas fa-balance-scale nav-icon"></i>
                             Leave Balance
                         </a>
                     </li>
@@ -414,13 +416,13 @@
                     <li class="nav-item">
                         <a class="nav-link @(ViewContext.RouteData.Values["action"]?.ToString() == "Profile" || ViewContext.RouteData.Values["action"]?.ToString() == "EditProfile" ? "active" : "")"
                            asp-controller="EmployeePortal" asp-action="Profile">
-                            <i class="fas fa-user"></i>
+                            <i class="fas fa-user-circle nav-icon"></i>
                             My Profile
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link" asp-area="Identity" asp-page="/Account/Manage/Index">
-                            <i class="fas fa-cog"></i>
+                            <i class="fas fa-cog nav-icon"></i>
                             Account Settings
                         </a>
                     </li>
@@ -451,9 +453,7 @@
                     </div>
 
                     <form class="form-inline" asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Landing", new { area = "" })" method="post">
-                        <button type="submit" class="btn-logout">
-                            <i class="fas fa-sign-out-alt"></i> Logout
-                        </button>
+                        <button type="submit" class="btn-logout">Logout</button>
                     </form>
                 </div>
             </header>
@@ -481,7 +481,7 @@
 
             <!-- Footer -->
             <footer class="portal-footer">
-                &copy; @DateTime.Now.Year PayRoll Pro - Employee Portal. All rights reserved.
+                &copy; 2025 PayRoll Pro - Employee Portal. All rights reserved.
             </footer>
         </div>
     }

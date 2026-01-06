@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PayRollManagementSystem.Data;
 using PayRollManagementSystem.Models;
+using PayRollManagementSystem.Services;
 
 namespace PayRollManagementSystem.Controllers
 {
@@ -10,10 +11,12 @@ namespace PayRollManagementSystem.Controllers
     public class LeaveController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly IEmailService _emailService;
 
-        public LeaveController(ApplicationDbContext context)
+        public LeaveController(ApplicationDbContext context, IEmailService emailService)
         {
             _context = context;
+            _emailService = emailService;
         }
 
         // GET: Leave
@@ -260,6 +263,27 @@ namespace PayRollManagementSystem.Controllers
 
             await _context.SaveChangesAsync();
 
+            // Send email notification to employee
+            try
+            {
+                if (leave.Employee != null && !string.IsNullOrEmpty(leave.Employee.Email))
+                {
+                    await _emailService.SendLeaveRequestEmailAsync(
+                        leave.Employee.Email,
+                        leave.Employee.Name,
+                        leave.LeaveType.ToString(),
+                        leave.StartDate,
+                        leave.EndDate,
+                        "Approved"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log email error but don't fail the approval
+                Console.WriteLine($"Failed to send email: {ex.Message}");
+            }
+
             return Json(new { success = true, message = $"Leave approved for {leave.Employee?.Name}!" });
         }
 
@@ -289,6 +313,27 @@ namespace PayRollManagementSystem.Controllers
             leave.UpdatedAt = DateTime.Now;
 
             await _context.SaveChangesAsync();
+
+            // Send email notification to employee
+            try
+            {
+                if (leave.Employee != null && !string.IsNullOrEmpty(leave.Employee.Email))
+                {
+                    await _emailService.SendLeaveRequestEmailAsync(
+                        leave.Employee.Email,
+                        leave.Employee.Name,
+                        leave.LeaveType.ToString(),
+                        leave.StartDate,
+                        leave.EndDate,
+                        "Rejected"
+                    );
+                }
+            }
+            catch (Exception ex)
+            {
+                // Log email error but don't fail the rejection
+                Console.WriteLine($"Failed to send email: {ex.Message}");
+            }
 
             return Json(new { success = true, message = $"Leave rejected for {leave.Employee?.Name}." });
         }
@@ -436,6 +481,17 @@ namespace PayRollManagementSystem.Controllers
                 annualLeave = leaveBalance.RemainingAnnualLeave,
                 maternityLeave = leaveBalance.RemainingMaternityLeave
             });
+        }
+
+        // GET: API endpoint for pending leaves count (for notifications)
+        [HttpGet]
+        [Route("/api/GetPendingLeavesCount")]
+        public async Task<IActionResult> GetPendingLeavesCount()
+        {
+            var pendingCount = await _context.Leaves
+                .CountAsync(l => l.Status == LeaveStatus.Pending);
+
+            return Json(new { count = pendingCount });
         }
 
         private bool LeaveExists(int id)
