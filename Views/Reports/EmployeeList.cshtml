@@ -2,11 +2,16 @@
 
 @{
     ViewData["Title"] = "Employee List Report";
-    var currentDepartment = ViewData["CurrentDepartment"]?.ToString();
-    var currentDesignation = ViewData["CurrentDesignation"]?.ToString();
-    var currentStatus = ViewData["CurrentStatus"]?.ToString();
-    var currentFilter = ViewData["CurrentFilter"]?.ToString();
+    var currentDepartment = ViewData["CurrentDepartment"] as string;
+    var currentDesignation = ViewData["CurrentDesignation"] as string;
+    var currentStatus = ViewData["CurrentStatus"] as string;
+    var currentFilter = ViewData["CurrentFilter"] as string;
+    ViewBag.ReportTitle = "Employee List Report";
+    ViewBag.ReportDate = DateTime.Now.ToString("MMMM dd, yyyy");
 }
+
+<!-- Company Header -->
+<partial name="_ReportHeader" />
 
 <style>
     .report-container {

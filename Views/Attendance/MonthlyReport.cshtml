@@ -2,7 +2,15 @@
 
 @{
     ViewData["Title"] = "Monthly Attendance Report";
+    var selectedMonth = ViewBag.SelectedMonth;
+    var selectedYear = ViewBag.SelectedYear;
+    var monthName = new DateTime((int)selectedYear, (int)selectedMonth, 1).ToString("MMMM yyyy");
+    ViewBag.ReportTitle = $"Monthly Attendance Report - {monthName}";
+    ViewBag.ReportDate = DateTime.Now.ToString("MMMM dd, yyyy");
 }
+
+<!-- Company Header -->
+<partial name="_ReportHeader" />
 
 <style>
     body {

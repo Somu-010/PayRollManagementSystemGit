@@ -17,16 +17,29 @@ namespace PayRollManagementSystem.Controllers
         }
 
         // GET: Employees
-        public async Task<IActionResult> Index(string searchString, string department, string status)
+        public async Task<IActionResult> Index(string searchString, string department, string status, string view = "active")
         {
             ViewData["CurrentFilter"] = searchString;
             ViewData["CurrentDepartment"] = department;
             ViewData["CurrentStatus"] = status;
+            ViewData["CurrentView"] = view;
 
             var employees = from e in _context.Employees
                             .Include(e => e.DepartmentNavigation)
                             .Include(e => e.ShiftNavigation)
+                            .Include(e => e.DesignationNavigation)
                             select e;
+
+            // Filter by view (active or resigned)
+            if (view == "resigned")
+            {
+                employees = employees.Where(e => e.Status == EmploymentStatus.Resigned);
+            }
+            else
+            {
+                // Default: show only active employees
+                employees = employees.Where(e => e.Status == EmploymentStatus.Active);
+            }
 
             if (!string.IsNullOrEmpty(searchString))
             {
@@ -50,6 +63,10 @@ namespace PayRollManagementSystem.Controllers
                 .Distinct()
                 .OrderBy(d => d)
                 .ToListAsync();
+
+            // Add counts for tabs
+            ViewBag.ActiveCount = await _context.Employees.CountAsync(e => e.Status == EmploymentStatus.Active);
+            ViewBag.ResignedCount = await _context.Employees.CountAsync(e => e.Status == EmploymentStatus.Resigned);
 
             return View(await employees.OrderByDescending(e => e.CreatedAt).ToListAsync());
         }
@@ -214,10 +231,10 @@ namespace PayRollManagementSystem.Controllers
             }
         }
 
-        // POST: AJAX Delete Employee (Inline Modal)
+        // POST: AJAX Mark Employee as Resigned (Replaces Delete)
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Delete(int id)
+        public async Task<IActionResult> MarkAsResigned(int id, string resignationDate, string resignationReason)
         {
             try
             {
@@ -227,15 +244,64 @@ namespace PayRollManagementSystem.Controllers
                     return Json(new { success = false, message = "Employee not found" });
                 }
 
+                if (employee.Status == EmploymentStatus.Resigned)
+                {
+                    return Json(new { success = false, message = "Employee is already marked as resigned" });
+                }
+
                 var employeeName = employee.Name;
-                _context.Employees.Remove(employee);
+                
+                // Update employee status to Resigned
+                employee.Status = EmploymentStatus.Resigned;
+                employee.UpdatedAt = DateTime.Now;
+                
+                // You can add resignation date and reason fields to Employee model if needed
+                // employee.ResignationDate = DateTime.Parse(resignationDate);
+                // employee.ResignationReason = resignationReason;
+
+                _context.Update(employee);
                 await _context.SaveChangesAsync();
 
-                return Json(new { success = true, message = $"Employee {employeeName} deleted successfully!" });
+                return Json(new { success = true, message = $"Employee {employeeName} marked as resigned successfully! All historical data has been preserved." });
             }
             catch (Exception ex)
             {
-                return Json(new { success = false, message = "Error deleting employee: " + ex.Message });
+                return Json(new { success = false, message = "Error marking employee as resigned: " + ex.Message });
+            }
+        }
+
+        // POST: AJAX Reactivate Employee (Change from Resigned to Active)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Reactivate(int id)
+        {
+            try
+            {
+                var employee = await _context.Employees.FindAsync(id);
+                if (employee == null)
+                {
+                    return Json(new { success = false, message = "Employee not found" });
+                }
+
+                if (employee.Status != EmploymentStatus.Resigned)
+                {
+                    return Json(new { success = false, message = "Only resigned employees can be reactivated" });
+                }
+
+                var employeeName = employee.Name;
+                
+                // Reactivate employee
+                employee.Status = EmploymentStatus.Active;
+                employee.UpdatedAt = DateTime.Now;
+
+                _context.Update(employee);
+                await _context.SaveChangesAsync();
+
+                return Json(new { success = true, message = $"Employee {employeeName} reactivated successfully!" });
+            }
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Error reactivating employee: " + ex.Message });
             }
         }
 

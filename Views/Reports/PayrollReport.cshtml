@@ -1,12 +1,18 @@
 @model IEnumerable<PayRollManagementSystem.Models.Payroll>
 
 @{
-    ViewData["Title"] = "Monthly Payroll Report";
+    ViewData["Title"] = "Payroll Report";
     var selectedMonth = (int)ViewData["SelectedMonth"];
     var selectedYear = (int)ViewData["SelectedYear"];
-    var currentDepartment = ViewData["CurrentDepartment"]?.ToString();
-    var currentStatus = ViewData["CurrentStatus"]?.ToString();
+    var currentDepartment = ViewData["CurrentDepartment"] as string;
+    var currentStatus = ViewData["CurrentStatus"] as string;
+    var monthName = new DateTime(selectedYear, selectedMonth, 1).ToString("MMMM yyyy");
+    ViewBag.ReportTitle = $"Payroll Report - {monthName}";
+    ViewBag.ReportDate = DateTime.Now.ToString("MMMM dd, yyyy");
 }
+
+<!-- Company Header -->
+<partial name="_ReportHeader" />
 
 <style>
     .report-container {

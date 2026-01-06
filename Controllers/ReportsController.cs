@@ -32,6 +32,10 @@ namespace PayRollManagementSystem.Controllers
             ViewData["CurrentStatus"] = status;
             ViewData["CurrentFilter"] = searchString;
 
+            // Get company settings
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            ViewBag.CompanySetting = companySetting;
+
             // Get distinct departments and designations for filters
             ViewBag.Departments = await _context.Departments
                 .Where(d => d.Status == DepartmentStatus.Active)
@@ -102,9 +106,13 @@ namespace PayRollManagementSystem.Controllers
             ViewData["CurrentDepartment"] = department;
             ViewData["CurrentStatus"] = status;
 
+            // Get company settings
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            ViewBag.CompanySetting = companySetting;
+
             // Get distinct departments for filter
             ViewBag.Departments = await _context.Departments
-                .Where(d => d.Status == DepartmentStatus.Active)
+                // .Where(d => d.Status == DepartmentStatus.Active)
                 .OrderBy(d => d.Name)
                 .Select(d => d.Name)
                 .Distinct()
@@ -162,6 +170,10 @@ namespace PayRollManagementSystem.Controllers
             ViewData["SelectedYear"] = selectedYear;
             ViewData["SelectedEmployee"] = employeeId;
             ViewData["CurrentDepartment"] = department;
+
+            // Get company settings
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            ViewBag.CompanySetting = companySetting;
 
             // Get employees for dropdown
             ViewBag.Employees = await _context.Employees
@@ -247,6 +259,10 @@ namespace PayRollManagementSystem.Controllers
             ViewData["CurrentDepartment"] = department;
             ViewData["CurrentStatus"] = status;
 
+            // Get company settings
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            ViewBag.CompanySetting = companySetting;
+
             // Get departments for filter
             ViewBag.Departments = await _context.Departments
                 .Where(d => d.Status == DepartmentStatus.Active)
@@ -300,6 +316,10 @@ namespace PayRollManagementSystem.Controllers
             var selectedYear = year ?? DateTime.Now.Year;
             ViewData["SelectedEmployee"] = employeeId;
             ViewData["SelectedYear"] = selectedYear;
+
+            // Get company settings
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            ViewBag.CompanySetting = companySetting;
 
             // Get employees for dropdown
             ViewBag.Employees = await _context.Employees

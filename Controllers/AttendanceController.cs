@@ -462,6 +462,10 @@ namespace PayRollManagementSystem.Controllers
             ViewBag.SelectedYear = currentYear;
             ViewBag.SelectedEmployeeId = employeeId;
 
+            // Get company settings
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            ViewBag.CompanySetting = companySetting;
+
             // Load employees for dropdown
             ViewBag.Employees = await _context.Employees
                 .Where(e => e.Status == EmploymentStatus.Active)

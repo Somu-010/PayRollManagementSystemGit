@@ -1,0 +1,139 @@
+@{
+    var companySetting = ViewBag.CompanySetting as PayRollManagementSystem.Models.CompanySetting;
+    var reportTitle = ViewBag.ReportTitle as string ?? "Report";
+    var reportDate = ViewBag.ReportDate as string ?? DateTime.Now.ToString("MMMM dd, yyyy");
+}
+
+<style>
+    .report-header {
+        background: white;
+        padding: 30px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+        text-align: center;
+        border-bottom: 3px double #2c3e50;
+    }
+
+    .company-logo-report {
+        max-width: 150px;
+        max-height: 70px;
+        margin-bottom: 15px;
+    }
+
+    .company-name-report {
+        font-size: 24px;
+        font-weight: 700;
+        color: #2c3e50;
+        margin: 0 0 8px 0;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .company-address-report {
+        font-size: 13px;
+        color: #5a6c7d;
+        margin: 5px 0;
+        line-height: 1.5;
+    }
+
+    .company-contact-report {
+        display: flex;
+        justify-content: center;
+        gap: 20px;
+        flex-wrap: wrap;
+        margin: 10px 0;
+        font-size: 12px;
+        color: #5a6c7d;
+    }
+
+    .company-contact-report span {
+        display: flex;
+        align-items: center;
+        gap: 5px;
+    }
+
+    .company-contact-report i {
+        color: #2193b0;
+    }
+
+    .company-tax-report {
+        font-size: 12px;
+        color: #5a6c7d;
+        margin: 8px 0 0 0;
+    }
+
+    .report-title-section {
+        margin-top: 20px;
+        padding-top: 15px;
+        border-top: 2px solid #e8f4f8;
+    }
+
+    .report-title-main {
+        font-size: 20px;
+        font-weight: 700;
+        color: #2193b0;
+        margin: 0 0 5px 0;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .report-date {
+        font-size: 14px;
+        color: #5a6c7d;
+        margin: 0;
+    }
+
+    @@media print {
+        .report-header {
+            box-shadow: none;
+            border-bottom: 2px solid #000;
+        }
+    }
+</style>
+
+<div class="report-header">
+    @if (companySetting != null)
+    {
+        @if (!string.IsNullOrEmpty(companySetting.LogoPath))
+        {
+            <img src="@companySetting.LogoPath" alt="@companySetting.CompanyName Logo" class="company-logo-report" />
+        }
+        
+        <h1 class="company-name-report">@companySetting.CompanyName</h1>
+        
+        @if (!string.IsNullOrEmpty(companySetting.Address))
+        {
+            <p class="company-address-report">@companySetting.Address</p>
+        }
+        
+        <div class="company-contact-report">
+            @if (!string.IsNullOrEmpty(companySetting.Phone))
+            {
+                <span><i class="fas fa-phone"></i> @companySetting.Phone</span>
+            }
+            @if (!string.IsNullOrEmpty(companySetting.Email))
+            {
+                <span><i class="fas fa-envelope"></i> @companySetting.Email</span>
+            }
+            @if (!string.IsNullOrEmpty(companySetting.Website))
+            {
+                <span><i class="fas fa-globe"></i> @companySetting.Website</span>
+            }
+        </div>
+        
+        @if (!string.IsNullOrEmpty(companySetting.TaxNumber))
+        {
+            <p class="company-tax-report">Tax/Reg. No: @companySetting.TaxNumber</p>
+        }
+    }
+    else
+    {
+        <h1 class="company-name-report">PayRoll Management System</h1>
+    }
+    
+    <div class="report-title-section">
+        <h2 class="report-title-main">@reportTitle</h2>
+        <p class="report-date">Generated on: @reportDate</p>
+    </div>
+</div>

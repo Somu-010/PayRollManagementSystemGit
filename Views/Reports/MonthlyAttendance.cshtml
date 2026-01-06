@@ -5,9 +5,15 @@
     var selectedMonth = (int)ViewData["SelectedMonth"];
     var selectedYear = (int)ViewData["SelectedYear"];
     var selectedEmployee = ViewData["SelectedEmployee"] as int?;
-    var currentDepartment = ViewData["CurrentDepartment"]?.ToString();
-    var employeeSummary = ViewBag.EmployeeSummary as IEnumerable<dynamic>;
+    var currentDepartment = ViewData["CurrentDepartment"] as string;
+    var employeeSummary = ViewBag.EmployeeSummary;
+    var monthName = new DateTime(selectedYear, selectedMonth, 1).ToString("MMMM yyyy");
+    ViewBag.ReportTitle = $"Monthly Attendance Report - {monthName}";
+    ViewBag.ReportDate = DateTime.Now.ToString("MMMM dd, yyyy");
 }
+
+<!-- Company Header -->
+<partial name="_ReportHeader" />
 
 <style>
     .report-container {

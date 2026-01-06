@@ -441,6 +441,10 @@ namespace PayRollManagementSystem.Controllers
             ViewBag.SelectedMonth = currentMonth;
             ViewBag.SelectedYear = currentYear;
 
+            // Get company settings
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            ViewBag.CompanySetting = companySetting;
+
             var startDate = new DateTime(currentYear, currentMonth, 1);
             var endDate = startDate.AddMonths(1).AddDays(-1);
 

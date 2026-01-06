@@ -28,15 +28,15 @@ namespace PayRollManagementSystem.Controllers
                 // Create default company setting if none exists
                 companySetting = new CompanySetting
                 {
-                    CompanyName = "PayRoll Pro",
-                    Address = "123 Business Street, City, State, ZIP",
-                    Phone = "+1 (555) 123-4567",
-                    Email = "info@payrollpro.com",
-                    Website = "www.payrollpro.com",
-                    Currency = "USD",
-                    CurrencySymbol = "$",
-                    FiscalYearStartMonth = 1,
-                    Timezone = "UTC"
+                    CompanyName = "Firotech",
+                    Address = "Uttara Eastern City, Forid Market, Udayan School Road, Behind Sector 4, Road 18 Rail Line, Uttara, Dhaka 1230, Bangladesh",
+                    Phone = "+880 1XXX-XXXXXX",
+                    Email = "info@firotechbd.com",
+                    Website = "http://firotechbd.com",
+                    Currency = "BDT",
+                    CurrencySymbol = "?",
+                    FiscalYearStartMonth = 7,
+                    Timezone = "Asia/Dhaka"
                 };
 
                 _context.CompanySettings.Add(companySetting);

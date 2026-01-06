@@ -3,9 +3,14 @@
 @{
     ViewData["Title"] = "Daily Attendance Report";
     var selectedDate = (DateTime)ViewData["SelectedDate"];
-    var currentDepartment = ViewData["CurrentDepartment"]?.ToString();
-    var currentStatus = ViewData["CurrentStatus"]?.ToString();
+    var currentDepartment = ViewData["CurrentDepartment"] as string;
+    var currentStatus = ViewData["CurrentStatus"] as string;
+    ViewBag.ReportTitle = "Daily Attendance Report";
+    ViewBag.ReportDate = selectedDate.ToString("MMMM dd, yyyy");
 }
+
+<!-- Company Header -->
+<partial name="_ReportHeader" />
 
 <style>
     .report-container {

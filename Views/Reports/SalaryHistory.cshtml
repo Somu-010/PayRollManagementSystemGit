@@ -5,7 +5,12 @@
     var selectedEmployee = ViewData["SelectedEmployee"] as int?;
     var selectedYear = (int)ViewData["SelectedYear"];
     var employee = ViewBag.Employee as PayRollManagementSystem.Models.Employee;
+    ViewBag.ReportTitle = employee != null ? $"Salary History - {employee.Name} ({selectedYear})" : "Salary History Report";
+    ViewBag.ReportDate = DateTime.Now.ToString("MMMM dd, yyyy");
 }
+
+<!-- Company Header -->
+<partial name="_ReportHeader" />
 
 <style>
     .report-container {

@@ -446,6 +446,96 @@
         color: #7f1d1d;
         line-height: 1.6;
     }
+
+    /* Status Tabs */
+    .status-tabs {
+        display: flex;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .tab-button {
+        flex: 1;
+        padding: 15px 20px;
+        background: white;
+        border-radius: 12px;
+        text-decoration: none;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        transition: all 0.3s;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        border: 2px solid transparent;
+    }
+
+    .tab-button:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .tab-button.active {
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        border-color: #2193b0;
+    }
+
+    .tab-icon {
+        font-size: 20px;
+        flex-shrink: 0;
+    }
+
+    .tab-button:not(.active) .tab-icon {
+        opacity: 0.6;
+    }
+
+    .tab-button.active .tab-icon {
+        filter: brightness(0) invert(1);
+    }
+
+    .tab-label {
+        flex: 1;
+        font-weight: 600;
+        font-size: 15px;
+        color: #2c3e50;
+    }
+
+    .tab-button.active .tab-label {
+        color: white;
+    }
+
+    .tab-count {
+        background: rgba(0, 0, 0, 0.1);
+        padding: 4px 12px;
+        border-radius: 20px;
+        font-size: 13px;
+        font-weight: 700;
+        color: #2c3e50;
+        flex-shrink: 0;
+    }
+
+    .tab-button.active .tab-count {
+        background: rgba(255, 255, 255, 0.2);
+        color: white;
+    }
+
+    .btn-resign {
+        background: rgba(245, 158, 11, 0.1);
+        color: #f59e0b;
+    }
+
+        .btn-resign:hover {
+            background: rgba(245, 158, 11, 0.2);
+            color: #f59e0b;
+        }
+
+    .btn-reactivate {
+        background: rgba(16, 185, 129, 0.1);
+        color: #10b981;
+    }
+
+        .btn-reactivate:hover {
+            background: rgba(16, 185, 129, 0.2);
+            color: #10b981;
+        }
 </style>
 
 <div class="page-header">
@@ -454,6 +544,22 @@
 </div>
 
 <div id="alertContainer"></div>
+
+<!-- Status Tabs -->
+<div class="status-tabs">
+    <a href="@Url.Action("Index", new { view = "active" })" 
+       class="tab-button @(ViewData["CurrentView"]?.ToString() != "resigned" ? "active" : "")">
+        <span class="tab-icon">✓</span>
+        <span class="tab-label">Active Employees</span>
+        <span class="tab-count">@ViewBag.ActiveCount</span>
+    </a>
+    <a href="@Url.Action("Index", new { view = "resigned" })" 
+       class="tab-button @(ViewData["CurrentView"]?.ToString() == "resigned" ? "active" : "")">
+        <span class="tab-icon">📋</span>
+        <span class="tab-label">Resigned Employees</span>
+        <span class="tab-count">@ViewBag.ResignedCount</span>
+    </a>
+</div>
 
 <!-- Filters -->
 <div class="filters-card">
@@ -534,8 +640,15 @@
                             <td>
                                 <div class="action-btns">
                                     <a asp-action="Details" asp-route-id="@item.EmployeeId" class="btn-action btn-view">👁️ View</a>
-                                    <button onclick="openEditModal(@item.EmployeeId)" class="btn-action btn-edit">✏️ Edit</button>
-                                    <button onclick="openDeleteModal(@item.EmployeeId, '@item.Name', '@item.EmployeeCode')" class="btn-action btn-delete">🗑️ Delete</button>
+                                    @if (item.Status != PayRollManagementSystem.Models.EmploymentStatus.Resigned)
+                                    {
+                                        <button onclick="openEditModal(@item.EmployeeId)" class="btn-action btn-edit">✏️ Edit</button>
+                                        <button onclick="openResignModal(@item.EmployeeId, '@item.Name', '@item.EmployeeCode')" class="btn-action btn-resign">📋 Mark as Resigned</button>
+                                    }
+                                    else
+                                    {
+                                        <button onclick="reactivateEmployee(@item.EmployeeId, '@item.Name')" class="btn-action btn-reactivate">↻ Reactivate</button>
+                                    }
                                 </div>
                             </td>
                         </tr>
@@ -650,38 +763,48 @@
     </form>
 </div>
 
-<!-- Delete Modal -->
-<div class="modal-overlay" id="deleteModalOverlay" onclick="closeDeleteModal()"></div>
-<div class="modal" id="deleteModal">
+<!-- Mark as Resigned Modal -->
+<div class="modal-overlay" id="resignModalOverlay" onclick="closeResignModal()"></div>
+<div class="modal" id="resignModal">
     <div class="modal-header">
-        <h3 class="modal-title">🗑️ Delete Employee</h3>
-        <button class="modal-close" onclick="closeDeleteModal()">×</button>
+        <h3 class="modal-title">📋 Mark Employee as Resigned</h3>
+        <button class="modal-close" onclick="closeResignModal()">×</button>
     </div>
-    <form id="deleteForm" onsubmit="handleDelete(event)">
+    <form id="resignForm" onsubmit="handleResign(event)">
         <div class="modal-body">
-            <input type="hidden" id="delete_EmployeeId" name="id" />
+            <input type="hidden" id="resign_EmployeeId" name="id" />
 
-            <div class="delete-warning">
-                <span class="delete-warning-icon">⚠️</span>
-                <div class="delete-warning-text">
-                    <strong>Are you sure you want to delete this employee?</strong><br>
-                    This action cannot be undone.
+            <div class="delete-warning" style="background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.2);">
+                <span class="delete-warning-icon">ℹ️</span>
+                <div class="delete-warning-text" style="color: #92400e;">
+                    <strong>Important Information:</strong><br>
+                    This will mark the employee as resigned. All employee data, attendance records, payroll history, and leave records will be preserved in the system. The employee will be moved to the "Resigned Employees" list.
                 </div>
             </div>
 
-            <div style="background: #f8fafb; border-radius: 10px; padding: 20px;">
+            <div style="background: #f8fafb; border-radius: 10px; padding: 20px; margin-bottom: 20px;">
                 <div style="display: flex; align-items: center; gap: 15px;">
-                    <div class="employee-avatar" id="delete_avatar">EM</div>
+                    <div class="employee-avatar" id="resign_avatar">EM</div>
                     <div>
-                        <h3 style="margin: 0 0 5px 0; font-size: 18px; color: #2c3e50;" id="delete_name"></h3>
-                        <p style="margin: 0; font-size: 14px; color: #5a6c7d;" id="delete_code"></p>
+                        <h3 style="margin: 0 0 5px 0; font-size: 18px; color: #2c3e50;" id="resign_name"></h3>
+                        <p style="margin: 0; font-size: 14px; color: #5a6c7d;" id="resign_code"></p>
                     </div>
                 </div>
             </div>
+
+            <div class="form-group">
+                <label>Resignation Date <span style="color: #ef4444;">*</span></label>
+                <input type="date" id="resign_date" name="resignationDate" class="form-control" required />
+            </div>
+
+            <div class="form-group">
+                <label>Reason for Resignation</label>
+                <textarea id="resign_reason" name="resignationReason" class="form-control" rows="3" placeholder="Optional: Enter resignation reason..."></textarea>
+            </div>
         </div>
         <div class="modal-footer">
-            <button type="button" class="btn-modal btn-modal-cancel" onclick="closeDeleteModal()">Cancel</button>
-            <button type="submit" class="btn-modal btn-modal-delete">🗑️ Delete Employee</button>
+            <button type="button" class="btn-modal btn-modal-cancel" onclick="closeResignModal()">Cancel</button>
+            <button type="submit" class="btn-modal" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white;">📋 Mark as Resigned</button>
         </div>
     </form>
 </div>
@@ -761,31 +884,38 @@
             }
         }
 
-        function openDeleteModal(id, name, code) {
-            document.getElementById('delete_EmployeeId').value = id;
-            document.getElementById('delete_name').textContent = name;
-            document.getElementById('delete_code').textContent = code;
-            document.getElementById('delete_avatar').textContent = name.substring(0, 2).toUpperCase();
+        function openResignModal(id, name, code) {
+            document.getElementById('resign_EmployeeId').value = id;
+            document.getElementById('resign_name').textContent = name;
+            document.getElementById('resign_code').textContent = code;
+            document.getElementById('resign_avatar').textContent = name.substring(0, 2).toUpperCase();
+            document.getElementById('resign_date').value = new Date().toISOString().split('T')[0];
 
-            document.getElementById('deleteModal').classList.add('active');
-            document.getElementById('deleteModalOverlay').classList.add('active');
+            document.getElementById('resignModal').classList.add('active');
+            document.getElementById('resignModalOverlay').classList.add('active');
         }
 
-        function closeDeleteModal() {
-            document.getElementById('deleteModal').classList.remove('active');
-            document.getElementById('deleteModalOverlay').classList.remove('active');
+        function closeResignModal() {
+            document.getElementById('resignModal').classList.remove('active');
+            document.getElementById('resignModalOverlay').classList.remove('active');
+            document.getElementById('resignForm').reset();
         }
 
-        async function handleDelete(event) {
+        async function handleResign(event) {
             event.preventDefault();
 
-            const id = document.getElementById('delete_EmployeeId').value;
+            const id = document.getElementById('resign_EmployeeId').value;
+            const date = document.getElementById('resign_date').value;
+            const reason = document.getElementById('resign_reason').value;
+
             const formData = new FormData();
             formData.append('id', id);
+            formData.append('resignationDate', date);
+            formData.append('resignationReason', reason);
             formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
 
             try {
-                const response = await fetch('/Employee/Delete', {
+                const response = await fetch('/Employee/MarkAsResigned', {
                     method: 'POST',
                     body: formData
                 });
@@ -793,14 +923,42 @@
                 const result = await response.json();
 
                 if (result.success) {
-                    closeDeleteModal();
+                    closeResignModal();
                     showAlert(result.message, 'success');
-                    setTimeout(() => location.reload(), 1000);
+                    setTimeout(() => location.reload(), 1500);
                 } else {
                     showAlert(result.message, 'error');
                 }
             } catch (error) {
-                showAlert('Error deleting employee', 'error');
+                showAlert('Error marking employee as resigned', 'error');
+            }
+        }
+
+        async function reactivateEmployee(id, name) {
+            if (!confirm(`Are you sure you want to reactivate ${name}? This will move them back to the Active Employees list.`)) {
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('id', id);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+
+            try {
+                const response = await fetch('/Employee/Reactivate', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const result = await response.json();
+
+                if (result.success) {
+                    showAlert(result.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showAlert(result.message, 'error');
+                }
+            } catch (error) {
+                showAlert('Error reactivating employee', 'error');
             }
         }
 
