@@ -17,7 +17,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] - PayRoll System</title>
+    <title>@ViewData["Title"] - FiroTech</title>
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/PayRollManagementSystem.styles.css" asp-append-version="true" />
@@ -146,6 +146,50 @@
             height: 20px;
             margin-right: 12px;
             font-size: 18px;
+        }
+
+        /* Dropdown Navigation */
+        .dropdown-nav {
+            position: relative;
+        }
+
+        .dropdown-toggle {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .dropdown-icon {
+            position: absolute;
+            right: 16px;
+            font-size: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .dropdown-toggle[aria-expanded="true"] .dropdown-icon {
+            transform: rotate(180deg);
+        }
+
+        .submenu {
+            background: rgba(0, 0, 0, 0.1);
+            border-radius: 8px;
+            margin: 4px 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .submenu-link {
+            padding: 10px 16px 10px 45px !important;
+            font-size: 13px;
+        }
+
+        .submenu-link:hover {
+            background: rgba(255, 255, 255, 0.05);
+            transform: translateX(2px);
+        }
+
+        .submenu-link.active {
+            background: rgba(109, 213, 237, 0.2);
+            border-left: 3px solid var(--primary-light);
         }
 
         /* Main Content Area */
@@ -374,7 +418,7 @@
         <aside class="dashboard-sidebar" id="sidebar">
             <div class="sidebar-header">
                 <div class="sidebar-logo">💼</div>
-                <span class="sidebar-brand">PayRoll Pro</span>
+                <span class="sidebar-brand">FiroTech</span>
             </div>
 
             <nav class="sidebar-nav">
@@ -396,34 +440,45 @@
                                 Employees
                             </a>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Department" ? "active" : "")"
-                               asp-controller="Department" asp-action="Index">
-                                <span class="nav-icon">🏢</span>
-                                Departments
+                        
+                        <!-- Master Data Dropdown -->
+                        <li class="nav-item dropdown-nav">
+                            <a class="nav-link dropdown-toggle @(new[] { "Department", "Designation", "Shift" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) ? "active" : "")" 
+                               href="#masterDataMenu" 
+                               data-bs-toggle="collapse" 
+                               role="button" 
+                               aria-expanded="false">
+                                <span class="nav-icon">⚙️</span>
+                                Master Data
+                                <i class="fas fa-chevron-down dropdown-icon"></i>
                             </a>
+                            <div class="collapse submenu" id="masterDataMenu">
+                                <ul class="list-unstyled">
+                                    <li class="nav-item">
+                                        <a class="nav-link submenu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Department" ? "active" : "")"
+                                           asp-controller="Department" asp-action="Index">
+                                            <span class="nav-icon">🏢</span>
+                                            Departments
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link submenu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Designation" ? "active" : "")"
+                                           asp-controller="Designation" asp-action="Index">
+                                            <span class="nav-icon">💼</span>
+                                            Designations
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link submenu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Shift" ? "active" : "")"
+                                           asp-controller="Shift" asp-action="Index">
+                                            <span class="nav-icon">⏰</span>
+                                            Shifts
+                                        </a>
+                                    </li>
+                                </ul>
+                            </div>
                         </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Designation" ? "active" : "")"
-                               asp-controller="Designation" asp-action="Index">
-                                <span class="nav-icon">💼</span>
-                                Designations
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Shift" ? "active" : "")"
-                               asp-controller="Shift" asp-action="Index">
-                                <span class="nav-icon">⏰</span>
-                                Shifts
-                            </a>
-                        </li>
-                        <li class="nav-item">
-                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Payroll" ? "active" : "")"
-                               asp-controller="Payroll" asp-action="Index">
-                                <span class="nav-icon">💵</span>
-                                Payroll
-                            </a>
-                        </li>
+                        
                         <li class="nav-item">
                             <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Attendance" ? "active" : "")"
                                asp-controller="Attendance" asp-action="Index">
@@ -460,9 +515,10 @@
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" asp-controller="Payroll" asp-action="Index">
-                                <span class="nav-icon">📄</span>
-                                Payslips
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Payroll" ? "active" : "")"
+                               asp-controller="Payroll" asp-action="Index">
+                                <span class="nav-icon">💵</span>
+                                Payroll
                             </a>
                         </li>
                     </ul>
@@ -546,7 +602,7 @@
 
             <!-- Footer -->
             <footer class="dashboard-footer">
-                &copy; 2025 PayRoll Pro. All rights reserved.
+                &copy; 2025 FiroTech. All rights reserved.
             </footer>
         </div>
     }
@@ -604,6 +660,34 @@
 
                 // Update every 30 seconds
                 setInterval(updateLeaveNotifications, 30000);
+            }
+
+            // Master Data dropdown state persistence
+            const masterDataMenu = document.getElementById('masterDataMenu');
+            const masterDataToggle = document.querySelector('[href="#masterDataMenu"]');
+            
+            // Check if any master data page is active
+            const currentController = '@ViewContext.RouteData.Values["controller"]';
+            const masterDataControllers = ['Department', 'Designation', 'Shift'];
+            
+            if (masterDataControllers.includes(currentController)) {
+                // Keep dropdown open if on master data page
+                masterDataMenu?.classList.add('show');
+                masterDataToggle?.setAttribute('aria-expanded', 'true');
+            }
+            
+            // Save state to sessionStorage
+            masterDataToggle?.addEventListener('click', function() {
+                setTimeout(() => {
+                    const isExpanded = masterDataMenu?.classList.contains('show');
+                    sessionStorage.setItem('masterDataMenuOpen', isExpanded);
+                }, 300);
+            });
+            
+            // Restore state on page load
+            if (sessionStorage.getItem('masterDataMenuOpen') === 'true' && !masterDataControllers.includes(currentController)) {
+                masterDataMenu?.classList.add('show');
+                masterDataToggle?.setAttribute('aria-expanded', 'true');
             }
         </script>
     }
