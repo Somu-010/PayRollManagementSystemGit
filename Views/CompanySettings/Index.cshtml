@@ -411,6 +411,70 @@
             </div>
         </div>
 
+        <!-- Payroll Configuration -->
+        <div class="settings-card">
+            <h3 class="section-title">
+                <i class="fas fa-cogs"></i> Payroll Configuration
+            </h3>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="OvertimeRate">
+                        Overtime Rate per Hour 
+                        <span style="color: #ef4444;">*</span>
+                    </label>
+                    <div style="position: relative;">
+                        <input asp-for="OvertimeRate" class="form-control" type="number" step="0.01" min="0" placeholder="150.00" required 
+                               style="padding-right: 50px;" />
+                        <span style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #5a6c7d; font-size: 14px;">
+                            @Model.CurrencySymbol/hr
+                        </span>
+                    </div>
+                    <span asp-validation-for="OvertimeRate" class="text-danger"></span>
+                    <small style="color: #5a6c7d; font-size: 12px; margin-top: 5px; display: block;">
+                        Rate paid for each hour of overtime work beyond shift hours
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="LatePenaltyPerDay">Late Penalty per Day</label>
+                    <div style="position: relative;">
+                        <input asp-for="LatePenaltyPerDay" class="form-control" type="number" step="0.01" min="0" placeholder="0.00" 
+                               style="padding-right: 50px;" />
+                        <span style="position: absolute; right: 15px; top: 50%; transform: translateY(-50%); color: #5a6c7d; font-size: 14px;">
+                            @Model.CurrencySymbol/day
+                        </span>
+                    </div>
+                    <span asp-validation-for="LatePenaltyPerDay" class="text-danger"></span>
+                    <small style="color: #5a6c7d; font-size: 12px; margin-top: 5px; display: block;">
+                        Optional penalty deducted for each late arrival (leave blank to disable)
+                    </small>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="MaxLateDaysAllowed">Maximum Late Days Allowed per Month</label>
+                    <input asp-for="MaxLateDaysAllowed" class="form-control" type="number" min="0" max="31" placeholder="5" />
+                    <span asp-validation-for="MaxLateDaysAllowed" class="text-danger"></span>
+                    <small style="color: #5a6c7d; font-size: 12px; margin-top: 5px; display: block;">
+                        Number of late arrivals allowed before penalties apply
+                    </small>
+                </div>
+            </div>
+
+            <div class="alert" style="background: #e0f2fe; border-color: #0284c7; color: #0c4a6e; margin-top: 20px;">
+                <i class="fas fa-info-circle"></i>
+                <div>
+                    <strong>Automatic Calculations:</strong>
+                    <ul style="margin: 5px 0 0 0; padding-left: 20px; font-size: 13px;">
+                        <li>Overtime hours are automatically calculated from attendance records</li>
+                        <li>Overtime allowance = Total Overtime Hours × Overtime Rate</li>
+                        <li>Absence deduction = (Absent Days + Unpaid Leaves) × Per Day Salary</li>
+                        <li>These are automatically added to payroll during generation</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
         <!-- Form Actions -->
         <div class="form-actions">
             <button type="submit" class="btn-save">

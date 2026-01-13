@@ -5,6 +5,8 @@
     Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
     var selectedMonth = (int)ViewData["SelectedMonth"];
     var selectedYear = (int)ViewData["SelectedYear"];
+    var todayAttendance = ViewBag.TodayAttendance as PayRollManagementSystem.Models.Attendance;
+    var holidays = ViewBag.Holidays as List<PayRollManagementSystem.Models.Holiday> ?? new List<PayRollManagementSystem.Models.Holiday>();
 }
 
 <style>
@@ -18,13 +20,74 @@
     .page-header {
         display: flex;
         align-items: center;
-        gap: 10px;
+        justify-content: space-between;
         margin-bottom: 20px;
         color: #2c3e50;
+        flex-wrap: wrap;
+        gap: 15px;
     }
 
     .page-header h2 {
         margin: 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .btn-mark-attendance {
+        padding: 12px 24px;
+        background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.3s;
+        text-decoration: none;
+    }
+
+    .btn-mark-attendance:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        color: white;
+    }
+
+    .today-status-banner {
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 15px;
+    }
+
+    .today-status-banner.checked-in {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    }
+
+    .today-status-banner.checked-out {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+
+    .today-status-banner.not-marked {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    }
+
+    .status-info h3 {
+        margin: 0 0 5px 0;
+        font-size: 18px;
+    }
+
+    .status-info p {
+        margin: 0;
+        opacity: 0.9;
     }
 
     .filters-section {
@@ -106,6 +169,37 @@
         margin-top: 5px;
     }
 
+    .holidays-section {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 25px;
+    }
+
+    .holidays-section h4 {
+        margin: 0 0 10px 0;
+        color: #92400e;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+
+    .holiday-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .holiday-item {
+        background: white;
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 13px;
+        color: #92400e;
+        font-weight: 500;
+    }
+
     .attendance-table {
         width: 100%;
         border-collapse: collapse;
@@ -135,6 +229,14 @@
         background: #f8fafb;
     }
 
+    .attendance-table tbody tr.holiday-row {
+        background: #fef3c7;
+    }
+
+    .attendance-table tbody tr.holiday-row:hover {
+        background: #fde68a;
+    }
+
     .status-badge {
         padding: 5px 12px;
         border-radius: 20px;
@@ -146,6 +248,7 @@
     .status-absent { background: #fee2e2; color: #ef4444; }
     .status-late { background: #fef3c7; color: #f59e0b; }
     .status-leave { background: #dbeafe; color: #3b82f6; }
+    .status-holiday { background: #fef3c7; color: #f59e0b; }
 
     .empty-state {
         text-align: center;
@@ -162,9 +265,73 @@
 
 <div class="attendance-container">
     <div class="page-header">
-        <i class="fas fa-calendar-alt" style="font-size: 24px; color: #2193b0;"></i>
-        <h2>My Attendance - @(new DateTime(selectedYear, selectedMonth, 1).ToString("MMMM yyyy"))</h2>
+        <h2>
+            <i class="fas fa-calendar-alt" style="color: #2193b0;"></i>
+            My Attendance - @(new DateTime(selectedYear, selectedMonth, 1).ToString("MMMM yyyy"))
+        </h2>
+        <a href="@Url.Action("MarkAttendance", "EmployeePortal")" class="btn-mark-attendance">
+            <i class="fas fa-clock"></i> Mark Attendance
+        </a>
     </div>
+
+    <!-- Today's Status Banner -->
+    @{
+        var bannerClass = "not-marked";
+        var statusTitle = "Attendance Not Marked";
+        var statusText = "You haven't marked your attendance for today yet.";
+        
+        if (todayAttendance != null)
+        {
+            if (todayAttendance.CheckOutTime.HasValue)
+            {
+                bannerClass = "checked-out";
+                statusTitle = $"? Checked Out at {todayAttendance.CheckOutTime.Value:hh\\:mm}";
+                statusText = $"Total Hours: {todayAttendance.TotalHours:0.00} hrs";
+                if (todayAttendance.OvertimeHours > 0)
+                {
+                    statusText += $" | Overtime: {todayAttendance.OvertimeHours:0.00} hrs";
+                }
+            }
+            else
+            {
+                bannerClass = "checked-in";
+                statusTitle = $"? Checked In at {todayAttendance.CheckInTime:hh\\:mm}";
+                statusText = todayAttendance.IsLate ? $"Late by {todayAttendance.LateByMinutes} minutes" : "On time";
+            }
+        }
+    }
+    <div class="today-status-banner @bannerClass">
+        <div class="status-info">
+            <h3>@statusTitle</h3>
+            <p>@statusText</p>
+        </div>
+        @if (todayAttendance == null || !todayAttendance.CheckOutTime.HasValue)
+        {
+            <a href="@Url.Action("MarkAttendance", "EmployeePortal")" class="btn-mark-attendance">
+                @(todayAttendance == null ? "Check In Now" : "Check Out Now")
+            </a>
+        }
+    </div>
+
+    <!-- Holidays Section -->
+    @if (holidays.Any())
+    {
+        <div class="holidays-section">
+            <h4>
+                <i class="fas fa-calendar-day"></i>
+                Holidays This Month
+            </h4>
+            <div class="holiday-list">
+                @foreach (var holiday in holidays)
+                {
+                    <div class="holiday-item">
+                        <i class="fas fa-star" style="color: #f59e0b;"></i>
+                        @holiday.Date.ToString("dd MMM") - @holiday.Name
+                    </div>
+                }
+            </div>
+        </div>
+    }
 
     <!-- Filters -->
     <form method="get" asp-action="Attendance">
@@ -239,8 +406,16 @@
             <tbody>
                 @foreach (var item in Model)
                 {
-                    <tr>
-                        <td><strong>@item.Date.ToString("dd MMM yyyy")</strong></td>
+                    var isHoliday = holidays.Any(h => h.Date.Date == item.Date.Date);
+                    <tr class="@(isHoliday ? "holiday-row" : "")">
+                        <td>
+                            <strong>@item.Date.ToString("dd MMM yyyy")</strong>
+                            @if (isHoliday)
+                            {
+                                var holidayName = holidays.First(h => h.Date.Date == item.Date.Date).Name;
+                                <br /><span style="color: #f59e0b; font-size: 11px;">?? @holidayName</span>
+                            }
+                        </td>
                         <td>@item.Date.ToString("dddd")</td>
                         <td>
                             @item.CheckInTime.ToString(@"hh\:mm")
@@ -279,7 +454,7 @@
     else
     {
         <div class="empty-state">
-            <i class="fas fa-calendar-times" style="font-size: 48px; opacity: 0.3;"></i>
+            <i class="fas fa-calendar-times"></i>
             <h3>No attendance records</h3>
             <p>No attendance data found for this month.</p>
         </div>

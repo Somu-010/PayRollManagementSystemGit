@@ -24,6 +24,7 @@ namespace PayRollManagementSystem.Data
         public DbSet<Payroll> Payrolls { get; set; }
         public DbSet<PayrollDetail> PayrollDetails { get; set; }
         public DbSet<CompanySetting> CompanySettings { get; set; }
+        public DbSet<Holiday> Holidays { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {

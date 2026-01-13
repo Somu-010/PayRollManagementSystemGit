@@ -3,6 +3,8 @@
 @{
     ViewData["Title"] = "Leave Balance";
     Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
+    var employee = ViewBag.Employee as PayRollManagementSystem.Models.Employee;
+    var isFemale = employee?.Gender == PayRollManagementSystem.Models.Gender.Female;
 }
 
 <style>
@@ -178,7 +180,12 @@
 </style>
 
 @{
-    var totalRemaining = Model.RemainingAnnualLeave + Model.RemainingSickLeave + Model.RemainingCasualLeave + Model.RemainingMaternityLeave;
+    // Calculate total remaining - only include maternity for female employees
+    var totalRemaining = Model.RemainingAnnualLeave + Model.RemainingSickLeave + Model.RemainingCasualLeave;
+    if (isFemale)
+    {
+        totalRemaining += Model.RemainingMaternityLeave;
+    }
 }
 
 <div class="balance-container">
@@ -277,27 +284,46 @@
             </div>
         </div>
 
-        <!-- Maternity Leave -->
-        <div class="balance-card">
-            <div class="balance-card-header">
-                <div class="leave-type-icon icon-maternity"><i class="fas fa-baby"></i></div>
-                <span class="leave-type-name">Maternity Leave</span>
-            </div>
-            <div class="balance-details">
-                <div class="balance-row">
-                    <span class="balance-label">Allocated</span>
-                    <span class="balance-value">@Model.MaternityLeaveBalance days</span>
+        <!-- Maternity Leave - Only show for female employees -->
+        @if (isFemale)
+        {
+            <div class="balance-card">
+                <div class="balance-card-header">
+                    <div class="leave-type-icon icon-maternity"><i class="fas fa-baby"></i></div>
+                    <span class="leave-type-name">Maternity Leave</span>
                 </div>
-                <div class="balance-row">
-                    <span class="balance-label">Used</span>
-                    <span class="balance-value used">@Model.MaternityLeaveUsed days</span>
+                <div class="balance-details">
+                    <div class="balance-row">
+                        <span class="balance-label">Allocated</span>
+                        <span class="balance-value">@Model.MaternityLeaveBalance days</span>
+                    </div>
+                    <div class="balance-row">
+                        <span class="balance-label">Used</span>
+                        <span class="balance-value used">@Model.MaternityLeaveUsed days</span>
+                    </div>
+                </div>
+                <div class="remaining-days">
+                    <div class="remaining-value">@Model.RemainingMaternityLeave</div>
+                    <div class="remaining-label">Days Remaining</div>
                 </div>
             </div>
-            <div class="remaining-days">
-                <div class="remaining-value">@Model.RemainingMaternityLeave</div>
-                <div class="remaining-label">Days Remaining</div>
+        }
+        else
+        {
+            <!-- Info card for non-female employees -->
+            <div class="balance-card" style="background: rgba(107, 114, 128, 0.05); border: 2px dashed rgba(107, 114, 128, 0.2);">
+                <div class="balance-card-header">
+                    <div class="leave-type-icon" style="background: rgba(107, 114, 128, 0.1); color: #6b7280;">
+                        <i class="fas fa-info-circle"></i>
+                    </div>
+                    <span class="leave-type-name" style="color: #6b7280;">Maternity Leave</span>
+                </div>
+                <div style="text-align: center; padding: 20px 10px; color: #6b7280; font-size: 14px; line-height: 1.6;">
+                    <i class="fas fa-ban" style="font-size: 32px; margin-bottom: 10px; opacity: 0.5;"></i>
+                    <p style="margin: 0;">Maternity leave is only available for female employees.</p>
+                </div>
             </div>
-        </div>
+        }
     </div>
 
     <div class="action-section">

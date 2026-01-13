@@ -107,7 +107,7 @@ namespace PayRollManagementSystem.Controllers
         // POST: Employees/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("EmployeeCode,Name,Email,Phone,DepartmentId,DesignationId,ShiftId,BasicSalary,JoiningDate,Status,Address,City,PostalCode")] Employee employee)
+        public async Task<IActionResult> Create([Bind("EmployeeCode,Name,Email,Phone,Gender,DepartmentId,DesignationId,ShiftId,BasicSalary,JoiningDate,Status,Address,City,PostalCode")] Employee employee)
         {
             // Remove Department and Designation from ModelState validation since they'll be populated from the IDs
             ModelState.Remove("Department");
@@ -178,6 +178,7 @@ namespace PayRollManagementSystem.Controllers
                 name = employee.Name,
                 email = employee.Email,
                 phone = employee.Phone,
+                gender = (int)employee.Gender,
                 department = employee.Department,
                 designation = employee.Designation,
                 basicSalary = employee.BasicSalary,
@@ -210,6 +211,7 @@ namespace PayRollManagementSystem.Controllers
                 existingEmployee.Name = employee.Name;
                 existingEmployee.Email = employee.Email;
                 existingEmployee.Phone = employee.Phone;
+                existingEmployee.Gender = employee.Gender;
                 existingEmployee.Department = employee.Department;
                 existingEmployee.Designation = employee.Designation;
                 existingEmployee.BasicSalary = employee.BasicSalary;

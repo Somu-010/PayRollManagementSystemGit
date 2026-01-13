@@ -1,12 +1,11 @@
-﻿@model dynamic
+﻿@model PayRollManagementSystem.Services.AttendanceSummary
 
 @{
     ViewData["Title"] = "Monthly Attendance Report";
     var selectedMonth = ViewBag.SelectedMonth;
     var selectedYear = ViewBag.SelectedYear;
-    var monthName = new DateTime((int)selectedYear, (int)selectedMonth, 1).ToString("MMMM yyyy");
-    ViewBag.ReportTitle = $"Monthly Attendance Report - {monthName}";
-    ViewBag.ReportDate = DateTime.Now.ToString("MMMM dd, yyyy");
+    var monthName = ViewBag.MonthName as string;
+    var employee = ViewBag.Employee as PayRollManagementSystem.Models.Employee;
 }
 
 <!-- Company Header -->
@@ -440,35 +439,32 @@
 </div>
 
 <!-- Report Content -->
-@if (Model != null)
+@if (Model != null && employee != null)
 {
     <div class="report-card">
-        <!-- Report Header -->
-        
-
         <!-- Employee Information -->
         <div class="employee-section">
             <h3 class="section-title">Employee Information</h3>
             <table class="employee-info-table">
                 <tr>
                     <td class="label">Employee Name:</td>
-                    <td class="value">@Model.Employee.Name</td>
+                    <td class="value">@employee.Name</td>
                     <td class="label">Employee Code:</td>
-                    <td class="value">@Model.Employee.EmployeeCode</td>
+                    <td class="value">@employee.EmployeeCode</td>
                 </tr>
                 <tr>
                     <td class="label">Department:</td>
-                    <td class="value">@Model.Employee.Department</td>
+                    <td class="value">@employee.Department</td>
                     <td class="label">Designation:</td>
-                    <td class="value">@Model.Employee.Designation</td>
+                    <td class="value">@employee.Designation</td>
                 </tr>
-                @if (Model.Employee.ShiftNavigation != null)
+                @if (employee.ShiftNavigation != null)
                 {
                     <tr>
                         <td class="label">Shift:</td>
-                        <td class="value">@Model.Employee.ShiftNavigation.ShiftName</td>
+                        <td class="value">@employee.ShiftNavigation.ShiftName</td>
                         <td class="label">Shift Timing:</td>
-                        <td class="value">@Model.Employee.ShiftNavigation.StartTime.ToString(@"hh\:mm") - @Model.Employee.ShiftNavigation.EndTime.ToString(@"hh\:mm")</td>
+                        <td class="value">@employee.ShiftNavigation.StartTime.ToString(@"hh\:mm") - @employee.ShiftNavigation.EndTime.ToString(@"hh\:mm")</td>
                     </tr>
                 }
             </table>
@@ -476,33 +472,74 @@
 
         <!-- Summary Section -->
         <div class="summary-section">
-            <h3 class="section-title">Attendance Summary</h3>
+            <h3 class="section-title">Attendance Summary for @monthName</h3>
+            
+            <!-- Calendar Breakdown -->
+            <table class="summary-table" style="margin-bottom: 15px;">
+                <thead>
+                    <tr>
+                        <th colspan="4" style="background: #e8f4f8; color: #2193b0;">Calendar Breakdown</th>
+                    </tr>
+                    <tr>
+                        <th>Total Calendar Days</th>
+                        <th>Working Days</th>
+                        <th>Weekends</th>
+                        <th>Holidays</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>@Model.TotalCalendarDays</strong></td>
+                        <td><strong style="color: #2193b0;">@Model.TotalWorkingDays</strong></td>
+                        <td><strong>@Model.WeekendDays</strong></td>
+                        <td><strong>@Model.HolidayDays</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Attendance Statistics -->
             <table class="summary-table">
                 <thead>
                     <tr>
-                        <th>Total Days</th>
+                        <th colspan="8" style="background: #e8f4f8; color: #2193b0;">Attendance Statistics</th>
+                    </tr>
+                    <tr>
                         <th>Present Days</th>
                         <th>Absent Days</th>
                         <th>Late Days</th>
                         <th>Half Days</th>
                         <th>Leave Days</th>
+                        <th>Unmarked Days</th>
                         <th>Total Hours</th>
-                        <th>Overtime Hours</th>
+                        <th>Overtime</th>
                     </tr>
                 </thead>
                 <tbody>
                     <tr>
-                        <td><strong>@Model.TotalDays</strong></td>
-                        <td><strong>@Model.PresentDays</strong></td>
-                        <td><strong>@Model.AbsentDays</strong></td>
-                        <td><strong>@Model.LateDays</strong></td>
-                        <td><strong>@Model.HalfDays</strong></td>
-                        <td><strong>@Model.LeaveDays</strong></td>
-                        <td><strong>@Model.TotalWorkingHours.ToString("0.00")</strong></td>
-                        <td><strong>@Model.TotalOvertimeHours.ToString("0.00")</strong></td>
+                        <td><strong style="color: #10b981;">@Model.PresentDays</strong></td>
+                        <td><strong style="color: #ef4444;">@Model.AbsentDays</strong></td>
+                        <td><strong style="color: #f59e0b;">@Model.LateDays</strong></td>
+                        <td><strong style="color: #f59e0b;">@Model.HalfDays</strong></td>
+                        <td><strong style="color: #3b82f6;">@Model.LeaveDays</strong></td>
+                        <td><strong style="color: #6b7280;">@Model.UnmarkedDays</strong></td>
+                        <td><strong>@Model.TotalHours.ToString("0.00")</strong></td>
+                        <td><strong style="color: #10b981;">@Model.OvertimeHours.ToString("0.00")</strong></td>
                     </tr>
                 </tbody>
             </table>
+
+            <!-- Attendance Percentage -->
+            <div style="text-align: center; margin-top: 15px; padding: 15px; background: #f8fafb; border-radius: 8px;">
+                <strong style="font-size: 18px; color: #2c3e50;">
+                    Attendance Percentage: 
+                    <span style="color: @(Model.AttendancePercentage >= 90 ? "#10b981" : Model.AttendancePercentage >= 75 ? "#f59e0b" : "#ef4444");">
+                        @Model.AttendancePercentage.ToString("0.00")%
+                    </span>
+                </strong>
+                <div style="font-size: 12px; color: #5a6c7d; margin-top: 5px;">
+                    (Based on @Model.PresentDays present days out of @Model.TotalWorkingDays working days)
+                </div>
+            </div>
         </div>
 
         <!-- Detailed Attendance -->
@@ -529,7 +566,7 @@
                         @{
                             int serialNo = 1;
                         }
-                        @foreach (PayRollManagementSystem.Models.Attendance attendance in Model.Attendances)
+                        @foreach (var attendance in Model.Attendances)
                         {
                             <tr>
                                 <td class="text-center">@serialNo</td>

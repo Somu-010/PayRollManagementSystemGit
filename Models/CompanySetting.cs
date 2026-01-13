@@ -39,19 +39,32 @@ namespace PayRollManagementSystem.Models
 
         [StringLength(100)]
         [Display(Name = "Currency")]
-        public string Currency { get; set; } = "USD";
+        public string Currency { get; set; } = "BDT";
 
         [StringLength(10)]
         [Display(Name = "Currency Symbol")]
-        public string CurrencySymbol { get; set; } = "$";
+        public string CurrencySymbol { get; set; } = "?";
 
         [Display(Name = "Fiscal Year Start Month")]
         [Range(1, 12)]
-        public int FiscalYearStartMonth { get; set; } = 1;
+        public int FiscalYearStartMonth { get; set; } = 7; // Bangladesh: July
 
         [StringLength(100)]
         [Display(Name = "Timezone")]
-        public string? Timezone { get; set; }
+        public string? Timezone { get; set; } = "Asia/Dhaka";
+
+        // Payroll Configuration
+        [Display(Name = "Overtime Rate per Hour")]
+        [Range(0, 10000)]
+        public decimal OvertimeRate { get; set; } = 150; // BDT per hour
+
+        [Display(Name = "Late Penalty per Day")]
+        [Range(0, 10000)]
+        public decimal? LatePenaltyPerDay { get; set; }
+
+        [Display(Name = "Maximum Late Days Allowed")]
+        [Range(0, 31)]
+        public int? MaxLateDaysAllowed { get; set; } = 5;
 
         public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }

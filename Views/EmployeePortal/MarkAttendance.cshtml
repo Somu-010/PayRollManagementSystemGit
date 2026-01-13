@@ -1,0 +1,468 @@
+@model PayRollManagementSystem.Models.Employee
+
+@{
+    ViewData["Title"] = "Mark Attendance";
+    Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
+    var todayAttendance = ViewBag.TodayAttendance as PayRollManagementSystem.Models.Attendance;
+    var currentTime = ViewBag.CurrentTime as string;
+}
+
+<style>
+    .mark-attendance-container {
+        max-width: 800px;
+        margin: 0 auto;
+        background: white;
+        border-radius: 16px;
+        padding: 40px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+    }
+
+    .header-section {
+        text-align: center;
+        margin-bottom: 40px;
+    }
+
+    .header-section h2 {
+        color: #2c3e50;
+        margin: 0 0 10px 0;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+    }
+
+    .header-section p {
+        color: #5a6c7d;
+        margin: 0;
+    }
+
+    .current-time-display {
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 30px;
+    }
+
+    .current-time-display .time {
+        font-size: 48px;
+        font-weight: 700;
+        margin-bottom: 5px;
+    }
+
+    .current-time-display .date {
+        font-size: 16px;
+        opacity: 0.9;
+    }
+
+    .employee-info-card {
+        background: #f8fafb;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+    }
+
+    .info-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 15px;
+    }
+
+    .info-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .info-item i {
+        color: #2193b0;
+        font-size: 18px;
+        width: 24px;
+    }
+
+    .info-item .label {
+        font-size: 12px;
+        color: #5a6c7d;
+        margin: 0;
+    }
+
+    .info-item .value {
+        font-weight: 600;
+        color: #2c3e50;
+        margin: 0;
+    }
+
+    .action-buttons {
+        display: flex;
+        gap: 15px;
+        justify-content: center;
+        margin-bottom: 30px;
+    }
+
+    .btn-action {
+        padding: 18px 40px;
+        border: none;
+        border-radius: 12px;
+        font-size: 16px;
+        font-weight: 600;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        transition: all 0.3s;
+        min-width: 200px;
+        justify-content: center;
+    }
+
+    .btn-checkin {
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+    }
+
+    .btn-checkin:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
+    }
+
+    .btn-checkout {
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+        color: white;
+    }
+
+    .btn-checkout:hover {
+        transform: translateY(-3px);
+        box-shadow: 0 8px 25px rgba(250, 112, 154, 0.4);
+    }
+
+    .btn-action:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+    }
+
+    .attendance-status-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 20px;
+    }
+
+    .attendance-status-card h3 {
+        margin: 0 0 15px 0;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .status-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+    }
+
+    .status-item {
+        background: rgba(255, 255, 255, 0.15);
+        padding: 15px;
+        border-radius: 8px;
+        text-align: center;
+    }
+
+    .status-item .label {
+        font-size: 12px;
+        opacity: 0.9;
+        margin-bottom: 5px;
+    }
+
+    .status-item .value {
+        font-size: 20px;
+        font-weight: 700;
+    }
+
+    .alert-info {
+        background: #e0f2fe;
+        border-left: 4px solid #0284c7;
+        color: #075985;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .alert-warning {
+        background: #fef3c7;
+        border-left: 4px solid #f59e0b;
+        color: #92400e;
+        padding: 15px 20px;
+        border-radius: 8px;
+        margin-bottom: 20px;
+    }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #2193b0;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .back-link:hover {
+        color: #1a7690;
+        gap: 12px;
+    }
+</style>
+
+<div class="mark-attendance-container">
+    <div class="header-section">
+        <h2>
+            <i class="fas fa-clock" style="color: #2193b0;"></i>
+            Mark Your Attendance
+        </h2>
+        <p>Track your daily work hours efficiently</p>
+    </div>
+
+    <!-- Current Time Display -->
+    <div class="current-time-display">
+        <div class="time" id="currentTime">@DateTime.Now.ToString("hh:mm:ss tt")</div>
+        <div class="date">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</div>
+    </div>
+
+    <!-- Employee Info Card -->
+    <div class="employee-info-card">
+        <div class="info-row">
+            <div class="info-item">
+                <i class="fas fa-user"></i>
+                <div>
+                    <p class="label">Employee Name</p>
+                    <p class="value">@Model.Name</p>
+                </div>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-id-badge"></i>
+                <div>
+                    <p class="label">Employee Code</p>
+                    <p class="value">@Model.EmployeeCode</p>
+                </div>
+            </div>
+            <div class="info-item">
+                <i class="fas fa-building"></i>
+                <div>
+                    <p class="label">Department</p>
+                    <p class="value">@Model.DepartmentNavigation?.Name</p>
+                </div>
+            </div>
+            @if (Model.ShiftNavigation != null)
+            {
+                <div class="info-item">
+                    <i class="fas fa-business-time"></i>
+                    <div>
+                        <p class="label">Shift Timing</p>
+                        <p class="value">@Model.ShiftNavigation.StartTime.ToString(@"hh\:mm") - @Model.ShiftNavigation.EndTime.ToString(@"hh\:mm")</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+
+    @if (todayAttendance == null)
+    {
+        <!-- Not Checked In Yet -->
+        <div class="alert-info">
+            <i class="fas fa-info-circle"></i> You haven't checked in yet today. Click the button below to mark your check-in.
+        </div>
+
+        <div class="action-buttons">
+            <button type="button" class="btn-action btn-checkin" id="btnCheckIn">
+                <i class="fas fa-sign-in-alt"></i> Check In
+            </button>
+        </div>
+    }
+    else if (!todayAttendance.CheckOutTime.HasValue)
+    {
+        <!-- Checked In, Not Checked Out -->
+        <div class="attendance-status-card">
+            <h3>
+                <i class="fas fa-check-circle"></i>
+                Today's Attendance
+            </h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="label">Check-In Time</div>
+                    <div class="value">@todayAttendance.CheckInTime.ToString(@"hh\:mm")</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">Status</div>
+                    <div class="value">@(todayAttendance.IsLate ? "Late ?" : "On Time ?")</div>
+                </div>
+                @if (todayAttendance.IsLate)
+                {
+                    <div class="status-item">
+                        <div class="label">Late By</div>
+                        <div class="value">@todayAttendance.LateByMinutes min</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="alert-info">
+            <i class="fas fa-info-circle"></i> You are currently checked in. Click the button below when you're ready to check out.
+        </div>
+
+        <div class="action-buttons">
+            <button type="button" class="btn-action btn-checkout" id="btnCheckOut">
+                <i class="fas fa-sign-out-alt"></i> Check Out
+            </button>
+        </div>
+    }
+    else
+    {
+        <!-- Already Checked Out -->
+        <div class="attendance-status-card">
+            <h3>
+                <i class="fas fa-check-double"></i>
+                Today's Attendance Completed
+            </h3>
+            <div class="status-grid">
+                <div class="status-item">
+                    <div class="label">Check-In</div>
+                    <div class="value">@todayAttendance.CheckInTime.ToString(@"hh\:mm")</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">Check-Out</div>
+                    <div class="value">@todayAttendance.CheckOutTime.Value.ToString(@"hh\:mm")</div>
+                </div>
+                <div class="status-item">
+                    <div class="label">Total Hours</div>
+                    <div class="value">@(todayAttendance.TotalHours?.ToString("0.00") ?? "0") hrs</div>
+                </div>
+                @if (todayAttendance.OvertimeHours > 0)
+                {
+                    <div class="status-item">
+                        <div class="label">Overtime</div>
+                        <div class="value">@todayAttendance.OvertimeHours.Value.ToString("0.00") hrs</div>
+                    </div>
+                }
+            </div>
+        </div>
+
+        <div class="alert-info">
+            <i class="fas fa-check-circle"></i> You have successfully completed your attendance for today. Have a great day!
+        </div>
+    }
+
+    <div style="text-align: center; margin-top: 30px;">
+        <a href="@Url.Action("Attendance", "EmployeePortal")" class="back-link">
+            <i class="fas fa-arrow-left"></i> View My Attendance History
+        </a>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // Update time every second
+        function updateTime() {
+            const now = new Date();
+            const hours = now.getHours();
+            const minutes = now.getMinutes();
+            const seconds = now.getSeconds();
+            const ampm = hours >= 12 ? 'PM' : 'AM';
+            const displayHours = hours % 12 || 12;
+            
+            const timeString = `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${ampm}`;
+            document.getElementById('currentTime').textContent = timeString;
+        }
+
+        setInterval(updateTime, 1000);
+
+        // Check In
+        document.getElementById('btnCheckIn')?.addEventListener('click', function() {
+            if (!confirm('Are you sure you want to check in now?')) {
+                return;
+            }
+
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking In...';
+
+            fetch('@Url.Action("CheckIn", "EmployeePortal")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Check In';
+                }
+            })
+            .catch(error => {
+                showToast('An error occurred. Please try again.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Check In';
+            });
+        });
+
+        // Check Out
+        document.getElementById('btnCheckOut')?.addEventListener('click', function() {
+            if (!confirm('Are you sure you want to check out now?')) {
+                return;
+            }
+
+            const btn = this;
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Out...';
+
+            fetch('@Url.Action("CheckOut", "EmployeePortal")', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    showToast(data.message, 'success');
+                    setTimeout(() => location.reload(), 1500);
+                } else {
+                    showToast(data.message, 'error');
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Check Out';
+                }
+            })
+            .catch(error => {
+                showToast('An error occurred. Please try again.', 'error');
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Check Out';
+            });
+        });
+
+        function showToast(message, type) {
+            // Use the existing toast notification system
+            const toast = document.createElement('div');
+            toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
+            toast.style.position = 'fixed';
+            toast.style.top = '20px';
+            toast.style.right = '20px';
+            toast.style.zIndex = '9999';
+            toast.style.minWidth = '300px';
+            toast.innerHTML = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => {
+                toast.remove();
+            }, 5000);
+        }
+    </script>
+
+    @Html.AntiForgeryToken()
+}

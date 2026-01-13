@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PayRollManagementSystem.Data;
 using PayRollManagementSystem.Models;
+using PayRollManagementSystem.Services;
 
 namespace PayRollManagementSystem.Controllers
 {
@@ -10,10 +11,12 @@ namespace PayRollManagementSystem.Controllers
     public class AttendanceController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly WorkingDaysService _workingDaysService;
 
-        public AttendanceController(ApplicationDbContext context)
+        public AttendanceController(ApplicationDbContext context, WorkingDaysService workingDaysService)
         {
             _context = context;
+            _workingDaysService = workingDaysService;
         }
 
         // GET: Attendance
@@ -481,6 +484,7 @@ namespace PayRollManagementSystem.Controllers
             var employee = await _context.Employees
                 .Include(e => e.DepartmentNavigation)
                 .Include(e => e.DesignationNavigation)
+                .Include(e => e.ShiftNavigation)
                 .FirstOrDefaultAsync(e => e.EmployeeId == employeeId);
 
             if (employee == null)
@@ -488,29 +492,16 @@ namespace PayRollManagementSystem.Controllers
                 return NotFound();
             }
 
-            var startDate = new DateTime(currentYear, currentMonth, 1);
-            var endDate = startDate.AddMonths(1).AddDays(-1);
+            // Use WorkingDaysService for accurate calculation
+            var summary = await _workingDaysService.CalculateAttendanceSummary(
+                employeeId.Value, 
+                currentYear, 
+                currentMonth
+            );
 
-            var attendances = await _context.Attendances
-                .Where(a => a.EmployeeId == employeeId && a.Date >= startDate && a.Date <= endDate)
-                .OrderBy(a => a.Date)
-                .ToListAsync();
-
-            // Calculate summary
-            var summary = new
-            {
-                Employee = employee,
-                Month = startDate.ToString("MMMM yyyy"),
-                TotalDays = (endDate - startDate).Days + 1,
-                PresentDays = attendances.Count(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late),
-                AbsentDays = attendances.Count(a => a.Status == AttendanceStatus.Absent),
-                LateDays = attendances.Count(a => a.IsLate),
-                HalfDays = attendances.Count(a => a.IsHalfDay),
-                LeaveDays = attendances.Count(a => a.Status == AttendanceStatus.OnLeave),
-                TotalWorkingHours = attendances.Sum(a => a.TotalHours ?? 0),
-                TotalOvertimeHours = attendances.Sum(a => a.OvertimeHours ?? 0),
-                Attendances = attendances
-            };
+            // Add employee information to the summary
+            ViewBag.Employee = employee;
+            ViewBag.MonthName = new DateTime(currentYear, currentMonth, 1).ToString("MMMM yyyy");
 
             return View(summary);
         }

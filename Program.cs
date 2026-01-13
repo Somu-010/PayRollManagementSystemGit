@@ -17,6 +17,12 @@ builder.Services.AddDatabaseDeveloperPageExceptionFilter();
 // Register Email Service
 builder.Services.AddScoped<IEmailService, EmailService>();
 
+// Register Holiday Service
+builder.Services.AddScoped<HolidayService>();
+
+// Register Working Days Service
+builder.Services.AddScoped<WorkingDaysService>();
+
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false; // Changed to false so you can login without email confirmation
@@ -79,6 +85,12 @@ using (var scope = app.Services.CreateScope())
             await userManager.AddToRoleAsync(adminUser, "Admin");
         }
     }
+
+    // Seed Bangladeshi holidays for current year and next year
+    var holidayService = scope.ServiceProvider.GetRequiredService<HolidayService>();
+    var currentYear = DateTime.Now.Year;
+    await holidayService.SeedBangladeshiHolidays(currentYear);
+    await holidayService.SeedBangladeshiHolidays(currentYear + 1);
 }
 
 // Configure the HTTP request pipeline.

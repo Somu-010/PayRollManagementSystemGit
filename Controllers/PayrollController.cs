@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using PayRollManagementSystem.Data;
 using PayRollManagementSystem.Models;
+using PayRollManagementSystem.Services;
 using System.Security.Claims;
 
 namespace PayRollManagementSystem.Controllers
@@ -12,10 +13,12 @@ namespace PayRollManagementSystem.Controllers
     public class PayrollController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private readonly WorkingDaysService _workingDaysService;
 
-        public PayrollController(ApplicationDbContext context)
+        public PayrollController(ApplicationDbContext context, WorkingDaysService workingDaysService)
         {
             _context = context;
+            _workingDaysService = workingDaysService;
         }
 
         // GET: Payroll
@@ -271,20 +274,31 @@ namespace PayRollManagementSystem.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             var userName = User.Identity?.Name ?? "System";
 
-            // Calculate attendance
+            // Calculate attendance using WorkingDaysService for accurate working days
+            var attendanceSummary = await _workingDaysService.CalculateAttendanceSummary(
+                employee.EmployeeId, 
+                year, 
+                month
+            );
+
             var firstDayOfMonth = new DateTime(year, month, 1);
             var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
 
+            // Get attendance records
             var attendances = await _context.Attendances
                 .Where(a => a.EmployeeId == employee.EmployeeId &&
                            a.Date >= firstDayOfMonth &&
                            a.Date <= lastDayOfMonth)
                 .ToListAsync();
 
-            int totalWorkingDays = (lastDayOfMonth - firstDayOfMonth).Days + 1;
-            int presentDays = attendances.Count(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late);
-            int absentDays = attendances.Count(a => a.Status == AttendanceStatus.Absent);
-            int lateDays = attendances.Count(a => a.Status == AttendanceStatus.Late);
+            // Use accurate working days calculation
+            int totalWorkingDays = attendanceSummary.TotalWorkingDays;
+            int presentDays = attendanceSummary.PresentDays;
+            int absentDays = attendanceSummary.AbsentDays;  // Already includes unmarked days
+            int lateDays = attendanceSummary.LateDays;
+            
+            // Calculate overtime hours
+            decimal totalOvertimeHours = attendanceSummary.OvertimeHours;
 
             // Calculate leave days
             var leaves = await _context.Leaves
@@ -316,21 +330,63 @@ namespace PayRollManagementSystem.Controllers
                 }
             }
 
-            // Calculate basic salary (prorated for unpaid leaves/absences)
-            decimal basicSalary = employee.BasicSalary;
-            int effectiveWorkingDays = presentDays + paidLeaves;
-            decimal perDaySalary = basicSalary / totalWorkingDays;
-            decimal leaveDeduction = (unpaidLeaves + absentDays) * perDaySalary;
+            // Get company settings for overtime rate
+            var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
+            decimal overtimeRatePerHour = companySetting?.OvertimeRate ?? 150; // Default 150 BDT/hour if not set
 
-            // Get active allowances and deductions
+            // Calculate basic salary
+            decimal basicSalary = employee.BasicSalary;
+            decimal perDaySalary = basicSalary / totalWorkingDays;
+
+            // Calculate absence deduction (unpaid leaves + absent days)
+            int totalAbsenceDays = unpaidLeaves + absentDays;
+            decimal absenceDeduction = totalAbsenceDays * perDaySalary;
+
+            // Calculate overtime allowance
+            decimal overtimeAllowance = totalOvertimeHours * overtimeRatePerHour;
+
+            // Get active allowances and deductions (excluding auto-generated ones)
             var activeComponents = await _context.AllowanceDeductions
-                .Where(c => c.Status == ComponentStatus.Active)
+                .Where(c => c.Status == ComponentStatus.Active && 
+                           c.Code != "OT_AUTO" && // Don't include auto overtime
+                           c.Code != "ABS_AUTO") // Don't include auto absence
                 .ToListAsync();
 
-            decimal totalAllowances = 0;
-            decimal totalDeductions = 0;
+            decimal totalAllowances = overtimeAllowance; // Start with overtime
+            decimal totalDeductions = absenceDeduction;   // Start with absence
             var payrollDetails = new List<PayrollDetail>();
 
+            // Add overtime allowance detail if there's overtime
+            if (totalOvertimeHours > 0)
+            {
+                payrollDetails.Add(new PayrollDetail
+                {
+                    ComponentName = "Overtime Allowance",
+                    ComponentType = ComponentType.Allowance,
+                    CalculationMethod = CalculationMethod.FixedAmount,
+                    ComponentValue = overtimeRatePerHour,
+                    Amount = overtimeAllowance,
+                    IsTaxable = true,
+                    Remarks = $"{totalOvertimeHours:0.00} hours @ {overtimeRatePerHour:0.00} BDT/hour"
+                });
+            }
+
+            // Add absence deduction detail if there are absences
+            if (totalAbsenceDays > 0)
+            {
+                payrollDetails.Add(new PayrollDetail
+                {
+                    ComponentName = "Absence Deduction",
+                    ComponentType = ComponentType.Deduction,
+                    CalculationMethod = CalculationMethod.FixedAmount,
+                    ComponentValue = perDaySalary,
+                    Amount = absenceDeduction,
+                    IsTaxable = false,
+                    Remarks = $"{totalAbsenceDays} days @ {perDaySalary:0.00} BDT/day"
+                });
+            }
+
+            // Calculate other allowances and deductions
             foreach (var component in activeComponents)
             {
                 decimal amount = CalculateComponentAmount(component, basicSalary, basicSalary + totalAllowances);
@@ -358,9 +414,6 @@ namespace PayRollManagementSystem.Controllers
                 }
             }
 
-            // Add leave deduction
-            totalDeductions += leaveDeduction;
-
             decimal grossSalary = basicSalary + totalAllowances;
             decimal netSalary = grossSalary - totalDeductions;
 
@@ -378,14 +431,14 @@ namespace PayRollManagementSystem.Controllers
                 NetSalary = netSalary,
                 TotalWorkingDays = totalWorkingDays,
                 PresentDays = presentDays,
-                AbsentDays = absentDays,
+                AbsentDays = absentDays,  // Includes unmarked days automatically
                 LeaveDays = leaveDays,
                 PaidLeaves = paidLeaves,
                 UnpaidLeaves = unpaidLeaves,
                 LateDays = lateDays,
-                LeaveDeductionAmount = leaveDeduction,
-                OvertimeHours = 0,
-                OvertimeAmount = 0,
+                LeaveDeductionAmount = absenceDeduction,
+                OvertimeHours = totalOvertimeHours,
+                OvertimeAmount = overtimeAllowance,
                 Status = PayrollStatus.Pending,
                 CreatedBy = userName,
                 CreatedAt = DateTime.Now,

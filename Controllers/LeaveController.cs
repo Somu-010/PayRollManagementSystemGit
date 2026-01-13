@@ -108,13 +108,27 @@ namespace PayRollManagementSystem.Controllers
                     leave.NumberOfDays = (leave.EndDate - leave.StartDate).Days + 1;
                 }
 
+                // Validate maternity leave eligibility
+                if (leave.LeaveType == LeaveType.MaternityLeave)
+                {
+                    var employee = await _context.Employees.FindAsync(leave.EmployeeId);
+                    if (employee?.Gender != Gender.Female)
+                    {
+                        ModelState.AddModelError("LeaveType", "Maternity leave is only available for female employees.");
+                        await LoadDropdownData();
+                        return View(leave);
+                    }
+                }
+
                 // Check leave balance
                 var leaveBalance = await GetOrCreateLeaveBalance(leave.EmployeeId, DateTime.Now.Year);
-                var hasBalance = CheckLeaveBalance(leaveBalance, leave.LeaveType, leave.IsHalfDay ? 0.5m : leave.NumberOfDays);
+                var requestedDays = leave.IsHalfDay ? 0.5m : leave.NumberOfDays;
+                var hasBalance = CheckLeaveBalance(leaveBalance, leave.LeaveType, requestedDays);
 
                 if (!hasBalance)
                 {
-                    ModelState.AddModelError("", $"Insufficient {leave.LeaveType} balance. Please check your leave balance.");
+                    var remainingDays = GetRemainingLeaveBalance(leaveBalance, leave.LeaveType);
+                    ModelState.AddModelError("", $"Insufficient {leave.LeaveType} balance. You have {remainingDays} days remaining but requested {requestedDays} days.");
                     await LoadDropdownData();
                     return View(leave);
                 }
@@ -476,6 +490,10 @@ namespace PayRollManagementSystem.Controllers
         {
             var currentYear = DateTime.Now.Year;
             var leaveBalance = await GetOrCreateLeaveBalance(employeeId, currentYear);
+            
+            // Get employee gender
+            var employee = await _context.Employees.FindAsync(employeeId);
+            var gender = employee?.Gender.ToString() ?? "Male";
 
             return Json(new
             {
@@ -483,7 +501,8 @@ namespace PayRollManagementSystem.Controllers
                 casualLeave = leaveBalance.RemainingCasualLeave,
                 sickLeave = leaveBalance.RemainingSickLeave,
                 annualLeave = leaveBalance.RemainingAnnualLeave,
-                maternityLeave = leaveBalance.RemainingMaternityLeave
+                maternityLeave = leaveBalance.RemainingMaternityLeave,
+                gender = gender
             });
         }
 
@@ -519,6 +538,9 @@ namespace PayRollManagementSystem.Controllers
 
             if (leaveBalance == null)
             {
+                // Get employee to check gender for maternity leave
+                var employee = await _context.Employees.FindAsync(employeeId);
+                
                 // Create default leave balance for new year
                 leaveBalance = new LeaveBalance
                 {
@@ -527,7 +549,7 @@ namespace PayRollManagementSystem.Controllers
                     CasualLeaveBalance = 12, // Default: 12 days
                     SickLeaveBalance = 10,    // Default: 10 days
                     AnnualLeaveBalance = 20,  // Default: 20 days
-                    MaternityLeaveBalance = 90, // Default: 90 days
+                    MaternityLeaveBalance = (employee?.Gender == Gender.Female) ? 90 : 0, // 90 days for females, 0 for others
                     CasualLeaveUsed = 0,
                     SickLeaveUsed = 0,
                     AnnualLeaveUsed = 0,
@@ -552,6 +574,18 @@ namespace PayRollManagementSystem.Controllers
                 LeaveType.MaternityLeave => (leaveBalance.MaternityLeaveBalance - leaveBalance.MaternityLeaveUsed) >= days,
                 LeaveType.UnpaidLeave => true, // Always allow unpaid leave
                 _ => false
+            };
+        }
+
+        private decimal GetRemainingLeaveBalance(LeaveBalance leaveBalance, LeaveType leaveType)
+        {
+            return leaveType switch
+            {
+                LeaveType.CasualLeave => leaveBalance.CasualLeaveBalance - leaveBalance.CasualLeaveUsed,
+                LeaveType.SickLeave => leaveBalance.SickLeaveBalance - leaveBalance.SickLeaveUsed,
+                LeaveType.AnnualLeave => leaveBalance.AnnualLeaveBalance - leaveBalance.AnnualLeaveUsed,
+                LeaveType.MaternityLeave => leaveBalance.MaternityLeaveBalance - leaveBalance.MaternityLeaveUsed,
+                _ => 0
             };
         }
 

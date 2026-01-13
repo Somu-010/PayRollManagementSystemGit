@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using PayRollManagementSystem.Data;
 using PayRollManagementSystem.Models;
+using PayRollManagementSystem.Services;
 
 namespace PayRollManagementSystem.Controllers
 {
@@ -12,11 +13,13 @@ namespace PayRollManagementSystem.Controllers
     {
         private readonly ILogger<HomeController> _logger;
         private readonly ApplicationDbContext _context;
+        private readonly HolidayService _holidayService;
 
-        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context)
+        public HomeController(ILogger<HomeController> logger, ApplicationDbContext context, HolidayService holidayService)
         {
             _logger = logger;
             _context = context;
+            _holidayService = holidayService;
         }
 
         public async Task<IActionResult> Index()
@@ -156,6 +159,12 @@ namespace PayRollManagementSystem.Controllers
                 })
                 .ToListAsync();
 
+            // Get upcoming holidays
+            var upcomingHolidays = await _holidayService.GetUpcomingHolidays(5);
+
+            // Check if today is a holiday
+            var todayHoliday = await _holidayService.GetHolidayByDate(today);
+
             // Employee statistics
             ViewBag.TotalEmployees = totalEmployees;
             ViewBag.ActiveEmployees = activeEmployees;
@@ -186,6 +195,10 @@ namespace PayRollManagementSystem.Controllers
             ViewBag.OnLeaveToday = onLeaveToday;
             ViewBag.AttendancePercentage = attendancePercentage;
             ViewBag.RecentAttendance = recentAttendance;
+
+            // Holiday information
+            ViewBag.UpcomingHolidays = upcomingHolidays;
+            ViewBag.TodayHoliday = todayHoliday;
 
             return View();
         }

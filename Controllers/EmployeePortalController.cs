@@ -14,15 +14,21 @@ namespace PayRollManagementSystem.Controllers
         private readonly ApplicationDbContext _context;
         private readonly UserManager<IdentityUser> _userManager;
         private readonly IEmailService _emailService;
+        private readonly HolidayService _holidayService;
+        private readonly WorkingDaysService _workingDaysService;
 
         public EmployeePortalController(
             ApplicationDbContext context, 
             UserManager<IdentityUser> userManager,
-            IEmailService emailService)
+            IEmailService emailService,
+            HolidayService holidayService,
+            WorkingDaysService workingDaysService)
         {
             _context = context;
             _userManager = userManager;
             _emailService = emailService;
+            _holidayService = holidayService;
+            _workingDaysService = workingDaysService;
         }
 
         // GET: EmployeePortal - Dashboard
@@ -82,6 +88,14 @@ namespace PayRollManagementSystem.Controllers
             var todayAttendance = await _context.Attendances
                 .FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == today);
             ViewBag.TodayAttendance = todayAttendance;
+
+            // Upcoming holidays
+            var upcomingHolidays = await _holidayService.GetUpcomingHolidays(5);
+            ViewBag.UpcomingHolidays = upcomingHolidays;
+
+            // Check if today is a holiday
+            var todayHoliday = await _holidayService.GetHolidayByDate(today);
+            ViewBag.TodayHoliday = todayHoliday;
 
             return View(employee);
         }
@@ -176,8 +190,13 @@ namespace PayRollManagementSystem.Controllers
                 .OrderByDescending(a => a.Date)
                 .ToListAsync();
 
+            // Calculate working days (excluding weekends and holidays)
+            var totalWorkingDays = await _workingDaysService.GetWorkingDaysInMonth(selectedYear, selectedMonth);
+            var totalCalendarDays = _workingDaysService.GetTotalDaysInMonth(selectedYear, selectedMonth);
+            
             // Calculate stats
-            ViewBag.TotalDays = (lastDayOfMonth - firstDayOfMonth).Days + 1;
+            ViewBag.TotalDays = totalWorkingDays;  // Show working days, not calendar days
+            ViewBag.TotalCalendarDays = totalCalendarDays;
             ViewBag.PresentDays = attendanceList.Count(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late);
             ViewBag.AbsentDays = attendanceList.Count(a => a.Status == AttendanceStatus.Absent);
             ViewBag.LateDays = attendanceList.Count(a => a.IsLate);
@@ -185,7 +204,193 @@ namespace PayRollManagementSystem.Controllers
             ViewBag.TotalHours = attendanceList.Sum(a => a.TotalHours ?? 0);
             ViewBag.OvertimeHours = attendanceList.Sum(a => a.OvertimeHours ?? 0);
 
+            // Get today's attendance status
+            var todayAttendance = await _context.Attendances
+                .FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == DateTime.Today);
+            ViewBag.TodayAttendance = todayAttendance;
+
+            // Get holidays for the month
+            var holidays = await _context.Holidays
+                .Where(h => h.IsActive && h.Date >= firstDayOfMonth && h.Date <= lastDayOfMonth)
+                .OrderBy(h => h.Date)
+                .ToListAsync();
+            ViewBag.Holidays = holidays;
+
             return View(attendanceList);
+        }
+
+        // GET: EmployeePortal/MarkAttendance
+        public async Task<IActionResult> MarkAttendance()
+        {
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee == null)
+            {
+                return RedirectToAction("LinkAccount");
+            }
+
+            // Check if already marked today
+            var todayAttendance = await _context.Attendances
+                .FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == DateTime.Today);
+
+            ViewBag.TodayAttendance = todayAttendance;
+            ViewBag.CurrentTime = DateTime.Now.ToString("HH:mm");
+            
+            return View(employee);
+        }
+
+        // POST: EmployeePortal/CheckIn
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckIn()
+        {
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee == null)
+            {
+                return Json(new { success = false, message = "Employee not found." });
+            }
+
+            // Check if already checked in today
+            var existingAttendance = await _context.Attendances
+                .FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == DateTime.Today);
+
+            if (existingAttendance != null)
+            {
+                return Json(new { success = false, message = "You have already checked in today!" });
+            }
+
+            // Check if today is a holiday
+            var todayHoliday = await _context.Holidays
+                .FirstOrDefaultAsync(h => h.IsActive && h.Date == DateTime.Today);
+
+            if (todayHoliday != null)
+            {
+                return Json(new { success = false, message = $"Today is a holiday: {todayHoliday.Name}" });
+            }
+
+            var currentTime = DateTime.Now.TimeOfDay;
+            var attendance = new Attendance
+            {
+                EmployeeId = employee.EmployeeId,
+                Date = DateTime.Today,
+                CheckInTime = currentTime,
+                Status = AttendanceStatus.Present,
+                CreatedAt = DateTime.Now
+            };
+
+            // Calculate late status if shift is defined
+            if (employee.ShiftNavigation != null)
+            {
+                var shift = employee.ShiftNavigation;
+                var gracePeriodEnd = shift.StartTime.Add(TimeSpan.FromMinutes(shift.GracePeriod));
+
+                if (currentTime > gracePeriodEnd)
+                {
+                    attendance.IsLate = true;
+                    attendance.LateByMinutes = (int)(currentTime - shift.StartTime).TotalMinutes;
+                    attendance.Status = AttendanceStatus.Late;
+                }
+            }
+
+            _context.Attendances.Add(attendance);
+            await _context.SaveChangesAsync();
+
+            var statusMessage = attendance.IsLate 
+                ? $"Checked in at {currentTime:hh\\:mm}. You are {attendance.LateByMinutes} minutes late."
+                : $"Checked in successfully at {currentTime:hh\\:mm}!";
+
+            return Json(new { success = true, message = statusMessage, isLate = attendance.IsLate });
+        }
+
+        // POST: EmployeePortal/CheckOut
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> CheckOut()
+        {
+            var employee = await GetCurrentEmployeeAsync();
+            if (employee == null)
+            {
+                return Json(new { success = false, message = "Employee not found." });
+            }
+
+            var attendance = await _context.Attendances
+                .FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == DateTime.Today);
+
+            if (attendance == null)
+            {
+                return Json(new { success = false, message = "You haven't checked in yet today!" });
+            }
+
+            if (attendance.CheckOutTime.HasValue)
+            {
+                return Json(new { success = false, message = "You have already checked out today!" });
+            }
+
+            var currentTime = DateTime.Now.TimeOfDay;
+            attendance.CheckOutTime = currentTime;
+
+            // Calculate total hours and other metrics
+            if (employee.ShiftNavigation != null)
+            {
+                var shift = employee.ShiftNavigation;
+                var totalMinutes = (currentTime - attendance.CheckInTime).TotalMinutes;
+
+                // Handle night shift
+                if (shift.IsNightShift && currentTime < attendance.CheckInTime)
+                {
+                    totalMinutes = (new TimeSpan(24, 0, 0) - attendance.CheckInTime + currentTime).TotalMinutes;
+                }
+
+                // Subtract break duration
+                totalMinutes -= shift.BreakDuration;
+                attendance.TotalHours = (decimal)(totalMinutes / 60);
+
+                // Check for early leave
+                if (currentTime < shift.EndTime)
+                {
+                    var earlyLeaveMinutes = (int)(shift.EndTime - currentTime).TotalMinutes;
+                    if (earlyLeaveMinutes > 5)
+                    {
+                        attendance.IsEarlyLeave = true;
+                        attendance.EarlyLeaveByMinutes = earlyLeaveMinutes;
+                    }
+                }
+
+                // Check if half day
+                if (attendance.TotalHours < shift.HalfDayHours)
+                {
+                    attendance.IsHalfDay = true;
+                    attendance.Status = AttendanceStatus.HalfDay;
+                }
+
+                // Calculate overtime
+                if (attendance.TotalHours > shift.FullDayHours)
+                {
+                    attendance.OvertimeHours = attendance.TotalHours - shift.FullDayHours;
+                }
+            }
+            else
+            {
+                // No shift defined, just calculate basic hours
+                var totalMinutes = (currentTime - attendance.CheckInTime).TotalMinutes;
+                attendance.TotalHours = (decimal)(totalMinutes / 60);
+            }
+
+            attendance.UpdatedAt = DateTime.Now;
+            await _context.SaveChangesAsync();
+
+            var message = $"Checked out at {currentTime:hh\\:mm}. Total hours: {attendance.TotalHours:0.00}";
+            if (attendance.OvertimeHours > 0)
+            {
+                message += $". Overtime: {attendance.OvertimeHours:0.00} hours";
+            }
+
+            return Json(new { 
+                success = true, 
+                message = message,
+                totalHours = attendance.TotalHours,
+                overtimeHours = attendance.OvertimeHours ?? 0,
+                isEarlyLeave = attendance.IsEarlyLeave
+            });
         }
 
         // GET: EmployeePortal/Payslips
@@ -292,9 +497,9 @@ namespace PayRollManagementSystem.Controllers
             }
 
             // Get leave balance
-            var leaveBalance = await _context.LeaveBalances
-                .FirstOrDefaultAsync(lb => lb.EmployeeId == employee.EmployeeId && lb.Year == DateTime.Now.Year);
+            var leaveBalance = await GetOrCreateLeaveBalance(employee.EmployeeId, DateTime.Now.Year);
             ViewBag.LeaveBalance = leaveBalance;
+            ViewBag.Employee = employee;
 
             return View();
         }
@@ -318,12 +523,51 @@ namespace PayRollManagementSystem.Controllers
                 if (leave.EndDate < leave.StartDate)
                 {
                     ModelState.AddModelError("EndDate", "End date must be after or equal to start date.");
+                    
+                    // Reload leave balance for view
+                    var leaveBalanceError = await GetOrCreateLeaveBalance(employee.EmployeeId, DateTime.Now.Year);
+                    ViewBag.LeaveBalance = leaveBalanceError;
                     return View(leave);
                 }
 
                 if (leave.StartDate < DateTime.Today)
                 {
                     ModelState.AddModelError("StartDate", "Cannot apply leave for past dates.");
+                    
+                    // Reload leave balance for view
+                    var leaveBalanceError = await GetOrCreateLeaveBalance(employee.EmployeeId, DateTime.Now.Year);
+                    ViewBag.LeaveBalance = leaveBalanceError;
+                    return View(leave);
+                }
+
+                // Calculate number of days
+                var requestedDays = leave.IsHalfDay ? 0.5m : (leave.EndDate - leave.StartDate).Days + 1;
+
+                // Validate maternity leave eligibility
+                if (leave.LeaveType == LeaveType.MaternityLeave)
+                {
+                    if (employee.Gender != Gender.Female)
+                    {
+                        ModelState.AddModelError("LeaveType", "Maternity leave is only available for female employees.");
+                        
+                        // Reload leave balance for view
+                        var leaveBalanceError = await GetOrCreateLeaveBalance(employee.EmployeeId, DateTime.Now.Year);
+                        ViewBag.LeaveBalance = leaveBalanceError;
+                        return View(leave);
+                    }
+                }
+
+                // Check leave balance
+                var leaveBalance = await GetOrCreateLeaveBalance(employee.EmployeeId, DateTime.Now.Year);
+                var hasBalance = CheckLeaveBalance(leaveBalance, leave.LeaveType, requestedDays);
+
+                if (!hasBalance)
+                {
+                    var remainingDays = GetRemainingLeaveBalance(leaveBalance, leave.LeaveType);
+                    ModelState.AddModelError("", $"Insufficient {leave.LeaveType} balance. You have {remainingDays} days remaining but requested {requestedDays} days.");
+                    
+                    // Reload leave balance for view
+                    ViewBag.LeaveBalance = leaveBalance;
                     return View(leave);
                 }
 
@@ -339,6 +583,9 @@ namespace PayRollManagementSystem.Controllers
                 if (existingLeave != null)
                 {
                     ModelState.AddModelError("", "You already have a leave request for these dates.");
+                    
+                    // Reload leave balance for view
+                    ViewBag.LeaveBalance = leaveBalance;
                     return View(leave);
                 }
 
@@ -372,6 +619,9 @@ namespace PayRollManagementSystem.Controllers
                 return RedirectToAction(nameof(LeaveRequests));
             }
 
+            // Reload leave balance for view if validation failed
+            var leaveBalanceView = await GetOrCreateLeaveBalance(employee.EmployeeId, DateTime.Now.Year);
+            ViewBag.LeaveBalance = leaveBalanceView;
             return View(leave);
         }
 
@@ -414,29 +664,10 @@ namespace PayRollManagementSystem.Controllers
                 return RedirectToAction("LinkAccount");
             }
 
-            var leaveBalance = await _context.LeaveBalances
-                .FirstOrDefaultAsync(lb => lb.EmployeeId == employee.EmployeeId && lb.Year == DateTime.Now.Year);
-
-            if (leaveBalance == null)
-            {
-                // Create default leave balance if not exists
-                leaveBalance = new LeaveBalance
-                {
-                    EmployeeId = employee.EmployeeId,
-                    Year = DateTime.Now.Year,
-                    AnnualLeaveBalance = 20,
-                    SickLeaveBalance = 10,
-                    CasualLeaveBalance = 5,
-                    MaternityLeaveBalance = 90,
-                    AnnualLeaveUsed = 0,
-                    SickLeaveUsed = 0,
-                    CasualLeaveUsed = 0,
-                    MaternityLeaveUsed = 0,
-                    CreatedAt = DateTime.Now
-                };
-                _context.LeaveBalances.Add(leaveBalance);
-                await _context.SaveChangesAsync();
-            }
+            var leaveBalance = await GetOrCreateLeaveBalance(employee.EmployeeId, DateTime.Now.Year);
+            
+            // Pass both employee and leave balance to view
+            ViewBag.Employee = employee;
 
             return View(leaveBalance);
         }
@@ -509,6 +740,64 @@ namespace PayRollManagementSystem.Controllers
                 .Include(e => e.DesignationNavigation)
                 .Include(e => e.ShiftNavigation)
                 .FirstOrDefaultAsync(e => e.UserId == user.Id);
+        }
+
+        private async Task<LeaveBalance> GetOrCreateLeaveBalance(int employeeId, int year)
+        {
+            var leaveBalance = await _context.LeaveBalances
+                .FirstOrDefaultAsync(lb => lb.EmployeeId == employeeId && lb.Year == year);
+
+            if (leaveBalance == null)
+            {
+                // Get employee to check gender for maternity leave
+                var employee = await _context.Employees.FindAsync(employeeId);
+                
+                // Create default leave balance for new year
+                leaveBalance = new LeaveBalance
+                {
+                    EmployeeId = employeeId,
+                    Year = year,
+                    CasualLeaveBalance = 12, // Default: 12 days
+                    SickLeaveBalance = 10,    // Default: 10 days
+                    AnnualLeaveBalance = 20,  // Default: 20 days
+                    MaternityLeaveBalance = (employee?.Gender == Gender.Female) ? 90 : 0, // 90 days for females, 0 for others
+                    CasualLeaveUsed = 0,
+                    SickLeaveUsed = 0,
+                    AnnualLeaveUsed = 0,
+                    MaternityLeaveUsed = 0,
+                    CreatedAt = DateTime.Now
+                };
+
+                _context.LeaveBalances.Add(leaveBalance);
+                await _context.SaveChangesAsync();
+            }
+
+            return leaveBalance;
+        }
+
+        private bool CheckLeaveBalance(LeaveBalance leaveBalance, LeaveType leaveType, decimal days)
+        {
+            return leaveType switch
+            {
+                LeaveType.CasualLeave => (leaveBalance.CasualLeaveBalance - leaveBalance.CasualLeaveUsed) >= days,
+                LeaveType.SickLeave => (leaveBalance.SickLeaveBalance - leaveBalance.SickLeaveUsed) >= days,
+                LeaveType.AnnualLeave => (leaveBalance.AnnualLeaveBalance - leaveBalance.AnnualLeaveUsed) >= days,
+                LeaveType.MaternityLeave => (leaveBalance.MaternityLeaveBalance - leaveBalance.MaternityLeaveUsed) >= days,
+                LeaveType.UnpaidLeave => true, // Always allow unpaid leave
+                _ => false
+            };
+        }
+
+        private decimal GetRemainingLeaveBalance(LeaveBalance leaveBalance, LeaveType leaveType)
+        {
+            return leaveType switch
+            {
+                LeaveType.CasualLeave => leaveBalance.CasualLeaveBalance - leaveBalance.CasualLeaveUsed,
+                LeaveType.SickLeave => leaveBalance.SickLeaveBalance - leaveBalance.SickLeaveUsed,
+                LeaveType.AnnualLeave => leaveBalance.AnnualLeaveBalance - leaveBalance.AnnualLeaveUsed,
+                LeaveType.MaternityLeave => leaveBalance.MaternityLeaveBalance - leaveBalance.MaternityLeaveUsed,
+                _ => 0
+            };
         }
 
         // Helper method to generate admin notification email template

@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PayRollManagementSystem.Data;
 
@@ -11,9 +12,11 @@ using PayRollManagementSystem.Data;
 namespace PayRollManagementSystem.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260112181737_AddOvertimeAndLatePenaltySettings")]
+    partial class AddOvertimeAndLatePenaltySettings
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -668,9 +671,6 @@ namespace PayRollManagementSystem.Data.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
-                    b.Property<int>("Gender")
-                        .HasColumnType("int");
-
                     b.Property<DateTime>("JoiningDate")
                         .HasColumnType("datetime2");
 
@@ -983,6 +983,7 @@ namespace PayRollManagementSystem.Data.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("PayrollDetailId"));
 
                     b.Property<int?>("AllowanceDeductionId")
+                        .IsRequired()
                         .HasColumnType("int");
 
                     b.Property<decimal>("Amount")
@@ -1246,7 +1247,8 @@ namespace PayRollManagementSystem.Data.Migrations
                     b.HasOne("PayRollManagementSystem.Models.AllowanceDeduction", "AllowanceDeduction")
                         .WithMany()
                         .HasForeignKey("AllowanceDeductionId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("PayRollManagementSystem.Models.Payroll", "Payroll")
                         .WithMany("PayrollDetails")

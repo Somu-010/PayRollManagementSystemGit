@@ -287,15 +287,18 @@
 
             <div class="form-group">
                 <label asp-for="LeaveType">Leave Type <span class="required">*</span></label>
-                <select asp-for="LeaveType" class="form-control" required>
+                <select asp-for="LeaveType" class="form-control" id="leaveTypeSelect" required>
                     <option value="">-- Select Leave Type --</option>
                     <option value="CasualLeave">Casual Leave</option>
                     <option value="SickLeave">Sick Leave</option>
                     <option value="AnnualLeave">Annual Leave</option>
-                    <option value="MaternityLeave">Maternity Leave</option>
+                    <option value="MaternityLeave" id="maternityOption">Maternity Leave</option>
                     <option value="UnpaidLeave">Unpaid Leave</option>
                 </select>
                 <span asp-validation-for="LeaveType" class="text-danger"></span>
+                <small id="maternityWarning" class="text-danger" style="display: none;">
+                    ⚠️ Maternity leave is only available for female employees
+                </small>
             </div>
         </div>
 
@@ -370,6 +373,8 @@
     }
 
     <script>
+        let currentEmployeeGender = null;
+
         async function loadLeaveBalance() {
             const employeeId = document.getElementById('employeeSelect').value;
             if (!employeeId) {
@@ -387,6 +392,10 @@
                     document.getElementById('annualBalance').textContent = data.annualLeave.toFixed(1);
                     document.getElementById('maternityBalance').textContent = data.maternityLeave.toFixed(1);
                     document.getElementById('leaveBalanceBox').style.display = 'block';
+
+                    // Store employee gender and update maternity option
+                    currentEmployeeGender = data.gender;
+                    updateMaternityOption();
                 } else {
                     document.getElementById('leaveBalanceBox').style.display = 'none';
                 }
@@ -394,6 +403,39 @@
                 console.error('Error loading leave balance:', error);
             }
         }
+
+        function updateMaternityOption() {
+            const maternityOption = document.getElementById('maternityOption');
+            const maternityWarning = document.getElementById('maternityWarning');
+            const leaveTypeSelect = document.getElementById('leaveTypeSelect');
+
+            // Hide maternity option and show warning if employee is not female
+            if (currentEmployeeGender !== 'Female') {
+                maternityOption.disabled = true;
+                maternityOption.style.display = 'none';
+                
+                // If maternity leave is currently selected, clear it
+                if (leaveTypeSelect.value === 'MaternityLeave') {
+                    leaveTypeSelect.value = '';
+                    maternityWarning.style.display = 'block';
+                }
+            } else {
+                maternityOption.disabled = false;
+                maternityOption.style.display = 'block';
+                maternityWarning.style.display = 'none';
+            }
+        }
+
+        // Check if maternity leave is selected for non-female employee
+        document.getElementById('leaveTypeSelect').addEventListener('change', function() {
+            const maternityWarning = document.getElementById('maternityWarning');
+            if (this.value === 'MaternityLeave' && currentEmployeeGender !== 'Female') {
+                maternityWarning.style.display = 'block';
+                this.value = '';
+            } else {
+                maternityWarning.style.display = 'none';
+            }
+        });
 
         function calculateDays() {
             const startDate = document.getElementById('startDate').value;

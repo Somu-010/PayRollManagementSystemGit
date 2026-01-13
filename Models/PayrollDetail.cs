@@ -14,7 +14,8 @@ namespace PayRollManagementSystem.Models
         [ForeignKey("PayrollId")]
         public virtual Payroll? Payroll { get; set; }
 
-        [Required]
+        // Nullable for auto-generated components like Overtime & Absence
+        [Display(Name = "Allowance/Deduction")]
         public int? AllowanceDeductionId { get; set; }
 
         [ForeignKey("AllowanceDeductionId")]

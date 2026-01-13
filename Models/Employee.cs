@@ -29,6 +29,10 @@ namespace PayRollManagementSystem.Models
         [Display(Name = "Phone Number")]
         public string Phone { get; set; } = string.Empty;
 
+        [Required(ErrorMessage = "Gender is required")]
+        [Display(Name = "Gender")]
+        public Gender Gender { get; set; }
+
         [Required(ErrorMessage = "Department is required")]
         [StringLength(50)]
         public string Department { get; set; } = string.Empty;
@@ -105,5 +109,12 @@ namespace PayRollManagementSystem.Models
         Active,
         Inactive,
         Resigned
+    }
+
+    public enum Gender
+    {
+        Male,
+        Female,
+        Other
     }
 }

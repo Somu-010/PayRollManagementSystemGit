@@ -439,27 +439,46 @@
                     </div>
                 </div>
 
-                <!-- Maternity Leave -->
-                <div class="balance-card">
-                    <div class="balance-header">
-                        <span class="balance-type">Maternity Leave</span>
-                        <div class="balance-icon maternity-icon">👶</div>
+                <!-- Maternity Leave - Only show for female employees -->
+                @if (Model.Employee.Gender == PayRollManagementSystem.Models.Gender.Female)
+                {
+                    <div class="balance-card">
+                        <div class="balance-header">
+                            <span class="balance-type">Maternity Leave</span>
+                            <div class="balance-icon maternity-icon">👶</div>
+                        </div>
+                        <div class="balance-stats">
+                            <div class="stat-item">
+                                <div class="stat-label">Total</div>
+                                <div class="stat-value">@Model.LeaveBalance.MaternityLeaveBalance.ToString("0.0")</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Used</div>
+                                <div class="stat-value used">@Model.LeaveBalance.MaternityLeaveUsed.ToString("0.0")</div>
+                            </div>
+                            <div class="stat-item">
+                                <div class="stat-label">Remaining</div>
+                                <div class="stat-value remaining">@Model.LeaveBalance.RemainingMaternityLeave.ToString("0.0")</div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="balance-stats">
-                        <div class="stat-item">
-                            <div class="stat-label">Total</div>
-                            <div class="stat-value">@Model.LeaveBalance.MaternityLeaveBalance.ToString("0.0")</div>
+                }
+                else
+                {
+                    <!-- Info card for non-female employees -->
+                    <div class="balance-card" style="background: rgba(107, 114, 128, 0.02); border-style: dashed;">
+                        <div class="balance-header">
+                            <span class="balance-type" style="color: #6b7280;">Maternity Leave</span>
+                            <div class="balance-icon" style="background: rgba(107, 114, 128, 0.1);">
+                                <span style="font-size: 20px;">ℹ️</span>
+                            </div>
                         </div>
-                        <div class="stat-item">
-                            <div class="stat-label">Used</div>
-                            <div class="stat-value used">@Model.LeaveBalance.MaternityLeaveUsed.ToString("0.0")</div>
-                        </div>
-                        <div class="stat-item">
-                            <div class="stat-label">Remaining</div>
-                            <div class="stat-value remaining">@Model.LeaveBalance.RemainingMaternityLeave.ToString("0.0")</div>
+                        <div style="text-align: center; padding: 20px 10px; color: #6b7280; font-size: 13px;">
+                            <p style="margin: 0;">Not applicable for this employee</p>
+                            <p style="margin: 5px 0 0 0; font-size: 12px; opacity: 0.8;">(Female employees only)</p>
                         </div>
                     </div>
-                </div>
+                }
             </div>
         </div>
 
