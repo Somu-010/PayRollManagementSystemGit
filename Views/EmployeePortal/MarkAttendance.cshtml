@@ -5,6 +5,9 @@
     Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
     var todayAttendance = ViewBag.TodayAttendance as PayRollManagementSystem.Models.Attendance;
     var currentTime = ViewBag.CurrentTime as string;
+    var isWorkingDay = ViewBag.IsWorkingDay != null ? (bool)ViewBag.IsWorkingDay : true;
+    var holiday = ViewBag.Holiday as PayRollManagementSystem.Models.Holiday;
+    var isWeekend = ViewBag.IsWeekend != null ? (bool)ViewBag.IsWeekend : false;
 }
 
 <style>
@@ -212,6 +215,48 @@
         color: #1a7690;
         gap: 12px;
     }
+
+    .alert-holiday {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.3);
+        text-align: center;
+    }
+
+    .alert-holiday h2 {
+        margin: 0 0 15px 0;
+        font-size: 32px;
+    }
+
+    .alert-holiday p {
+        margin: 0;
+        font-size: 18px;
+        opacity: 0.95;
+    }
+
+    .alert-weekend {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        text-align: center;
+    }
+
+    .alert-weekend h2 {
+        margin: 0 0 15px 0;
+        font-size: 32px;
+    }
+
+    .alert-weekend p {
+        margin: 0;
+        font-size: 18px;
+        opacity: 0.95;
+    }
 </style>
 
 <div class="mark-attendance-container">
@@ -223,140 +268,182 @@
         <p>Track your daily work hours efficiently</p>
     </div>
 
-    <!-- Current Time Display -->
-    <div class="current-time-display">
-        <div class="time" id="currentTime">@DateTime.Now.ToString("hh:mm:ss tt")</div>
-        <div class="date">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</div>
-    </div>
-
-    <!-- Employee Info Card -->
-    <div class="employee-info-card">
-        <div class="info-row">
-            <div class="info-item">
-                <i class="fas fa-user"></i>
-                <div>
-                    <p class="label">Employee Name</p>
-                    <p class="value">@Model.Name</p>
-                </div>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-id-badge"></i>
-                <div>
-                    <p class="label">Employee Code</p>
-                    <p class="value">@Model.EmployeeCode</p>
-                </div>
-            </div>
-            <div class="info-item">
-                <i class="fas fa-building"></i>
-                <div>
-                    <p class="label">Department</p>
-                    <p class="value">@Model.DepartmentNavigation?.Name</p>
-                </div>
-            </div>
-            @if (Model.ShiftNavigation != null)
-            {
-                <div class="info-item">
-                    <i class="fas fa-business-time"></i>
-                    <div>
-                        <p class="label">Shift Timing</p>
-                        <p class="value">@Model.ShiftNavigation.StartTime.ToString(@"hh\:mm") - @Model.ShiftNavigation.EndTime.ToString(@"hh\:mm")</p>
-                    </div>
-                </div>
-            }
-        </div>
-    </div>
-
-    @if (todayAttendance == null)
+    @if (!isWorkingDay)
     {
-        <!-- Not Checked In Yet -->
-        <div class="alert-info">
-            <i class="fas fa-info-circle"></i> You haven't checked in yet today. Click the button below to mark your check-in.
-        </div>
-
-        <div class="action-buttons">
-            <button type="button" class="btn-action btn-checkin" id="btnCheckIn">
-                <i class="fas fa-sign-in-alt"></i> Check In
-            </button>
-        </div>
-    }
-    else if (!todayAttendance.CheckOutTime.HasValue)
-    {
-        <!-- Checked In, Not Checked Out -->
-        <div class="attendance-status-card">
-            <h3>
-                <i class="fas fa-check-circle"></i>
-                Today's Attendance
-            </h3>
-            <div class="status-grid">
-                <div class="status-item">
-                    <div class="label">Check-In Time</div>
-                    <div class="value">@todayAttendance.CheckInTime.ToString(@"hh\:mm")</div>
-                </div>
-                <div class="status-item">
-                    <div class="label">Status</div>
-                    <div class="value">@(todayAttendance.IsLate ? "Late ?" : "On Time ?")</div>
-                </div>
-                @if (todayAttendance.IsLate)
+        if (holiday != null)
+        {
+            <div class="alert-holiday">
+                <div style="font-size: 64px; margin-bottom: 15px;">&#127881;</div>
+                <h2>@holiday.Name</h2>
+                <p>Today is a holiday. No attendance marking required.</p>
+                @if (!string.IsNullOrEmpty(holiday.Description))
                 {
-                    <div class="status-item">
-                        <div class="label">Late By</div>
-                        <div class="value">@todayAttendance.LateByMinutes min</div>
-                    </div>
+                    <p style="margin-top: 15px; font-size: 16px; opacity: 0.9;">@holiday.Description</p>
                 }
             </div>
-        </div>
+        }
+        else if (isWeekend)
+        {
+            <div class="alert-weekend">
+                <div style="font-size: 64px; margin-bottom: 15px;">&#127958;&#65039;</div>
+                <h2>Weekend</h2>
+                <p>Today is a weekend. No attendance marking required.</p>
+                <p style="margin-top: 15px; font-size: 16px; opacity: 0.9;">Enjoy your day off!</p>
+            </div>
+        }
 
-        <div class="alert-info">
-            <i class="fas fa-info-circle"></i> You are currently checked in. Click the button below when you're ready to check out.
-        </div>
-
-        <div class="action-buttons">
-            <button type="button" class="btn-action btn-checkout" id="btnCheckOut">
-                <i class="fas fa-sign-out-alt"></i> Check Out
-            </button>
+        <div style="text-align: center; padding: 40px;">
+            <a href="@Url.Action("Attendance", "EmployeePortal")" class="back-link" style="display: inline-block; padding: 15px 40px; background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); color: white; text-decoration: none; border-radius: 12px; font-weight: 600;">
+                &larr; View My Attendance History
+            </a>
         </div>
     }
     else
     {
-        <!-- Already Checked Out -->
-        <div class="attendance-status-card">
-            <h3>
-                <i class="fas fa-check-double"></i>
-                Today's Attendance Completed
-            </h3>
-            <div class="status-grid">
-                <div class="status-item">
-                    <div class="label">Check-In</div>
-                    <div class="value">@todayAttendance.CheckInTime.ToString(@"hh\:mm")</div>
+        <!-- Current Time Display -->
+        <div class="current-time-display">
+            <div class="time" id="currentTime">@DateTime.Now.ToString("hh:mm:ss tt")</div>
+            <div class="date">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</div>
+        </div>
+
+        <!-- Employee Info Card -->
+        <div class="employee-info-card">
+            <div class="info-row">
+                <div class="info-item">
+                    <i class="fas fa-user"></i>
+                    <div>
+                        <p class="label">Employee Name</p>
+                        <p class="value">@Model.Name</p>
+                    </div>
                 </div>
-                <div class="status-item">
-                    <div class="label">Check-Out</div>
-                    <div class="value">@todayAttendance.CheckOutTime.Value.ToString(@"hh\:mm")</div>
+                <div class="info-item">
+                    <i class="fas fa-id-badge"></i>
+                    <div>
+                        <p class="label">Employee Code</p>
+                        <p class="value">@Model.EmployeeCode</p>
+                    </div>
                 </div>
-                <div class="status-item">
-                    <div class="label">Total Hours</div>
-                    <div class="value">@(todayAttendance.TotalHours?.ToString("0.00") ?? "0") hrs</div>
+                <div class="info-item">
+                    <i class="fas fa-building"></i>
+                    <div>
+                        <p class="label">Department</p>
+                        <p class="value">@Model.DepartmentNavigation?.Name</p>
+                    </div>
                 </div>
-                @if (todayAttendance.OvertimeHours > 0)
+                @if (Model.ShiftNavigation != null)
                 {
-                    <div class="status-item">
-                        <div class="label">Overtime</div>
-                        <div class="value">@todayAttendance.OvertimeHours.Value.ToString("0.00") hrs</div>
+                    <div class="info-item">
+                        <i class="fas fa-business-time"></i>
+                        <div>
+                            <p class="label">Shift Timing</p>
+                            <p class="value">@Model.ShiftNavigation.StartTime.ToString(@"hh\:mm") - @Model.ShiftNavigation.EndTime.ToString(@"hh\:mm")</p>
+                        </div>
                     </div>
                 }
             </div>
         </div>
 
-        <div class="alert-info">
-            <i class="fas fa-check-circle"></i> You have successfully completed your attendance for today. Have a great day!
+        @if (todayAttendance == null)
+        {
+            <!-- Not Checked In Yet -->
+            <div class="alert-info">
+                <i class="fas fa-info-circle"></i> You haven't checked in yet today. Click the button below to mark your check-in.
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" class="btn-action btn-checkin" id="btnCheckIn">
+                    <i class="fas fa-sign-in-alt"></i> Check In
+                </button>
+            </div>
+        }
+        else if (!todayAttendance.CheckOutTime.HasValue)
+        {
+            <!-- Checked In, Not Checked Out -->
+            <div class="attendance-status-card">
+                <h3>
+                    <i class="fas fa-check-circle"></i>
+                    Today's Attendance
+                </h3>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="label">Check-In Time</div>
+                        <div class="value">@todayAttendance.CheckInTime.ToString(@"hh\:mm")</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="label">Status</div>
+                        <div class="value">
+                            @if (todayAttendance.IsLate)
+                            {
+                                <text>Late</text> <i class="fas fa-clock" style="color: #ef4444;"></i>
+                            }
+                            else
+                            {
+                                <text>On Time</text> <i class="fas fa-check" style="color: #10b981;"></i>
+                            }
+                        </div>
+                    </div>
+                    @if (todayAttendance.IsLate)
+                    {
+                        <div class="status-item">
+                            <div class="label">Late By</div>
+                            <div class="value">@todayAttendance.LateByMinutes min</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="alert-info">
+                <i class="fas fa-info-circle"></i> You are currently checked in. Click the button below when you're ready to check out.
+            </div>
+
+            <div class="action-buttons">
+                <button type="button" class="btn-action btn-checkout" id="btnCheckOut">
+                    <i class="fas fa-sign-out-alt"></i> Check Out
+                </button>
+            </div>
+        }
+        else
+        {
+            <!-- Already Checked Out -->
+            <div class="attendance-status-card">
+                <h3>
+                    <i class="fas fa-check-double"></i>
+                    Today's Attendance Completed
+                </h3>
+                <div class="status-grid">
+                    <div class="status-item">
+                        <div class="label">Check-In</div>
+                        <div class="value">@todayAttendance.CheckInTime.ToString(@"hh\:mm")</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="label">Check-Out</div>
+                        <div class="value">@todayAttendance.CheckOutTime.Value.ToString(@"hh\:mm")</div>
+                    </div>
+                    <div class="status-item">
+                        <div class="label">Total Hours</div>
+                        <div class="value">@(todayAttendance.TotalHours?.ToString("0.00") ?? "0") hrs</div>
+                    </div>
+                    @if (todayAttendance.OvertimeHours > 0)
+                    {
+                        <div class="status-item">
+                            <div class="label">Overtime</div>
+                            <div class="value">@todayAttendance.OvertimeHours.Value.ToString("0.00") hrs</div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <div class="alert-info">
+                <i class="fas fa-check-circle"></i> You have successfully completed your attendance for today. Have a great day!
+            </div>
+        }
+
+        <div style="text-align: center; margin-top: 30px;">
+            <a href="@Url.Action("Attendance", "EmployeePortal")" class="back-link">
+                <i class="fas fa-arrow-left"></i> View My Attendance History
+            </a>
         </div>
     }
-
-    <div style="text-align: center; margin-top: 30px;">
-        <a href="@Url.Action("Attendance", "EmployeePortal")" class="back-link">
-            <i class="fas fa-arrow-left"></i> View My Attendance History
-        </a>
-    </div>
 </div>
 
 @section Scripts {
@@ -421,7 +508,7 @@
             btn.disabled = true;
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Out...';
 
-            fetch('@Url.Action("CheckOut", "EmployeePortal")', {
+/fetch('@Url.Action("CheckOut", "EmployeePortal")', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

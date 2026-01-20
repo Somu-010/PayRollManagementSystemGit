@@ -622,7 +622,7 @@
                             <td>@item.Phone</td>
                             <td>@(item.DepartmentNavigation?.Name ?? item.Department)</td>
                             <td>@item.Designation</td>
-                            <td style="font-weight: 600; color: #10b981;">$@item.BasicSalary.ToString("N2")</td>
+                            <td style="font-weight: 600; color: #10b981;">৳@item.BasicSalary.ToString("N2")</td>
                             <td>
                                 @if (item.Status == PayRollManagementSystem.Models.EmploymentStatus.Active)
                                 {

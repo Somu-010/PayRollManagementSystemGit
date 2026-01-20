@@ -1,6 +1,6 @@
+using Microsoft.EntityFrameworkCore;
 using PayRollManagementSystem.Data;
 using PayRollManagementSystem.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace PayRollManagementSystem.Services
 {
@@ -16,49 +16,42 @@ namespace PayRollManagementSystem.Services
         }
 
         /// <summary>
-        /// Calculate working days in a month excluding weekends and holidays
+        /// Get active weekend setting
         /// </summary>
-        public async Task<int> GetWorkingDaysInMonth(int year, int month)
+        private async Task<WeekendSetting?> GetActiveWeekendSetting()
         {
-            var startDate = new DateTime(year, month, 1);
-            var endDate = startDate.AddMonths(1).AddDays(-1);
-
-            // Get holidays for the month
-            var holidays = await _holidayService.GetHolidaysForMonth(year, month);
-            var holidayDates = holidays.Select(h => h.Date.Date).ToHashSet();
-
-            int workingDays = 0;
-            for (var date = startDate; date <= endDate; date = date.AddDays(1))
-            {
-                // Check if it's a weekend (Saturday or Sunday)
-                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
-                {
-                    continue; // Skip weekends
-                }
-
-                // Check if it's a holiday
-                if (holidayDates.Contains(date.Date))
-                {
-                    continue; // Skip holidays
-                }
-
-                workingDays++;
-            }
-
-            return workingDays;
+            return await _context.WeekendSettings
+                .Where(w => w.IsActive)
+                .OrderByDescending(w => w.EffectiveFrom)
+                .FirstOrDefaultAsync();
         }
 
         /// <summary>
-        /// Calculate working days between two dates excluding weekends and holidays
+        /// Check if a specific date is a weekend
         /// </summary>
-        public async Task<int> GetWorkingDaysBetweenDates(DateTime startDate, DateTime endDate)
+        private async Task<bool> IsWeekend(DateTime date)
         {
-            if (endDate < startDate)
+            var weekendSetting = await GetActiveWeekendSetting();
+            
+            if (weekendSetting == null)
             {
-                return 0;
+                // Default to Friday-Saturday if no setting exists (Bangladesh default)
+                return date.DayOfWeek == DayOfWeek.Friday || date.DayOfWeek == DayOfWeek.Saturday;
             }
 
-            // Get all holidays in the date range
+            return weekendSetting.IsWeekend(date.DayOfWeek);
+        }
+
+        /// <summary>
+        /// Calculate working days between two dates (inclusive)
+        /// </summary>
+        public async Task<int> GetWorkingDaysBetween(DateTime startDate, DateTime endDate)
+        {
+            if (startDate > endDate)
+            {
+                throw new ArgumentException("Start date must be before or equal to end date");
+            }
+
             var holidays = await _context.Holidays
                 .Where(h => h.IsActive && h.Date >= startDate && h.Date <= endDate)
                 .Select(h => h.Date.Date)
@@ -70,7 +63,7 @@ namespace PayRollManagementSystem.Services
             for (var date = startDate.Date; date <= endDate.Date; date = date.AddDays(1))
             {
                 // Skip weekends
-                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                if (await IsWeekend(date))
                 {
                     continue;
                 }
@@ -88,12 +81,23 @@ namespace PayRollManagementSystem.Services
         }
 
         /// <summary>
+        /// Calculate total working days in a specific month
+        /// </summary>
+        public async Task<int> GetWorkingDaysInMonth(int year, int month)
+        {
+            var startDate = new DateTime(year, month, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+
+            return await GetWorkingDaysBetween(startDate, endDate);
+        }
+
+        /// <summary>
         /// Check if a date is a working day (not weekend, not holiday)
         /// </summary>
         public async Task<bool> IsWorkingDay(DateTime date)
         {
             // Check if weekend
-            if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+            if (await IsWeekend(date))
             {
                 return false;
             }
@@ -114,7 +118,7 @@ namespace PayRollManagementSystem.Services
         /// <summary>
         /// Get weekend days in a month
         /// </summary>
-        public int GetWeekendDaysInMonth(int year, int month)
+        public async Task<int> GetWeekendDaysInMonth(int year, int month)
         {
             var startDate = new DateTime(year, month, 1);
             var endDate = startDate.AddMonths(1).AddDays(-1);
@@ -122,7 +126,7 @@ namespace PayRollManagementSystem.Services
             int weekendDays = 0;
             for (var date = startDate; date <= endDate; date = date.AddDays(1))
             {
-                if (date.DayOfWeek == DayOfWeek.Saturday || date.DayOfWeek == DayOfWeek.Sunday)
+                if (await IsWeekend(date))
                 {
                     weekendDays++;
                 }
@@ -147,33 +151,45 @@ namespace PayRollManagementSystem.Services
             // Get working days in month
             var totalWorkingDays = await GetWorkingDaysInMonth(year, month);
             var totalCalendarDays = GetTotalDaysInMonth(year, month);
-            var weekendDays = GetWeekendDaysInMonth(year, month);
+            var weekendDays = await GetWeekendDaysInMonth(year, month);
             
             // Get holidays
             var holidays = await _holidayService.GetHolidaysForMonth(year, month);
             var holidayCount = holidays.Count;
 
             // Calculate attendance statistics
-            var presentDays = attendances.Count(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late);
+            // Present = Actually present + Late + OnLeave (all count as "not absent")
+            var presentDays = attendances.Count(a => a.Status == AttendanceStatus.Present || 
+                                                     a.Status == AttendanceStatus.Late || 
+                                                     a.Status == AttendanceStatus.OnLeave);
+            
             var lateDays = attendances.Count(a => a.IsLate);
-            var halfDays = attendances.Count(a => a.IsHalfDay);
             var leaveDays = attendances.Count(a => a.Status == AttendanceStatus.OnLeave);
-            var markedAbsentDays = attendances.Count(a => a.Status == AttendanceStatus.Absent);
+            var halfDays = attendances.Count(a => a.Status == AttendanceStatus.HalfDay);
+            
+            // Manually marked absences
+            var markedAbsent = attendances.Count(a => a.Status == AttendanceStatus.Absent);
+            
+            // Unmarked days = Total working days - Days with any attendance record
+            var markedDays = attendances.Count;
+            var unmarkedDays = totalWorkingDays - markedDays;
+            
+            // Total absent = Marked absent + Unmarked days
+            var absentDays = markedAbsent + unmarkedDays;
 
-            // Calculate hours
-            var totalHours = attendances.Sum(a => a.TotalHours ?? 0);
-            var overtimeHours = attendances.Sum(a => a.OvertimeHours ?? 0);
+            // Calculate total worked hours and overtime
+            var totalWorkedHours = attendances
+                .Where(a => a.TotalHours.HasValue)
+                .Sum(a => a.TotalHours.Value);
+            
+            var overtimeHours = attendances
+                .Where(a => a.OvertimeHours.HasValue)
+                .Sum(a => a.OvertimeHours.Value);
 
-            // Calculate total absent days
-            // Unmarked days (working days without attendance) are automatically counted as absent
-            var markedWorkingDays = presentDays + markedAbsentDays + leaveDays;
-            var unmarkedDays = totalWorkingDays - markedWorkingDays;
-            if (unmarkedDays < 0) unmarkedDays = 0;
-
-            // Total absent days = explicitly marked absent + unmarked days
-            var totalAbsentDays = markedAbsentDays + unmarkedDays;
-
-            // Calculate attendance percentage based on present days only
+            // Calculate early leave count
+            var earlyLeaveDays = attendances.Count(a => a.IsEarlyLeave);
+            
+            // Calculate attendance percentage
             var attendancePercentage = totalWorkingDays > 0 
                 ? (decimal)presentDays / totalWorkingDays * 100 
                 : 0;
@@ -188,16 +204,52 @@ namespace PayRollManagementSystem.Services
                 WeekendDays = weekendDays,
                 HolidayDays = holidayCount,
                 PresentDays = presentDays,
-                AbsentDays = totalAbsentDays,  // Includes unmarked days
+                AbsentDays = absentDays,
                 LateDays = lateDays,
-                HalfDays = halfDays,
                 LeaveDays = leaveDays,
-                UnmarkedDays = unmarkedDays,  // For reporting purposes only
-                TotalHours = totalHours,
+                HalfDays = halfDays,
+                UnmarkedDays = unmarkedDays,
+                TotalHours = totalWorkedHours,
                 OvertimeHours = overtimeHours,
                 AttendancePercentage = attendancePercentage,
                 Attendances = attendances
             };
+        }
+
+        /// <summary>
+        /// Get list of weekend days for a month
+        /// </summary>
+        public async Task<List<DateTime>> GetWeekendDatesInMonth(int year, int month)
+        {
+            var startDate = new DateTime(year, month, 1);
+            var endDate = startDate.AddMonths(1).AddDays(-1);
+
+            var weekendDates = new List<DateTime>();
+            for (var date = startDate; date <= endDate; date = date.AddDays(1))
+            {
+                if (await IsWeekend(date))
+                {
+                    weekendDates.Add(date);
+                }
+            }
+
+            return weekendDates;
+        }
+
+        /// <summary>
+        /// Get configured weekend days
+        /// </summary>
+        public async Task<List<DayOfWeek>> GetConfiguredWeekendDays()
+        {
+            var weekendSetting = await GetActiveWeekendSetting();
+            
+            if (weekendSetting == null)
+            {
+                // Default to Friday-Saturday
+                return new List<DayOfWeek> { DayOfWeek.Friday, DayOfWeek.Saturday };
+            }
+
+            return weekendSetting.GetWeekendDays();
         }
     }
 

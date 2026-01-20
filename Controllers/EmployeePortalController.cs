@@ -228,6 +228,20 @@ namespace PayRollManagementSystem.Controllers
                 return RedirectToAction("LinkAccount");
             }
 
+            // Check if today is weekend or holiday
+            var today = DateTime.Today;
+            var isWorkingDay = await _workingDaysService.IsWorkingDay(today);
+            var holiday = await _context.Holidays.FirstOrDefaultAsync(h => h.IsActive && h.Date == today);
+            var weekendDays = await _workingDaysService.GetConfiguredWeekendDays();
+            
+            ViewBag.IsWorkingDay = isWorkingDay;
+            ViewBag.Holiday = holiday;
+            ViewBag.IsWeekend = weekendDays.Contains(today.DayOfWeek);
+            
+            // Ensure values are never null
+            if (ViewBag.IsWorkingDay == null) ViewBag.IsWorkingDay = true;
+            if (ViewBag.IsWeekend == null) ViewBag.IsWeekend = false;
+
             // Check if already marked today
             var todayAttendance = await _context.Attendances
                 .FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == DateTime.Today);
@@ -249,6 +263,23 @@ namespace PayRollManagementSystem.Controllers
                 return Json(new { success = false, message = "Employee not found." });
             }
 
+            // Check if today is weekend or holiday
+            var today = DateTime.Today;
+            var isWorkingDay = await _workingDaysService.IsWorkingDay(today);
+            
+            if (!isWorkingDay)
+            {
+                var holiday = await _context.Holidays.FirstOrDefaultAsync(h => h.IsActive && h.Date == today);
+                if (holiday != null)
+                {
+                    return Json(new { success = false, message = $"Today is a holiday: {holiday.Name}. No attendance required." });
+                }
+                else
+                {
+                    return Json(new { success = false, message = "Today is a weekend. No attendance required." });
+                }
+            }
+
             // Check if already checked in today
             var existingAttendance = await _context.Attendances
                 .FirstOrDefaultAsync(a => a.EmployeeId == employee.EmployeeId && a.Date == DateTime.Today);
@@ -256,15 +287,6 @@ namespace PayRollManagementSystem.Controllers
             if (existingAttendance != null)
             {
                 return Json(new { success = false, message = "You have already checked in today!" });
-            }
-
-            // Check if today is a holiday
-            var todayHoliday = await _context.Holidays
-                .FirstOrDefaultAsync(h => h.IsActive && h.Date == DateTime.Today);
-
-            if (todayHoliday != null)
-            {
-                return Json(new { success = false, message = $"Today is a holiday: {todayHoliday.Name}" });
             }
 
             var currentTime = DateTime.Now.TimeOfDay;

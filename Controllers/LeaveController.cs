@@ -12,11 +12,13 @@ namespace PayRollManagementSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly IEmailService _emailService;
+        private readonly LeaveApprovalService _leaveApprovalService;
 
-        public LeaveController(ApplicationDbContext context, IEmailService emailService)
+        public LeaveController(ApplicationDbContext context, IEmailService emailService, LeaveApprovalService leaveApprovalService)
         {
             _context = context;
             _emailService = emailService;
+            _leaveApprovalService = leaveApprovalService;
         }
 
         // GET: Leave
@@ -275,6 +277,9 @@ namespace PayRollManagementSystem.Controllers
             leave.ActionDate = DateTime.Now;
             leave.UpdatedAt = DateTime.Now;
 
+            // Auto-create attendance records for approved leave dates
+            await _leaveApprovalService.CreateAttendanceForApprovedLeave(id);
+
             await _context.SaveChangesAsync();
 
             // Send email notification to employee
@@ -298,7 +303,7 @@ namespace PayRollManagementSystem.Controllers
                 Console.WriteLine($"Failed to send email: {ex.Message}");
             }
 
-            return Json(new { success = true, message = $"Leave approved for {leave.Employee?.Name}!" });
+            return Json(new { success = true, message = $"Leave approved for {leave.Employee?.Name} and attendance auto-marked!" });
         }
 
         // POST: Leave/Reject

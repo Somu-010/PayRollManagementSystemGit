@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Mark Attendance";
+    var isWorkingDay = ViewBag.IsWorkingDay != null ? (bool)ViewBag.IsWorkingDay : true;
+    var holiday = ViewBag.Holiday as PayRollManagementSystem.Models.Holiday;
+    var isWeekend = ViewBag.IsWeekend != null ? (bool)ViewBag.IsWeekend : false;
 }
 
 <style>
@@ -280,6 +283,48 @@
     .calculation-item .value.overtime {
         color: #6366f1;
     }
+
+    .alert-holiday {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 12px rgba(245, 87, 108, 0.3);
+        text-align: center;
+    }
+    
+    .alert-holiday h2 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+    }
+    
+    .alert-holiday p {
+        margin: 0;
+        font-size: 16px;
+        opacity: 0.95;
+    }
+    
+    .alert-weekend {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 25px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+        text-align: center;
+    }
+    
+    .alert-weekend h2 {
+        margin: 0 0 10px 0;
+        font-size: 24px;
+    }
+    
+    .alert-weekend p {
+        margin: 0;
+        font-size: 16px;
+        opacity: 0.95;
+    }
 </style>
 
 <div class="page-header">
@@ -287,131 +332,159 @@
     <a asp-action="Index" class="btn-back">← Back to List</a>
 </div>
 
-<div class="form-card">
-    <form asp-action="Create" method="post">
-        @Html.AntiForgeryToken()
-        <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
-
-        <!-- Employee & Date Information -->
-        <h3 class="form-section-title">📋 Attendance Information</h3>
-
-        <div class="info-box">
-            <span style="font-size: 20px;">💡</span>
-            <div>
-                <strong>Quick Tip:</strong> The system will automatically calculate late arrivals, early leaves, total hours, and overtime based on the employee's shift settings.
-            </div>
+@if (!isWorkingDay)
+{
+    if (holiday != null)
+    {
+        <div class="alert-holiday">
+            <h2>🎉 @holiday.Name</h2>
+            <p>Today is a holiday. No attendance marking required.</p>
+            <p style="margin-top: 10px; font-size: 14px;">@holiday.Description</p>
         </div>
+    }
+    else if (isWeekend)
+    {
+        <div class="alert-weekend">
+            <h2>🏖️ Weekend</h2>
+            <p>Today is a weekend. No attendance marking required.</p>
+            <p style="margin-top: 10px; font-size: 14px;">Enjoy your day off!</p>
+        </div>
+    }
+    
+    <div style="text-align: center; padding: 40px;">
+        <a asp-action="Index" class="btn-submit" style="display: inline-block; text-decoration: none;">
+            ← Back to Attendance Records
+        </a>
+    </div>
+}
+else
+{
+    <div class="form-card">
+        <form asp-action="Create" method="post">
+            @Html.AntiForgeryToken()
+            <div asp-validation-summary="ModelOnly" class="validation-summary-errors"></div>
 
-        <div class="form-grid">
-            <div class="form-group">
-                <label asp-for="EmployeeId">Employee <span class="required">*</span></label>
-                <select asp-for="EmployeeId" class="form-control" id="employeeSelect" required onchange="loadShiftInfo()">
-                    <option value="">-- Select Employee --</option>
-                    @foreach (var emp in ViewBag.Employees)
-                    {
-                        <option value="@emp.EmployeeId">@emp.Name (@emp.EmployeeCode)</option>
-                    }
-                </select>
-                <span asp-validation-for="EmployeeId" class="text-danger"></span>
-                
-                <!-- Shift Information Box -->
-                <div class="shift-info-box" id="shiftInfoBox">
-                    <div style="font-weight: 600; color: #10b981; margin-bottom: 10px;">⏰ Shift Details</div>
-                    <div class="shift-info-grid">
-                        <div class="shift-info-item">
-                            <div class="label">Shift Name</div>
-                            <div class="value" id="shiftName">-</div>
+            <!-- Employee & Date Information -->
+            <h3 class="form-section-title">📋 Attendance Information</h3>
+
+            <div class="info-box">
+                <span style="font-size: 20px;">💡</span>
+                <div>
+                    <strong>Quick Tip:</strong> The system will automatically calculate late arrivals, early leaves, total hours, and overtime based on the employee's shift settings.
+                </div>
+            </div>
+
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="EmployeeId">Employee <span class="required">*</span></label>
+                    <select asp-for="EmployeeId" class="form-control" id="employeeSelect" required onchange="loadShiftInfo()">
+                        <option value="">-- Select Employee --</option>
+                        @foreach (var emp in ViewBag.Employees)
+                        {
+                            <option value="@emp.EmployeeId">@emp.Name (@emp.EmployeeCode)</option>
+                        }
+                    </select>
+                    <span asp-validation-for="EmployeeId" class="text-danger"></span>
+                    
+                    <!-- Shift Information Box -->
+                    <div class="shift-info-box" id="shiftInfoBox">
+                        <div style="font-weight: 600; color: #10b981; margin-bottom: 10px;">⏰ Shift Details</div>
+                        <div class="shift-info-grid">
+                            <div class="shift-info-item">
+                                <div class="label">Shift Name</div>
+                                <div class="value" id="shiftName">-</div>
+                            </div>
+                            <div class="shift-info-item">
+                                <div class="label">Start Time</div>
+                                <div class="value" id="shiftStart">-</div>
+                            </div>
+                            <div class="shift-info-item">
+                                <div class="label">End Time</div>
+                                <div class="value" id="shiftEnd">-</div>
+                            </div>
+                            <div class="shift-info-item">
+                                <div class="label">Grace Period</div>
+                                <div class="value" id="gracePeriod">-</div>
+                            </div>
                         </div>
-                        <div class="shift-info-item">
-                            <div class="label">Start Time</div>
-                            <div class="value" id="shiftStart">-</div>
-                        </div>
-                        <div class="shift-info-item">
-                            <div class="label">End Time</div>
-                            <div class="value" id="shiftEnd">-</div>
-                        </div>
-                        <div class="shift-info-item">
-                            <div class="label">Grace Period</div>
-                            <div class="value" id="gracePeriod">-</div>
-                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Date">Date <span class="required">*</span></label>
+                    <input asp-for="Date" class="form-control" type="date" value="@ViewBag.TodayDate" required />
+                    <span asp-validation-for="Date" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="Status">Attendance Status <span class="required">*</span></label>
+                    <select asp-for="Status" class="form-control" required>
+                        <option value="Present">✓ Present</option>
+                        <option value="Absent">✕ Absent</option>
+                        <option value="Late">⏰ Late</option>
+                        <option value="OnLeave">🏖️ On Leave</option>
+                        <option value="HalfDay">⏱️ Half Day</option>
+                    </select>
+                    <span asp-validation-for="Status" class="text-danger"></span>
+                </div>
+            </div>
+
+            <!-- Time Information -->
+            <h3 class="form-section-title">⏰ Time Information</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="CheckInTime">Check-In Time <span class="required">*</span></label>
+                    <input asp-for="CheckInTime" class="form-control" type="time" required id="checkInTime" onchange="calculateAttendance()" />
+                    <span asp-validation-for="CheckInTime" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="CheckOutTime">Check-Out Time</label>
+                    <input asp-for="CheckOutTime" class="form-control" type="time" id="checkOutTime" onchange="calculateAttendance()" />
+                    <span asp-validation-for="CheckOutTime" class="text-danger"></span>
+                    <small style="color: #5a6c7d; font-size: 12px; margin-top: 5px; display: block;">Leave empty if not checked out yet</small>
+                </div>
+            </div>
+
+            <!-- Real-time Calculation Display -->
+            <div class="calculation-box" id="calculationBox">
+                <div style="font-weight: 600; color: #fb923c; margin-bottom: 10px;">📊 Attendance Calculation</div>
+                <div class="calculation-grid">
+                    <div class="calculation-item">
+                        <div class="label">Arrival Status</div>
+                        <div class="value normal" id="arrivalStatus">On Time</div>
+                    </div>
+                    <div class="calculation-item">
+                        <div class="label">Leave Status</div>
+                        <div class="value normal" id="leaveStatus">-</div>
+                    </div>
+                    <div class="calculation-item">
+                        <div class="label">Total Hours</div>
+                        <div class="value normal" id="totalHours">-</div>
+                    </div>
+                    <div class="calculation-item">
+                        <div class="label">Overtime</div>
+                        <div class="value overtime" id="overtime">-</div>
                     </div>
                 </div>
             </div>
 
-            <div class="form-group">
-                <label asp-for="Date">Date <span class="required">*</span></label>
-                <input asp-for="Date" class="form-control" type="date" value="@ViewBag.TodayDate" required />
-                <span asp-validation-for="Date" class="text-danger"></span>
-            </div>
+            <!-- Additional Information -->
+            <h3 class="form-section-title">📝 Additional Information</h3>
 
             <div class="form-group">
-                <label asp-for="Status">Attendance Status <span class="required">*</span></label>
-                <select asp-for="Status" class="form-control" required>
-                    <option value="Present">✓ Present</option>
-                    <option value="Absent">✕ Absent</option>
-                    <option value="Late">⏰ Late</option>
-                    <option value="OnLeave">🏖️ On Leave</option>
-                    <option value="HalfDay">⏱️ Half Day</option>
-                </select>
-                <span asp-validation-for="Status" class="text-danger"></span>
-            </div>
-        </div>
-
-        <!-- Time Information -->
-        <h3 class="form-section-title">⏰ Time Information</h3>
-        <div class="form-grid">
-            <div class="form-group">
-                <label asp-for="CheckInTime">Check-In Time <span class="required">*</span></label>
-                <input asp-for="CheckInTime" class="form-control" type="time" required id="checkInTime" onchange="calculateAttendance()" />
-                <span asp-validation-for="CheckInTime" class="text-danger"></span>
+                <label asp-for="Remarks">Remarks/Notes</label>
+                <textarea asp-for="Remarks" class="form-control" placeholder="Enter any additional notes or remarks..."></textarea>
+                <span asp-validation-for="Remarks" class="text-danger"></span>
             </div>
 
-            <div class="form-group">
-                <label asp-for="CheckOutTime">Check-Out Time</label>
-                <input asp-for="CheckOutTime" class="form-control" type="time" id="checkOutTime" onchange="calculateAttendance()" />
-                <span asp-validation-for="CheckOutTime" class="text-danger"></span>
-                <small style="color: #5a6c7d; font-size: 12px; margin-top: 5px; display: block;">Leave empty if not checked out yet</small>
+            <div class="form-actions">
+                <a asp-action="Index" class="btn-cancel">Cancel</a>
+                <button type="submit" class="btn-submit">✓ Mark Attendance</button>
             </div>
-        </div>
-
-        <!-- Real-time Calculation Display -->
-        <div class="calculation-box" id="calculationBox">
-            <div style="font-weight: 600; color: #fb923c; margin-bottom: 10px;">📊 Attendance Calculation</div>
-            <div class="calculation-grid">
-                <div class="calculation-item">
-                    <div class="label">Arrival Status</div>
-                    <div class="value normal" id="arrivalStatus">On Time</div>
-                </div>
-                <div class="calculation-item">
-                    <div class="label">Leave Status</div>
-                    <div class="value normal" id="leaveStatus">-</div>
-                </div>
-                <div class="calculation-item">
-                    <div class="label">Total Hours</div>
-                    <div class="value normal" id="totalHours">-</div>
-                </div>
-                <div class="calculation-item">
-                    <div class="label">Overtime</div>
-                    <div class="value overtime" id="overtime">-</div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Additional Information -->
-        <h3 class="form-section-title">📝 Additional Information</h3>
-
-        <div class="form-group">
-            <label asp-for="Remarks">Remarks/Notes</label>
-            <textarea asp-for="Remarks" class="form-control" placeholder="Enter any additional notes or remarks..."></textarea>
-            <span asp-validation-for="Remarks" class="text-danger"></span>
-        </div>
-
-        <div class="form-actions">
-            <a asp-action="Index" class="btn-cancel">Cancel</a>
-            <button type="submit" class="btn-submit">✓ Mark Attendance</button>
-        </div>
-    </form>
-</div>
+        </form>
+    </div>
+}
 
 @section Scripts {
     @{

@@ -268,7 +268,7 @@
                 <div class="stat-card">
                     <div class="stat-label">💰 Salary Range</div>
                     <div class="stat-value" style="font-size: 20px;">
-                        $@(Model.MinimumSalary?.ToString("N0") ?? "0") - $@(Model.MaximumSalary?.ToString("N0") ?? "0")
+                        @(Model.MinimumSalary?.ToString("N0") ?? "0") - @(Model.MaximumSalary?.ToString("N0") ?? "0")
                     </div>
                 </div>
             }
@@ -323,7 +323,7 @@
                     <div class="detail-item">
                         <div class="detail-label">Minimum Salary</div>
                         <div class="detail-value">
-                            <span class="detail-icon">💵</span>$@Model.MinimumSalary.Value.ToString("N2")
+                            <span class="detail-icon">💵</span>@Model.MinimumSalary.Value.ToString("N2")
                         </div>
                     </div>
                 }
@@ -333,7 +333,7 @@
                     <div class="detail-item">
                         <div class="detail-label">Maximum Salary</div>
                         <div class="detail-value">
-                            <span class="detail-icon">💵</span>$@Model.MaximumSalary.Value.ToString("N2")
+                            <span class="detail-icon">💵</span>@Model.MaximumSalary.Value.ToString("N2")
                         </div>
                     </div>
                 }
@@ -343,7 +343,7 @@
                     <div class="detail-item">
                         <div class="detail-label">Average Salary</div>
                         <div class="detail-value">
-                            <span class="detail-icon">💰</span>$@(((Model.MinimumSalary.Value + Model.MaximumSalary.Value) / 2).ToString("N2"))
+                            <span class="detail-icon">💰</span>@(((Model.MinimumSalary.Value + Model.MaximumSalary.Value) / 2).ToString("N2"))
                         </div>
                     </div>
                 }

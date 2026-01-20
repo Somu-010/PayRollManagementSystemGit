@@ -435,23 +435,23 @@
         </div>
         <div class="stat-card basic">
             <div class="stat-label">Total Basic Salary</div>
-            <div class="stat-value">@ViewBag.TotalBasicSalary.ToString("C0")</div>
+            <div class="stat-value">@ViewBag.TotalBasicSalary.ToString("N0")</div>
         </div>
         <div class="stat-card allowances">
             <div class="stat-label">Total Allowances</div>
-            <div class="stat-value">@ViewBag.TotalAllowances.ToString("C0")</div>
+            <div class="stat-value">@ViewBag.TotalAllowances.ToString("N0")</div>
         </div>
         <div class="stat-card deductions">
             <div class="stat-label">Total Deductions</div>
-            <div class="stat-value">@ViewBag.TotalDeductions.ToString("C0")</div>
+            <div class="stat-value">@ViewBag.TotalDeductions.ToString("N0")</div>
         </div>
         <div class="stat-card gross">
             <div class="stat-label">Total Gross Salary</div>
-            <div class="stat-value">@ViewBag.TotalGrossSalary.ToString("C0")</div>
+            <div class="stat-value">@ViewBag.TotalGrossSalary.ToString("N0")</div>
         </div>
         <div class="stat-card net">
             <div class="stat-label">Total Net Salary</div>
-            <div class="stat-value">@ViewBag.TotalNetSalary.ToString("C0")</div>
+            <div class="stat-value">@ViewBag.TotalNetSalary.ToString("N0")</div>
         </div>
     </div>
 
@@ -486,11 +486,11 @@
                         </td>
                         <td>@(payroll.Employee?.DepartmentNavigation?.Name ?? "N/A")</td>
                         <td>@(payroll.Employee?.DesignationNavigation?.Title ?? "N/A")</td>
-                        <td class="text-right">@payroll.BasicSalary.ToString("C2")</td>
-                        <td class="text-right" style="color: #10b981; font-weight: 600;">@payroll.TotalAllowances.ToString("C2")</td>
-                        <td class="text-right"><strong>@payroll.GrossSalary.ToString("C2")</strong></td>
-                        <td class="text-right" style="color: #ef4444; font-weight: 600;">@payroll.TotalDeductions.ToString("C2")</td>
-                        <td class="text-right"><strong style="color: #2193b0; font-size: 16px;">@payroll.NetSalary.ToString("C2")</strong></td>
+                        <td class="text-right">@payroll.BasicSalary.ToString("N2")</td>
+                        <td class="text-right" style="color: #10b981; font-weight: 600;">@payroll.TotalAllowances.ToString("N2")</td>
+                        <td class="text-right"><strong>@payroll.GrossSalary.ToString("N2")</strong></td>
+                        <td class="text-right" style="color: #ef4444; font-weight: 600;">@payroll.TotalDeductions.ToString("N2")</td>
+                        <td class="text-right"><strong style="color: #2193b0; font-size: 16px;">@payroll.NetSalary.ToString("N2")</strong></td>
                         <td>@payroll.PaymentDate.ToString("dd-MMM-yyyy")</td>
                         <td>
                             @{
@@ -525,11 +525,11 @@
             <tfoot>
                 <tr>
                     <td colspan="4"><strong>TOTAL (@ViewBag.TotalEmployees Employees)</strong></td>
-                    <td class="text-right"><strong>@ViewBag.TotalBasicSalary.ToString("C2")</strong></td>
-                    <td class="text-right"><strong>@ViewBag.TotalAllowances.ToString("C2")</strong></td>
-                    <td class="text-right"><strong>@ViewBag.TotalGrossSalary.ToString("C2")</strong></td>
-                    <td class="text-right"><strong>@ViewBag.TotalDeductions.ToString("C2")</strong></td>
-                    <td class="text-right"><strong>@ViewBag.TotalNetSalary.ToString("C2")</strong></td>
+                    <td class="text-right"><strong>@ViewBag.TotalBasicSalary.ToString("N2")</strong></td>
+                    <td class="text-right"><strong>@ViewBag.TotalAllowances.ToString("N2")</strong></td>
+                    <td class="text-right"><strong>@ViewBag.TotalGrossSalary.ToString("N2")</strong></td>
+                    <td class="text-right"><strong>@ViewBag.TotalDeductions.ToString("N2")</strong></td>
+                    <td class="text-right"><strong>@ViewBag.TotalNetSalary.ToString("N2")</strong></td>
                     <td colspan="2"></td>
                 </tr>
             </tfoot>

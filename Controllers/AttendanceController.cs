@@ -12,11 +12,13 @@ namespace PayRollManagementSystem.Controllers
     {
         private readonly ApplicationDbContext _context;
         private readonly WorkingDaysService _workingDaysService;
+        private readonly HolidayService _holidayService;
 
-        public AttendanceController(ApplicationDbContext context, WorkingDaysService workingDaysService)
+        public AttendanceController(ApplicationDbContext context, WorkingDaysService workingDaysService, HolidayService holidayService)
         {
             _context = context;
             _workingDaysService = workingDaysService;
+            _holidayService = holidayService;
         }
 
         // GET: Attendance
@@ -88,7 +90,23 @@ namespace PayRollManagementSystem.Controllers
         public async Task<IActionResult> Create()
         {
             await LoadDropdownData();
-            ViewBag.TodayDate = DateTime.Today.ToString("yyyy-MM-dd");
+            
+            var today = DateTime.Today;
+            ViewBag.TodayDate = today.ToString("yyyy-MM-dd");
+            
+            // Check if today is weekend or holiday
+            var isWorkingDay = await _workingDaysService.IsWorkingDay(today);
+            var holiday = await _holidayService.GetHolidayByDate(today);
+            var weekendDays = await _workingDaysService.GetConfiguredWeekendDays();
+            
+            ViewBag.IsWorkingDay = isWorkingDay;
+            ViewBag.Holiday = holiday;
+            ViewBag.IsWeekend = weekendDays.Contains(today.DayOfWeek);
+            
+            // IMPORTANT: Ensure these are never null
+            if (ViewBag.IsWorkingDay == null) ViewBag.IsWorkingDay = true;
+            if (ViewBag.IsWeekend == null) ViewBag.IsWeekend = false;
+            
             return View();
         }
 
@@ -97,6 +115,25 @@ namespace PayRollManagementSystem.Controllers
         [ValidateAntiForgeryToken]
         public async Task<IActionResult> Create([Bind("EmployeeId,Date,CheckInTime,CheckOutTime,Status,Remarks")] Attendance attendance)
         {
+            // Check if the date is a weekend or holiday
+            var isWorkingDay = await _workingDaysService.IsWorkingDay(attendance.Date);
+            if (!isWorkingDay)
+            {
+                var holiday = await _holidayService.GetHolidayByDate(attendance.Date);
+                if (holiday != null)
+                {
+                    ModelState.AddModelError("Date", $"Cannot mark attendance on holiday: {holiday.Name}");
+                }
+                else
+                {
+                    ModelState.AddModelError("Date", "Cannot mark attendance on weekends");
+                }
+                
+                await LoadDropdownData();
+                ViewBag.TodayDate = attendance.Date.ToString("yyyy-MM-dd");
+                return View(attendance);
+            }
+
             ModelState.Remove("Employee");
 
             if (ModelState.IsValid)
@@ -370,6 +407,31 @@ namespace PayRollManagementSystem.Controllers
         public async Task<IActionResult> BulkMarkAttendance()
         {
             var today = DateTime.Today;
+            
+            // Check if today is weekend or holiday
+            var isWorkingDay = await _workingDaysService.IsWorkingDay(today);
+            var holiday = await _holidayService.GetHolidayByDate(today);
+            var weekendDays = await _workingDaysService.GetConfiguredWeekendDays();
+            
+            ViewBag.IsWorkingDay = isWorkingDay;
+            ViewBag.Holiday = holiday;
+            ViewBag.IsWeekend = weekendDays.Contains(today.DayOfWeek);
+            ViewBag.TodayDate = today.ToString("yyyy-MM-dd");
+            
+            // If not a working day, show message and return empty list
+            if (!isWorkingDay)
+            {
+                if (holiday != null)
+                {
+                    TempData["Info"] = $"Today is {holiday.Name}. No attendance marking required.";
+                }
+                else
+                {
+                    TempData["Info"] = "Today is a weekend. No attendance marking required.";
+                }
+                return View(new List<Employee>());
+            }
+            
             var employees = await _context.Employees
                 .Include(e => e.ShiftNavigation)
                 .Where(e => e.Status == EmploymentStatus.Active)
@@ -383,7 +445,6 @@ namespace PayRollManagementSystem.Controllers
 
             var unmarkedEmployees = employees.Where(e => !markedEmployeeIds.Contains(e.EmployeeId)).ToList();
 
-            ViewBag.TodayDate = today.ToString("yyyy-MM-dd");
             ViewBag.MarkedCount = markedEmployeeIds.Count;
             ViewBag.UnmarkedCount = unmarkedEmployees.Count;
 

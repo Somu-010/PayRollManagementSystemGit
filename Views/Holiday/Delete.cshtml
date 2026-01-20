@@ -1,0 +1,121 @@
+@model PayRollManagementSystem.Models.Holiday
+
+@{
+    ViewData["Title"] = "Delete Holiday";
+}
+
+<style>
+    .delete-container {
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .delete-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .warning-box {
+        background: rgba(239, 68, 68, 0.1);
+        border: 2px solid rgba(239, 68, 68, 0.2);
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .warning-box h3 {
+        color: #ef4444;
+        margin: 0 0 10px 0;
+    }
+
+    .info-box {
+        background: #f8fafb;
+        border-radius: 10px;
+        padding: 20px;
+        margin-bottom: 20px;
+    }
+
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 10px 0;
+        border-bottom: 1px solid #e8e8e8;
+    }
+
+    .info-row:last-child {
+        border-bottom: none;
+    }
+
+    .info-label {
+        font-weight: 600;
+        color: #5a6c7d;
+    }
+
+    .info-value {
+        color: #2c3e50;
+    }
+
+    .btn-delete {
+        padding: 12px 30px;
+        background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        margin-right: 10px;
+    }
+
+    .btn-back {
+        padding: 12px 30px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+</style>
+
+<div class="delete-container">
+    <h1 style="color: #2c3e50; margin-bottom: 30px;">&#128465; Delete Holiday</h1>
+
+    <div class="delete-card">
+        <div class="warning-box">
+            <h3>&#9888; Warning</h3>
+            <p>Are you sure you want to delete this holiday? This action cannot be undone.</p>
+        </div>
+
+        <div class="info-box">
+            <h3 style="margin: 0 0 15px 0; color: #2c3e50;">Holiday Details</h3>
+            <div class="info-row">
+                <span class="info-label">Holiday Name:</span>
+                <span class="info-value"><strong>@Model.Name</strong></span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Date:</span>
+                <span class="info-value">@Model.Date.ToString("dd MMMM yyyy") (@Model.Date.DayOfWeek)</span>
+            </div>
+            <div class="info-row">
+                <span class="info-label">Type:</span>
+                <span class="info-value">@Model.Type</span>
+            </div>
+            @if (!string.IsNullOrEmpty(Model.Description))
+            {
+                <div class="info-row">
+                    <span class="info-label">Description:</span>
+                    <span class="info-value">@Model.Description</span>
+                </div>
+            }
+        </div>
+
+        <form asp-action="Delete" method="post">
+            @Html.AntiForgeryToken()
+            <input type="hidden" asp-for="HolidayId" />
+            <button type="submit" class="btn-delete">&#128465; Yes, Delete Holiday</button>
+            <a asp-action="Index" asp-route-year="@Model.Date.Year" class="btn-back">Cancel</a>
+        </form>
+    </div>
+</div>

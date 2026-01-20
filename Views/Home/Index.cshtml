@@ -421,7 +421,7 @@
                 <span class="stat-title">Monthly Payroll</span>
                 <div class="stat-icon green">💰</div>
             </div>
-            <div class="stat-value">$@(ViewBag.MonthlyPayroll != null ? ((decimal)ViewBag.MonthlyPayroll).ToString("N0") : "0")</div>
+            <div class="stat-value">৳@(ViewBag.MonthlyPayroll != null ? ((decimal)ViewBag.MonthlyPayroll).ToString("N0") : "0")</div>
             <div class="stat-change">@ViewBag.ActiveEmployees active employees</div>
         </div>
 
@@ -478,7 +478,7 @@
                                 <p>@emp.EmployeeCode • @emp.DesignationName</p>
                             </div>
                         </div>
-                        <span class="item-salary">$@emp.BasicSalary.ToString("N0")</span>
+                        <span class="item-salary">৳@emp.BasicSalary.ToString("N0")</span>
                     </div>
                 }
             }
@@ -601,7 +601,7 @@
                             <span class="item-count">@desig.EmployeeCount <span style="font-size: 12px; color: #5a6c7d;">emp</span></span>
                             @if (minSalary.HasValue && maxSalary.HasValue)
                             {
-                                <span class="item-salary">$@minSalary.Value.ToString("N0")-$@maxSalary.Value.ToString("N0")</span>
+                                <span class="item-salary">৳@minSalary.Value.ToString("N0")-৳@maxSalary.Value.ToString("N0")</span>
                             }
                         </div>
                     </div>

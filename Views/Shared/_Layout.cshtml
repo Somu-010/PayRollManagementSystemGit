@@ -443,7 +443,7 @@
                         
                         <!-- Master Data Dropdown -->
                         <li class="nav-item dropdown-nav">
-                            <a class="nav-link dropdown-toggle @(new[] { "Department", "Designation", "Shift" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) ? "active" : "")" 
+                            <a class="nav-link dropdown-toggle @(new[] { "Department", "Designation", "Shift", "Holiday" }.Contains(ViewContext.RouteData.Values["controller"]?.ToString()) ? "active" : "")" 
                                href="#masterDataMenu" 
                                data-bs-toggle="collapse" 
                                role="button" 
@@ -473,6 +473,13 @@
                                            asp-controller="Shift" asp-action="Index">
                                             <span class="nav-icon">⏰</span>
                                             Shifts
+                                        </a>
+                                    </li>
+                                    <li class="nav-item">
+                                        <a class="nav-link submenu-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Holiday" ? "active" : "")"
+                                           asp-controller="Holiday" asp-action="Index">
+                                            <span class="nav-icon">📅</span>
+                                            Holidays & Weekends
                                         </a>
                                     </li>
                                 </ul>
@@ -668,7 +675,7 @@
             
             // Check if any master data page is active
             const currentController = '@ViewContext.RouteData.Values["controller"]';
-            const masterDataControllers = ['Department', 'Designation', 'Shift'];
+            const masterDataControllers = ['Department', 'Designation', 'Shift', 'Holiday'];
             
             if (masterDataControllers.includes(currentController)) {
                 // Keep dropdown open if on master data page

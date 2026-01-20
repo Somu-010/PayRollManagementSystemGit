@@ -2,6 +2,7 @@
 
 @{
     ViewData["Title"] = "Payslip Details";
+    var companySetting = ViewBag.CompanySetting as PayRollManagementSystem.Models.CompanySetting;
 }
 
 <style>
@@ -452,10 +453,6 @@
 <div class="payslip-container">
     <!-- Payslip Header with Company Info -->
     <div class="payslip-header">
-        @{
-            var companySetting = ViewBag.CompanySetting as PayRollManagementSystem.Models.CompanySetting;
-        }
-        
         @if (companySetting != null)
         {
             <div class="company-info">
@@ -592,7 +589,7 @@
         <tbody>
             <tr>
                 <td><strong>Basic Salary</strong></td>
-                <td class="text-right">@Model.BasicSalary.ToString("C2")</td>
+                <td class="text-right">@Model.BasicSalary.ToString("N2")</td>
             </tr>
             @if (Model.PayrollDetails != null)
             {
@@ -600,7 +597,7 @@
                 {
                     <tr>
                         <td>@detail.ComponentName</td>
-                        <td class="text-right">@detail.Amount.ToString("C2")</td>
+                        <td class="text-right">@detail.Amount.ToString("N2")</td>
                     </tr>
                 }
             }
@@ -608,7 +605,7 @@
         <tfoot>
             <tr>
                 <td><strong>TOTAL EARNINGS (A)</strong></td>
-                <td class="text-right"><strong>@Model.GrossSalary.ToString("C2")</strong></td>
+                <td class="text-right"><strong>@Model.GrossSalary.ToString("N2")</strong></td>
             </tr>
         </tfoot>
     </table>
@@ -627,7 +624,7 @@
             {
                 <tr>
                     <td>Leave / Absence Deduction (@(Model.UnpaidLeaves + Model.AbsentDays) days)</td>
-                    <td class="text-right">@Model.LeaveDeductionAmount.ToString("C2")</td>
+                    <td class="text-right">@Model.LeaveDeductionAmount.ToString("N2")</td>
                 </tr>
             }
             @if (Model.PayrollDetails != null)
@@ -636,7 +633,7 @@
                 {
                     <tr>
                         <td>@detail.ComponentName</td>
-                        <td class="text-right">@detail.Amount.ToString("C2")</td>
+                        <td class="text-right">@detail.Amount.ToString("N2")</td>
                     </tr>
                 }
             }
@@ -644,7 +641,7 @@
         <tfoot>
             <tr>
                 <td><strong>TOTAL DEDUCTIONS (B)</strong></td>
-                <td class="text-right"><strong>@Model.TotalDeductions.ToString("C2")</strong></td>
+                <td class="text-right"><strong>@Model.TotalDeductions.ToString("N2")</strong></td>
             </tr>
         </tfoot>
     </table>
@@ -652,7 +649,7 @@
     <!-- Net Salary -->
     <div class="net-salary-box">
         <div class="net-salary-label">Net Salary Payable (A - B)</div>
-        <div class="net-salary-amount">@Model.NetSalary.ToString("C2")</div>
+        <div class="net-salary-amount">@Model.NetSalary.ToString("N2")</div>
         <div class="net-salary-words">
             (Amount in words: @NumberToWords(Model.NetSalary))
         </div>
@@ -687,7 +684,7 @@
     string NumberToWords(decimal number)
     {
         if (number == 0)
-            return "Zero Dollars";
+            return "Zero Taka";
 
         int wholePart = (int)number;
         int decimalPart = (int)((number - wholePart) * 100);

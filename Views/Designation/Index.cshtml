@@ -530,7 +530,7 @@
                             <td>
                                 @if (item.MinimumSalary.HasValue || item.MaximumSalary.HasValue)
                                 {
-                                    <span>$@(item.MinimumSalary?.ToString("N0") ?? "0") - $@(item.MaximumSalary?.ToString("N0") ?? "0")</span>
+                                    <span>@(item.MinimumSalary?.ToString("N0") ?? "0") - @(item.MaximumSalary?.ToString("N0") ?? "0")</span>
                                 }
                                 else
                                 {

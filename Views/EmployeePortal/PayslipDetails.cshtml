@@ -247,7 +247,7 @@
             }
             else
             {
-                <h1>?? PAYSLIP</h1>
+                <h1>PAYSLIP</h1>
                 <div class="period">@Model.PayPeriod</div>
             }
         </div>
@@ -286,10 +286,10 @@
         <div class="earnings-deductions">
             <!-- Earnings -->
             <div class="earnings-section">
-                <h3 class="section-title earnings">?? Earnings</h3>
+                <h3 class="section-title earnings">&#128176; Earnings</h3>
                 <div class="item-row">
                     <span class="item-label">Basic Salary</span>
-                    <span class="item-value earnings">@Model.BasicSalary.ToString("C2")</span>
+                    <span class="item-value earnings">@Model.BasicSalary.ToString("N2")</span>
                 </div>
                 @if (Model.PayrollDetails != null)
                 {
@@ -297,32 +297,32 @@
                     {
                         <div class="item-row">
                             <span class="item-label">@detail.AllowanceDeduction?.Name</span>
-                            <span class="item-value earnings">@detail.Amount.ToString("C2")</span>
+                            <span class="item-value earnings">@detail.Amount.ToString("N2")</span>
                         </div>
                     }
                 }
                 <div class="total-row">
                     <span>Gross Salary</span>
-                    <span class="earnings">@Model.GrossSalary.ToString("C2")</span>
+                    <span class="earnings">@Model.GrossSalary.ToString("N2")</span>
                 </div>
             </div>
 
             <!-- Deductions -->
             <div class="deductions-section">
-                <h3 class="section-title deductions">?? Deductions</h3>
+                <h3 class="section-title deductions">&#128184; Deductions</h3>
                 @if (Model.PayrollDetails != null)
                 {
                     @foreach (var detail in Model.PayrollDetails.Where(d => d.AllowanceDeduction?.Type == PayRollManagementSystem.Models.ComponentType.Deduction))
                     {
                         <div class="item-row">
                             <span class="item-label">@detail.AllowanceDeduction?.Name</span>
-                            <span class="item-value deductions">@detail.Amount.ToString("C2")</span>
+                            <span class="item-value deductions">@detail.Amount.ToString("N2")</span>
                         </div>
                     }
                 }
                 <div class="total-row">
                     <span>Total Deductions</span>
-                    <span class="deductions">@Model.TotalDeductions.ToString("C2")</span>
+                    <span class="deductions">@Model.TotalDeductions.ToString("N2")</span>
                 </div>
             </div>
         </div>
@@ -330,7 +330,7 @@
         <!-- Net Salary -->
         <div class="net-salary-section">
             <div class="label">NET SALARY</div>
-            <div class="amount">@Model.NetSalary.ToString("C2")</div>
+            <div class="amount">@Model.NetSalary.ToString("N2")</div>
         </div>
 
         <!-- Actions -->

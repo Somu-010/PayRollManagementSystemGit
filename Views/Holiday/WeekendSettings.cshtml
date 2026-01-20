@@ -1,0 +1,300 @@
+@model PayRollManagementSystem.Models.WeekendSetting
+
+@{
+    ViewData["Title"] = "Weekend Settings";
+    var allSettings = ViewBag.AllSettings as List<PayRollManagementSystem.Models.WeekendSetting>;
+}
+
+<style>
+    .settings-container {
+        max-width: 900px;
+        margin: 0 auto;
+    }
+
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+    }
+
+    .btn-back {
+        padding: 10px 20px;
+        background: white;
+        color: #667eea;
+        border: 2px solid #667eea;
+        border-radius: 8px;
+        text-decoration: none;
+        font-weight: 600;
+    }
+
+    .settings-card {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        margin-bottom: 30px;
+    }
+
+    .info-box {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+    }
+
+    .info-box h3 {
+        margin: 0 0 10px 0;
+        font-size: 18px;
+    }
+
+    .info-box p {
+        margin: 0;
+        opacity: 0.9;
+    }
+
+    .day-selector {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+        gap: 15px;
+        margin: 30px 0;
+    }
+
+    .day-checkbox {
+        background: #f8fafb;
+        border: 2px solid #e8e8e8;
+        border-radius: 12px;
+        padding: 20px;
+        text-align: center;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+
+    .day-checkbox:hover {
+        border-color: #667eea;
+        transform: translateY(-2px);
+    }
+
+    .day-checkbox input[type="checkbox"] {
+        display: none;
+    }
+
+    .day-checkbox input[type="checkbox"]:checked + label {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 8px;
+        padding: 10px;
+    }
+
+    .day-checkbox label {
+        font-weight: 600;
+        cursor: pointer;
+        display: block;
+        transition: all 0.3s;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-group label {
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 8px;
+        display: block;
+    }
+
+    .form-control {
+        padding: 12px;
+        border: 2px solid #e8e8e8;
+        border-radius: 8px;
+        width: 100%;
+    }
+
+    .btn-save {
+        padding: 15px 40px;
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+        color: white;
+        border: none;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: 16px;
+        cursor: pointer;
+        width: 100%;
+    }
+
+    .history-section {
+        background: white;
+        border-radius: 16px;
+        padding: 30px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .history-section h3 {
+        margin-bottom: 20px;
+        color: #2c3e50;
+    }
+
+    .history-item {
+        padding: 15px;
+        border-left: 4px solid #667eea;
+        background: #f8fafb;
+        border-radius: 8px;
+        margin-bottom: 15px;
+    }
+
+    .history-item.inactive {
+        opacity: 0.6;
+        border-left-color: #e8e8e8;
+    }
+</style>
+
+<div class="settings-container">
+    <div class="page-header">
+        <h1 style="margin: 0; color: #2c3e50;">&#9881; Weekend Settings</h1>
+        <a asp-action="Index" class="btn-back">&#8592; Back to Holidays</a>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+
+    <div class="info-box">
+        <h3>&#128161; Configure Your Weekends</h3>
+        <p>Select which days of the week should be considered as weekends. This will affect attendance tracking, payroll calculations, and leave management.</p>
+    </div>
+
+    <div class="settings-card">
+        <form asp-action="UpdateWeekendSettings" method="post">
+            @Html.AntiForgeryToken()
+
+            <h3 style="margin-bottom: 20px; color: #2c3e50;">Select Weekend Days</h3>
+            
+            <div class="day-selector">
+                <div class="day-checkbox">
+                    <input type="checkbox" id="sunday" asp-for="IsSundayWeekend" />
+                    <label for="sunday">
+                        <div style="font-size: 24px; margin-bottom: 5px;">&#127774;</div>
+                        Sunday
+                    </label>
+                </div>
+
+                <div class="day-checkbox">
+                    <input type="checkbox" id="monday" asp-for="IsMondayWeekend" />
+                    <label for="monday">
+                        <div style="font-size: 24px; margin-bottom: 5px;">&#128188;</div>
+                        Monday
+                    </label>
+                </div>
+
+                <div class="day-checkbox">
+                    <input type="checkbox" id="tuesday" asp-for="IsTuesdayWeekend" />
+                    <label for="tuesday">
+                        <div style="font-size: 24px; margin-bottom: 5px;">&#128188;</div>
+                        Tuesday
+                    </label>
+                </div>
+
+                <div class="day-checkbox">
+                    <input type="checkbox" id="wednesday" asp-for="IsWednesdayWeekend" />
+                    <label for="wednesday">
+                        <div style="font-size: 24px; margin-bottom: 5px;">&#128188;</div>
+                        Wednesday
+                    </label>
+                </div>
+
+                <div class="day-checkbox">
+                    <input type="checkbox" id="thursday" asp-for="IsThursdayWeekend" />
+                    <label for="thursday">
+                        <div style="font-size: 24px; margin-bottom: 5px;">&#128188;</div>
+                        Thursday
+                    </label>
+                </div>
+
+                <div class="day-checkbox">
+                    <input type="checkbox" id="friday" asp-for="IsFridayWeekend" />
+                    <label for="friday">
+                        <div style="font-size: 24px; margin-bottom: 5px;">&#128332;</div>
+                        Friday
+                    </label>
+                </div>
+
+                <div class="day-checkbox">
+                    <input type="checkbox" id="saturday" asp-for="IsSaturdayWeekend" />
+                    <label for="saturday">
+                        <div style="font-size: 24px; margin-bottom: 5px;">&#127774;</div>
+                        Saturday
+                    </label>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="EffectiveFrom">Effective From Date</label>
+                <input asp-for="EffectiveFrom" class="form-control" type="date" />
+                <small style="color: #5a6c7d;">The date from which this weekend configuration will be active</small>
+            </div>
+
+            <button type="submit" class="btn-save">&#128190; Save Weekend Settings</button>
+        </form>
+    </div>
+
+    @if (allSettings != null && allSettings.Any())
+    {
+        <div class="history-section">
+            <h3>&#128221; Weekend Configuration History</h3>
+            
+            @foreach (var setting in allSettings)
+            {
+                <div class="history-item @(setting.IsActive ? "" : "inactive")">
+                    <div style="display: flex; justify-content: space-between; align-items: start; margin-bottom: 10px;">
+                        <div>
+                            <strong style="color: #2c3e50; font-size: 16px;">@setting.GetWeekendDaysDisplay()</strong>
+                            @if (setting.IsActive)
+                            {
+                                <span class="badge" style="background: rgba(16, 185, 129, 0.1); color: #10b981; margin-left: 10px;">Active</span>
+                            }
+                        </div>
+                        <div style="text-align: right; font-size: 12px; color: #5a6c7d;">
+                            <div>Effective: @setting.EffectiveFrom.ToString("dd MMM yyyy")</div>
+                            <div>Created: @setting.CreatedAt.ToString("dd MMM yyyy")</div>
+                        </div>
+                    </div>
+                    @if (!string.IsNullOrEmpty(setting.CreatedBy))
+                    {
+                        <div style="font-size: 12px; color: #5a6c7d;">Created by: @setting.CreatedBy</div>
+                    }
+                </div>
+            }
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <script>
+        // Add visual feedback for checkbox selection
+        document.querySelectorAll('.day-checkbox input[type="checkbox"]').forEach(checkbox => {
+            checkbox.addEventListener('change', function() {
+                const dayBox = this.closest('.day-checkbox');
+                if (this.checked) {
+                    dayBox.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                    dayBox.style.color = 'white';
+                    dayBox.style.borderColor = '#667eea';
+                } else {
+                    dayBox.style.background = '#f8fafb';
+                    dayBox.style.color = '#2c3e50';
+                    dayBox.style.borderColor = '#e8e8e8';
+                }
+            });
+
+            // Initialize checked state
+            if (checkbox.checked) {
+                const dayBox = checkbox.closest('.day-checkbox');
+                dayBox.style.background = 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)';
+                dayBox.style.color = 'white';
+                dayBox.style.borderColor = '#667eea';
+            }
+        });
+    </script>
+}

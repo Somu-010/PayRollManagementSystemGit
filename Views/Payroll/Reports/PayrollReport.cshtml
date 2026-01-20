@@ -1,0 +1,122 @@
+@model IEnumerable<PayRollManagementSystem.Models.Payroll>
+
+@{
+    ViewData["Title"] = "Payroll Report";
+    var selectedMonth = (int)ViewData["SelectedMonth"];
+    var selectedYear = (int)ViewData["SelectedYear"];
+    var currentDepartment = ViewData["CurrentDepartment"] as string;
+    var currentStatus = ViewData["CurrentStatus"] as string;
+    var monthName = new DateTime(selectedYear, selectedMonth, 1).ToString("MMMM yyyy");
+    ViewBag.ReportTitle = $"Payroll Report - {monthName}";
+    ViewBag.ReportDate = DateTime.Now.ToString("MMMM dd, yyyy");
+}
+
+<!-- Statistics -->
+<div class="stats-cards">
+    <div class="stat-card total">
+        <div class="stat-label">Total Employees</div>
+        <div class="stat-value">@ViewBag.TotalEmployees</div>
+    </div>
+    <div class="stat-card basic">
+        <div class="stat-label">Total Basic Salary</div>
+        <div class="stat-value">@ViewBag.TotalBasicSalary.ToString("N0")</div>
+    </div>
+    <div class="stat-card allowances">
+        <div class="stat-label">Total Allowances</div>
+        <div class="stat-value">@ViewBag.TotalAllowances.ToString("N0")</div>
+    </div>
+    <div class="stat-card deductions">
+        <div class="stat-label">Total Deductions</div>
+        <div class="stat-value">@ViewBag.TotalDeductions.ToString("N0")</div>
+    </div>
+    <div class="stat-card gross">
+        <div class="stat-label">Total Gross Salary</div>
+        <div class="stat-value">@ViewBag.TotalGrossSalary.ToString("N0")</div>
+    </div>
+    <div class="stat-card net">
+        <div class="stat-label">Total Net Salary</div>
+        <div class="stat-value">@ViewBag.TotalNetSalary.ToString("N0")</div>
+    </div>
+</div>
+
+<!-- Table -->
+<table class="payroll-table">
+    <thead>
+        <tr>
+            <th>S.No</th>
+            <th>Employee</th>
+            <th>Department</th>
+            <th>Designation</th>
+            <th class="text-right">Basic Salary</th>
+            <th class="text-right">Allowances</th>
+            <th class="text-right">Gross Salary</th>
+            <th class="text-right">Deductions</th>
+            <th class="text-right">Net Salary</th>
+            <th>Payment Date</th>
+            <th>Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        @if (Model != null && Model.Any())
+        {
+            int serialNo = 1;
+            @foreach (var payroll in Model)
+            {
+                <tr>
+                    <td>@serialNo</td>
+                    <td>
+                        <div class="employee-info">@payroll.Employee?.Name</div>
+                        <div class="employee-code">@payroll.Employee?.EmployeeCode</div>
+                    </td>
+                    <td>@(payroll.Employee?.DepartmentNavigation?.Name ?? "N/A")</td>
+                    <td>@(payroll.Employee?.DesignationNavigation?.Title ?? "N/A")</td>
+                    <td class="text-right">@payroll.BasicSalary.ToString("N2")</td>
+                    <td class="text-right" style="color: #10b981; font-weight: 600;">@payroll.TotalAllowances.ToString("N2")</td>
+                    <td class="text-right"><strong>@payroll.GrossSalary.ToString("N2")</strong></td>
+                    <td class="text-right" style="color: #ef4444; font-weight: 600;">@payroll.TotalDeductions.ToString("N2")</td>
+                    <td class="text-right"><strong style="color: #2193b0; font-size: 16px;">@payroll.NetSalary.ToString("N2")</strong></td>
+                    <td>@payroll.PaymentDate.ToString("dd-MMM-yyyy")</td>
+                    <td>
+                        @{
+                            var statusClass = payroll.Status switch
+                            {
+                                PayRollManagementSystem.Models.PayrollStatus.Draft => "status-draft",
+                                PayRollManagementSystem.Models.PayrollStatus.Pending => "status-pending",
+                                PayRollManagementSystem.Models.PayrollStatus.Approved => "status-approved",
+                                PayRollManagementSystem.Models.PayrollStatus.Paid => "status-paid",
+                                _ => "status-draft"
+                            };
+                        }
+                        <span class="status-badge @statusClass">@payroll.Status</span>
+                    </td>
+                </tr>
+                serialNo++;
+            }
+        }
+        else
+        {
+            <tr>
+                <td colspan="11" class="empty-state">
+                    <i class="fas fa-file-invoice-dollar" style="font-size: 48px; margin-bottom: 15px; display: block; opacity: 0.3;"></i>
+                    <h3>No payroll records found</h3>
+                    <p>No payroll has been generated for this period</p>
+                </td>
+            </tr>
+        }
+    </tbody>
+    @if (Model != null && Model.Any())
+    {
+        <tfoot>
+            <tr>
+                <td colspan="4"><strong>TOTAL (@ViewBag.TotalEmployees Employees)</strong></td>
+                <td class="text-right"><strong>@ViewBag.TotalBasicSalary.ToString("N2")</strong></td>
+                <td class="text-right"><strong>@ViewBag.TotalAllowances.ToString("N2")</strong></td>
+                <td class="text-right"><strong>@ViewBag.TotalGrossSalary.ToString("N2")</strong></td>
+                <td class="text-right"><strong>@ViewBag.TotalDeductions.ToString("N2")</strong></td>
+                <td class="text-right"><strong>@ViewBag.TotalNetSalary.ToString("N2")</strong></td>
+                <td colspan="2"></td>
+            </tr>
+        </tfoot>
+    }
+</table>
+</div>

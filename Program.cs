@@ -23,6 +23,9 @@ builder.Services.AddScoped<HolidayService>();
 // Register Working Days Service
 builder.Services.AddScoped<WorkingDaysService>();
 
+// Register Leave Approval Service
+builder.Services.AddScoped<LeaveApprovalService>();
+
 builder.Services.AddDefaultIdentity<IdentityUser>(options =>
 {
     options.SignIn.RequireConfirmedAccount = false; // Changed to false so you can login without email confirmation

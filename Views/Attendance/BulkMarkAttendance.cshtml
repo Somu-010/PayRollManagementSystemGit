@@ -2,6 +2,9 @@
 
 @{
     ViewData["Title"] = "Bulk Mark Attendance";
+    var isWorkingDay = ViewBag.IsWorkingDay != null ? (bool)ViewBag.IsWorkingDay : true;
+    var holiday = ViewBag.Holiday as PayRollManagementSystem.Models.Holiday;
+    var isWeekend = ViewBag.IsWeekend != null ? (bool)ViewBag.IsWeekend : false;
 }
 
 <style>
@@ -290,174 +293,268 @@
         background: rgba(109, 213, 237, 0.1);
         border-radius: 8px;
     }
+
+    .alert-holiday {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        box-shadow: 0 6px 20px rgba(245, 87, 108, 0.3);
+        text-align: center;
+    }
+    
+    .alert-holiday h2 {
+        margin: 0 0 15px 0;
+        font-size: 32px;
+    }
+    
+    .alert-holiday p {
+        margin: 0;
+        font-size: 18px;
+        opacity: 0.95;
+    }
+    
+    .alert-weekend {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 30px;
+        border-radius: 16px;
+        margin-bottom: 30px;
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        text-align: center;
+    }
+    
+    .alert-weekend h2 {
+        margin: 0 0 15px 0;
+        font-size: 32px;
+    }
+    
+    .alert-weekend p {
+        margin: 0;
+        font-size: 18px;
+        opacity: 0.95;
+    }
 </style>
 
 <div class="page-header">
-    <h1 class="page-title">👥 Bulk Mark Attendance</h1>
+    <h1 class="page-title">📋 Bulk Mark Attendance - @ViewBag.TodayDate</h1>
     <a asp-action="Index" class="btn-back">← Back to List</a>
 </div>
 
-<!-- Statistics Banner -->
-<div class="stats-banner">
-    <div class="stat-item">
-        <div class="stat-value">@ViewBag.TodayDate</div>
-        <div class="stat-label">📅 Today's Date</div>
+@if (TempData["Info"] != null)
+{
+    <div class="alert" style="background: rgba(59, 130, 246, 0.1); border: 2px solid rgba(59, 130, 246, 0.2); color: #3b82f6; padding: 15px; border-radius: 10px; margin-bottom: 20px;">
+        <span style="font-size: 18px; margin-right: 10px;">ℹ️</span>
+        <span>@TempData["Info"]</span>
     </div>
-    <div class="stat-item">
-        <div class="stat-value">@ViewBag.MarkedCount</div>
-        <div class="stat-label">✓ Already Marked</div>
-    </div>
-    <div class="stat-item">
-        <div class="stat-value">@ViewBag.UnmarkedCount</div>
-        <div class="stat-label">⏳ Pending</div>
-    </div>
-</div>
+}
 
-<!-- Info Box -->
-<div class="info-box">
-    <span class="info-icon">💡</span>
-    <div class="info-content">
-        <h3>Bulk Attendance Marking</h3>
-        <p>Select employees and mark their attendance for today all at once. Already marked employees will not appear in this list. The system will automatically calculate late arrivals based on shift timings.</p>
-    </div>
-</div>
-
-<!-- Form Card -->
-<div class="form-card">
-    @if (Model.Any())
+@if (!isWorkingDay)
+{
+    if (holiday != null)
     {
-        <form asp-action="BulkMarkAttendance" method="post">
-            <div class="form-header">
-                <h3 class="form-title">Select Employees (@ViewBag.UnmarkedCount employees)</h3>
-                <div class="select-actions">
-                    <button type="button" class="btn-select" onclick="selectAll()">✓ Select All</button>
-                    <button type="button" class="btn-select" onclick="deselectAll()">✕ Deselect All</button>
-                </div>
-            </div>
+        <div class="alert-holiday">
+            <div style="font-size: 64px; margin-bottom: 15px;">🎉</div>
+            <h2>@holiday.Name</h2>
+            <p>Today is a holiday. No attendance marking required.</p>
+            @if (!string.IsNullOrEmpty(holiday.Description))
+            {
+                <p style="margin-top: 15px; font-size: 16px; opacity: 0.9;">@holiday.Description</p>
+            }
+        </div>
+    }
+    else if (isWeekend)
+    {
+        <div class="alert-weekend">
+            <div style="font-size: 64px; margin-bottom: 15px;">🏖️</div>
+            <h2>Weekend</h2>
+            <p>Today is a weekend. No attendance marking required.</p>
+            <p style="margin-top: 15px; font-size: 16px; opacity: 0.9;">Enjoy your day off!</p>
+        </div>
+    }
+    
+    <div style="text-align: center; padding: 40px;">
+        <a asp-action="Index" class="btn-back" style="display: inline-block; padding: 15px 40px; font-size: 16px;">
+            ← Back to Attendance Records
+        </a>
+    </div>
+}
+else if (!Model.Any())
+{
+    <div class="info-card" style="text-align: center; padding: 60px; background: white; border-radius: 16px;">
+        <div style="font-size: 64px; margin-bottom: 20px;">✅</div>
+        <h2 style="color: #10b981; margin-bottom: 15px;">All attendance marked!</h2>
+        <p style="color: #5a6c7d; font-size: 16px;">Attendance has been marked for all active employees today.</p>
+        <p style="color: #5a6c7d; margin-top: 10px;">
+            <strong>Marked:</strong> @ViewBag.MarkedCount employee(s)
+        </p>
+    </div>
+}
+else
+{
+    <!-- Statistics Banner -->
+    <div class="stats-banner">
+        <div class="stat-item">
+            <div class="stat-value">@ViewBag.TodayDate</div>
+            <div class="stat-label">📅 Today's Date</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">@ViewBag.MarkedCount</div>
+            <div class="stat-label">✓ Already Marked</div>
+        </div>
+        <div class="stat-item">
+            <div class="stat-value">@ViewBag.UnmarkedCount</div>
+            <div class="stat-label">⏳ Pending</div>
+        </div>
+    </div>
 
-            <div class="employee-list" id="employeeList">
-                @foreach (var employee in Model)
-                {
-                    <div class="employee-card" onclick="toggleCard(this)">
-                        <div class="employee-checkbox">
-                            <input type="checkbox"
-                                   name="selectedEmployees"
-                                   value="@employee.EmployeeId"
-                                   onchange="updateSelectedCount()" />
-                            <div class="employee-avatar">@employee.Name.Substring(0, Math.Min(2, employee.Name.Length)).ToUpper()</div>
-                            <div class="employee-details">
-                                <div class="name">@employee.Name</div>
-                                <div class="info">
-                                    @employee.EmployeeCode • @employee.Department<br />
-                                    @if (employee.ShiftNavigation != null)
-                                    {
-                                        <span style="color: #2193b0; font-weight: 600;">
-                                            ⏰ @employee.ShiftNavigation.ShiftName: @employee.ShiftNavigation.StartTime.ToString(@"hh\:mm") - @employee.ShiftNavigation.EndTime.ToString(@"hh\:mm")
-                                        </span>
-                                    }
-                                    else
-                                    {
-                                        <span style="color: #ef4444;">⚠️ No Shift Assigned</span>
-                                    }
+    <!-- Info Box -->
+    <div class="info-box">
+        <span class="info-icon">💡</span>
+        <div class="info-content">
+            <h3>Bulk Attendance Marking</h3>
+            <p>Select employees and mark their attendance for today all at once. Already marked employees will not appear in this list. The system will automatically calculate late arrivals based on shift timings.</p>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="form-card">
+        @if (Model.Any())
+        {
+            <form asp-action="BulkMarkAttendance" method="post">
+                <div class="form-header">
+                    <h3 class="form-title">Select Employees (@ViewBag.UnmarkedCount employees)</h3>
+                    <div class="select-actions">
+                        <button type="button" class="btn-select" onclick="selectAll()">✓ Select All</button>
+                        <button type="button" class="btn-select" onclick="deselectAll()">✕ Deselect All</button>
+                    </div>
+                </div>
+
+                <div class="employee-list" id="employeeList">
+                    @foreach (var employee in Model)
+                    {
+                        <div class="employee-card" onclick="toggleCard(this)">
+                            <div class="employee-checkbox">
+                                <input type="checkbox"
+                                       name="selectedEmployees"
+                                       value="@employee.EmployeeId"
+                                       onchange="updateSelectedCount()" />
+                                <div class="employee-avatar">@employee.Name.Substring(0, Math.Min(2, employee.Name.Length)).ToUpper()</div>
+                                <div class="employee-details">
+                                    <div class="name">@employee.Name</div>
+                                    <div class="info">
+                                        @employee.EmployeeCode • @employee.Department<br />
+                                        @if (employee.ShiftNavigation != null)
+                                        {
+                                            <span style="color: #2193b0; font-weight: 600;">
+                                                ⏰ @employee.ShiftNavigation.ShiftName: @employee.ShiftNavigation.StartTime.ToString(@"hh\:mm") - @employee.ShiftNavigation.EndTime.ToString(@"hh\:mm")
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color: #ef4444;">⚠️ No Shift Assigned</span>
+                                        }
+                                    </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                }
-            </div>
-
-            <div class="form-actions">
-                <div class="status-selector">
-                    <label>Attendance Status</label>
-                    <select name="bulkStatus" required>
-                        <option value="Present">✓ Present</option>
-                        <option value="Absent">✕ Absent</option>
-                        <option value="Late">⏰ Late</option>
-                        <option value="OnLeave">🏖️ On Leave</option>
-                        <option value="HalfDay">⏱️ Half Day</option>
-                    </select>
+                    }
                 </div>
-                <span class="selected-count" id="selectedCount">0 employees selected</span>
-                <button type="submit" class="btn-submit" id="submitBtn" disabled>
-                    ✓ Mark Attendance for Selected
-                </button>
+
+                <div class="form-actions">
+                    <div class="status-selector">
+                        <label>Attendance Status</label>
+                        <select name="bulkStatus" required>
+                            <option value="Present">✓ Present</option>
+                            <option value="Absent">✕ Absent</option>
+                            <option value="Late">⏰ Late</option>
+                            <option value="OnLeave">🏖️ On Leave</option>
+                            <option value="HalfDay">⏱️ Half Day</option>
+                        </select>
+                    </div>
+                    <span class="selected-count" id="selectedCount">0 employees selected</span>
+                    <button type="submit" class="btn-submit" id="submitBtn" disabled>
+                        ✓ Mark Attendance for Selected
+                    </button>
+                </div>
+            </form>
+        }
+        else
+        {
+            <div class="no-records">
+                <h3>🎉 All Done!</h3>
+                <p>Attendance has been marked for all active employees today.</p>
+                <a asp-action="Index" class="btn-back">View Attendance Records →</a>
             </div>
-        </form>
-    }
-    else
-    {
-        <div class="no-records">
-            <h3>🎉 All Done!</h3>
-            <p>Attendance has been marked for all active employees today.</p>
-            <a asp-action="Index" class="btn-back">View Attendance Records →</a>
-        </div>
-    }
-</div>
-
-@section Scripts {
-    <script>
-        function toggleCard(card) {
-            const checkbox = card.querySelector('input[type="checkbox"]');
-            checkbox.checked = !checkbox.checked;
-            updateCard(card, checkbox.checked);
-            updateSelectedCount();
         }
+    </div>
 
-        function updateCard(card, isSelected) {
-            if (isSelected) {
-                card.classList.add('selected');
-            } else {
-                card.classList.remove('selected');
-            }
-        }
-
-        function selectAll() {
-            const checkboxes = document.querySelectorAll('input[name="selectedEmployees"]');
-            const cards = document.querySelectorAll('.employee-card');
-
-            checkboxes.forEach((checkbox, index) => {
-                checkbox.checked = true;
-                updateCard(cards[index], true);
-            });
-
-            updateSelectedCount();
-        }
-
-        function deselectAll() {
-            const checkboxes = document.querySelectorAll('input[name="selectedEmployees"]');
-            const cards = document.querySelectorAll('.employee-card');
-
-            checkboxes.forEach((checkbox, index) => {
-                checkbox.checked = false;
-                updateCard(cards[index], false);
-            });
-
-            updateSelectedCount();
-        }
-
-        function updateSelectedCount() {
-            const checkboxes = document.querySelectorAll('input[name="selectedEmployees"]:checked');
-            const count = checkboxes.length;
-            const countElement = document.getElementById('selectedCount');
-            const submitBtn = document.getElementById('submitBtn');
-
-            countElement.textContent = `${count} employee${count !== 1 ? 's' : ''} selected`;
-
-            if (count > 0) {
-                submitBtn.disabled = false;
-            } else {
-                submitBtn.disabled = true;
-            }
-        }
-
-        // Prevent card click when clicking checkbox directly
-        document.querySelectorAll('input[name="selectedEmployees"]').forEach(checkbox => {
-            checkbox.addEventListener('click', (e) => {
-                e.stopPropagation();
-                const card = checkbox.closest('.employee-card');
+    @section Scripts {
+        <script>
+            function toggleCard(card) {
+                const checkbox = card.querySelector('input[type="checkbox"]');
+                checkbox.checked = !checkbox.checked;
                 updateCard(card, checkbox.checked);
                 updateSelectedCount();
+            }
+
+            function updateCard(card, isSelected) {
+                if (isSelected) {
+                    card.classList.add('selected');
+                } else {
+                    card.classList.remove('selected');
+                }
+            }
+
+            function selectAll() {
+                const checkboxes = document.querySelectorAll('input[name="selectedEmployees"]');
+                const cards = document.querySelectorAll('.employee-card');
+
+                checkboxes.forEach((checkbox, index) => {
+                    checkbox.checked = true;
+                    updateCard(cards[index], true);
+                });
+
+                updateSelectedCount();
+            }
+
+            function deselectAll() {
+                const checkboxes = document.querySelectorAll('input[name="selectedEmployees"]');
+                const cards = document.querySelectorAll('.employee-card');
+
+                checkboxes.forEach((checkbox, index) => {
+                    checkbox.checked = false;
+                    updateCard(cards[index], false);
+                });
+
+                updateSelectedCount();
+            }
+
+            function updateSelectedCount() {
+                const checkboxes = document.querySelectorAll('input[name="selectedEmployees"]:checked');
+                const count = checkboxes.length;
+                const countElement = document.getElementById('selectedCount');
+                const submitBtn = document.getElementById('submitBtn');
+
+                countElement.textContent = `${count} employee${count !== 1 ? 's' : ''} selected`;
+
+                if (count > 0) {
+                    submitBtn.disabled = false;
+                } else {
+                    submitBtn.disabled = true;
+                }
+            }
+
+            // Prevent card click when clicking checkbox directly
+            document.querySelectorAll('input[name="selectedEmployees"]').forEach(checkbox => {
+                checkbox.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const card = checkbox.closest('.employee-card');
+                    updateCard(card, checkbox.checked);
+                    updateSelectedCount();
+                });
             });
-        });
-    </script>
+        </script>
+    }
 }

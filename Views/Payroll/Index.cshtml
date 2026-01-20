@@ -498,10 +498,10 @@
                                 </div>
                             </td>
                             <td>@item.PayPeriod</td>
-                            <td><span class="amount-display">@item.BasicSalary.ToString("C0")</span></td>
-                            <td><span class="amount-display">@item.GrossSalary.ToString("C0")</span></td>
-                            <td><span style="color: #ef4444; font-weight: 600;">@item.TotalDeductions.ToString("C0")</span></td>
-                            <td><strong class="amount-display" style="font-size: 16px;">@item.NetSalary.ToString("C0")</strong></td>
+                            <td><span class="amount-display">@item.BasicSalary.ToString("N0")</span></td>
+                            <td><span class="amount-display">@item.GrossSalary.ToString("N0")</span></td>
+                            <td><span style="color: #ef4444; font-weight: 600;">@item.TotalDeductions.ToString("N0")</span></td>
+                            <td><strong class="amount-display" style="font-size: 16px;">@item.NetSalary.ToString("N0")</strong></td>
                             <td>
                                 @{
                                     var statusClass = item.Status switch
@@ -550,7 +550,7 @@
 <div class="modal" id="deleteModal">
     <div class="modal-header">
         <h3 class="modal-title">&#128465; Delete Payroll</h3>
-        <button class="modal-close" onclick="closeDeleteModal()">×</button>
+        <button class="modal-close" onclick="closeDeleteModal()">&times;</button>
     </div>
     <form id="deleteForm" onsubmit="handleDelete(event)">
         @Html.AntiForgeryToken()
