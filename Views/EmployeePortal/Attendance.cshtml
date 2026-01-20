@@ -424,7 +424,20 @@
                                 <span style="color: #ef4444; font-size: 11px;"> (Late)</span>
                             }
                         </td>
-                        <td>@(item.CheckOutTime?.ToString(@"hh\:mm") ?? "-")</td>
+                        <td>
+                            @if (item.CheckOutTime.HasValue)
+                            {
+                                @item.CheckOutTime.Value.ToString(@"hh\:mm")
+                                @if (item.IsEarlyLeave && item.EarlyLeaveByMinutes > 0)
+                                {
+                                    <span style="color: #f59e0b; font-size: 11px;"> (Early Leave)</span>
+                                }
+                            }
+                            else
+                            {
+                                <text>-</text>
+                            }
+                        </td>
                         <td>
                             <strong>@(item.TotalHours?.ToString("0.00") ?? "0") hrs</strong>
                             @if (item.OvertimeHours > 0)

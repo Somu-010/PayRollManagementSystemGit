@@ -274,39 +274,52 @@ namespace PayRollManagementSystem.Controllers
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier) ?? "System";
             var userName = User.Identity?.Name ?? "System";
 
-            // Calculate attendance using WorkingDaysService for accurate working days
-            var attendanceSummary = await _workingDaysService.CalculateAttendanceSummary(
-                employee.EmployeeId, 
-                year, 
-                month
-            );
-
+            // Determine the calculation end date
+            var today = DateTime.Today;
             var firstDayOfMonth = new DateTime(year, month, 1);
             var lastDayOfMonth = firstDayOfMonth.AddMonths(1).AddDays(-1);
+            
+            // If generating for current month, calculate only up to today
+            // Otherwise, calculate for the full month
+            var calculationEndDate = (year == today.Year && month == today.Month) ? today : lastDayOfMonth;
 
-            // Get attendance records
+            // Calculate attendance using WorkingDaysService for accurate working days
+            // We'll manually calculate for the prorated period
+            var totalWorkingDays = await _workingDaysService.GetWorkingDaysBetween(firstDayOfMonth, calculationEndDate);
+            var totalMonthWorkingDays = await _workingDaysService.GetWorkingDaysInMonth(year, month);
+
+            // Get attendance records (only up to calculation end date)
             var attendances = await _context.Attendances
                 .Where(a => a.EmployeeId == employee.EmployeeId &&
                            a.Date >= firstDayOfMonth &&
-                           a.Date <= lastDayOfMonth)
+                           a.Date <= calculationEndDate)
                 .ToListAsync();
 
-            // Use accurate working days calculation
-            int totalWorkingDays = attendanceSummary.TotalWorkingDays;
-            int presentDays = attendanceSummary.PresentDays;
-            int absentDays = attendanceSummary.AbsentDays;  // Already includes unmarked days
-            int lateDays = attendanceSummary.LateDays;
+            // Count present days (includes late)
+            int presentDays = attendances.Count(a => a.Status == AttendanceStatus.Present || 
+                                                     a.Status == AttendanceStatus.Late ||
+                                                     a.Status == AttendanceStatus.OnLeave);
+            
+            // Calculate absent days (unmarked working days + marked absent)
+            int markedAbsent = attendances.Count(a => a.Status == AttendanceStatus.Absent);
+            int markedDays = attendances.Count;
+            int unmarkedDays = totalWorkingDays - markedDays;
+            int absentDays = markedAbsent + unmarkedDays;
+            
+            int lateDays = attendances.Count(a => a.IsLate);
             
             // Calculate overtime hours
-            decimal totalOvertimeHours = attendanceSummary.OvertimeHours;
+            decimal totalOvertimeHours = attendances
+                .Where(a => a.OvertimeHours.HasValue)
+                .Sum(a => a.OvertimeHours.Value);
 
-            // Calculate leave days
+            // Calculate leave days (only within the calculation period)
             var leaves = await _context.Leaves
                 .Where(l => l.EmployeeId == employee.EmployeeId &&
                            l.Status == LeaveStatus.Approved &&
-                           ((l.StartDate >= firstDayOfMonth && l.StartDate <= lastDayOfMonth) ||
-                            (l.EndDate >= firstDayOfMonth && l.EndDate <= lastDayOfMonth) ||
-                            (l.StartDate <= firstDayOfMonth && l.EndDate >= lastDayOfMonth)))
+                           ((l.StartDate >= firstDayOfMonth && l.StartDate <= calculationEndDate) ||
+                            (l.EndDate >= firstDayOfMonth && l.EndDate <= calculationEndDate) ||
+                            (l.StartDate <= firstDayOfMonth && l.EndDate >= calculationEndDate)))
                 .ToListAsync();
 
             int leaveDays = 0;
@@ -316,7 +329,7 @@ namespace PayRollManagementSystem.Controllers
             foreach (var leave in leaves)
             {
                 var leaveStart = leave.StartDate < firstDayOfMonth ? firstDayOfMonth : leave.StartDate;
-                var leaveEnd = leave.EndDate > lastDayOfMonth ? lastDayOfMonth : leave.EndDate;
+                var leaveEnd = leave.EndDate > calculationEndDate ? calculationEndDate : leave.EndDate;
                 int days = (int)(leaveEnd - leaveStart).TotalDays + 1;
 
                 leaveDays += days;
@@ -334,9 +347,10 @@ namespace PayRollManagementSystem.Controllers
             var companySetting = await _context.CompanySettings.FirstOrDefaultAsync();
             decimal overtimeRatePerHour = companySetting?.OvertimeRate ?? 150; // Default 150 BDT/hour if not set
 
-            // Calculate basic salary
-            decimal basicSalary = employee.BasicSalary;
-            decimal perDaySalary = basicSalary / totalWorkingDays;
+            // Calculate PRORATED basic salary based on working days
+            decimal fullBasicSalary = employee.BasicSalary;
+            decimal proratedBasicSalary = (fullBasicSalary / totalMonthWorkingDays) * totalWorkingDays;
+            decimal perDaySalary = fullBasicSalary / totalMonthWorkingDays;
 
             // Calculate absence deduction (unpaid leaves + absent days)
             int totalAbsenceDays = unpaidLeaves + absentDays;
@@ -386,10 +400,13 @@ namespace PayRollManagementSystem.Controllers
                 });
             }
 
-            // Calculate other allowances and deductions
+            // Calculate other allowances and deductions (PRORATED)
             foreach (var component in activeComponents)
             {
-                decimal amount = CalculateComponentAmount(component, basicSalary, basicSalary + totalAllowances);
+                decimal fullAmount = CalculateComponentAmount(component, fullBasicSalary, fullBasicSalary + totalAllowances);
+                
+                // Prorate the allowances/deductions if generating mid-month
+                decimal amount = (fullAmount / totalMonthWorkingDays) * totalWorkingDays;
 
                 var detail = new PayrollDetail
                 {
@@ -399,7 +416,10 @@ namespace PayRollManagementSystem.Controllers
                     CalculationMethod = component.CalculationMethod,
                     ComponentValue = component.Value,
                     Amount = amount,
-                    IsTaxable = component.IsTaxable
+                    IsTaxable = component.IsTaxable,
+                    Remarks = calculationEndDate < lastDayOfMonth 
+                        ? $"Prorated for {totalWorkingDays}/{totalMonthWorkingDays} days (up to {calculationEndDate:dd MMM})"
+                        : null
                 };
 
                 payrollDetails.Add(detail);
@@ -414,24 +434,31 @@ namespace PayRollManagementSystem.Controllers
                 }
             }
 
-            decimal grossSalary = basicSalary + totalAllowances;
+            decimal grossSalary = proratedBasicSalary + totalAllowances;
             decimal netSalary = grossSalary - totalDeductions;
+
+            // Generate appropriate payroll number with prorated indicator
+            var payrollNumber = GeneratePayrollNumber(employee, month, year);
+            if (calculationEndDate < lastDayOfMonth)
+            {
+                payrollNumber += $"-PARTIAL";
+            }
 
             var payroll = new Payroll
             {
-                PayrollNumber = GeneratePayrollNumber(employee, month, year),
+                PayrollNumber = payrollNumber,
                 EmployeeId = employee.EmployeeId,
                 Month = month,
                 Year = year,
-                PaymentDate = lastDayOfMonth,
-                BasicSalary = basicSalary,
+                PaymentDate = calculationEndDate, // Set to actual calculation date
+                BasicSalary = proratedBasicSalary, // Store prorated basic salary
                 TotalAllowances = totalAllowances,
                 TotalDeductions = totalDeductions,
                 GrossSalary = grossSalary,
                 NetSalary = netSalary,
-                TotalWorkingDays = totalWorkingDays,
+                TotalWorkingDays = totalWorkingDays, // Actual working days calculated
                 PresentDays = presentDays,
-                AbsentDays = absentDays,  // Includes unmarked days automatically
+                AbsentDays = absentDays,
                 LeaveDays = leaveDays,
                 PaidLeaves = paidLeaves,
                 UnpaidLeaves = unpaidLeaves,
@@ -442,7 +469,10 @@ namespace PayRollManagementSystem.Controllers
                 Status = PayrollStatus.Pending,
                 CreatedBy = userName,
                 CreatedAt = DateTime.Now,
-                PayrollDetails = payrollDetails
+                PayrollDetails = payrollDetails,
+                Remarks = calculationEndDate < lastDayOfMonth 
+                    ? $"Prorated payroll calculated up to {calculationEndDate:dd MMMM yyyy} ({totalWorkingDays} of {totalMonthWorkingDays} working days)"
+                    : $"Full month payroll for {firstDayOfMonth:MMMM yyyy} ({totalWorkingDays} working days)"
             };
 
             return payroll;

@@ -195,7 +195,7 @@ namespace PayRollManagementSystem.Controllers
             var totalCalendarDays = _workingDaysService.GetTotalDaysInMonth(selectedYear, selectedMonth);
             
             // Calculate stats
-            ViewBag.TotalDays = totalWorkingDays;  // Show working days, not calendar days
+            ViewBag.TotalDays = totalWorkingDays; // Show working days, not calendar days
             ViewBag.TotalCalendarDays = totalCalendarDays;
             ViewBag.PresentDays = attendanceList.Count(a => a.Status == AttendanceStatus.Present || a.Status == AttendanceStatus.Late);
             ViewBag.AbsentDays = attendanceList.Count(a => a.Status == AttendanceStatus.Absent);
@@ -286,6 +286,15 @@ namespace PayRollManagementSystem.Controllers
 
             if (existingAttendance != null)
             {
+                // Check if already checked out
+                if (existingAttendance.CheckOutTime.HasValue)
+                {
+                    return Json(new { 
+                        success = false, 
+                        message = "You have already completed your attendance for today. You cannot check in again after checking out!" 
+                    });
+                }
+                
                 return Json(new { success = false, message = "You have already checked in today!" });
             }
 
@@ -362,15 +371,20 @@ namespace PayRollManagementSystem.Controllers
                     totalMinutes = (new TimeSpan(24, 0, 0) - attendance.CheckInTime + currentTime).TotalMinutes;
                 }
 
-                // Subtract break duration
+                // Subtract break duration (ensure it doesn't go negative)
                 totalMinutes -= shift.BreakDuration;
+                if (totalMinutes < 0)
+                {
+                    totalMinutes = 0;
+                }
+                
                 attendance.TotalHours = (decimal)(totalMinutes / 60);
 
                 // Check for early leave
                 if (currentTime < shift.EndTime)
                 {
                     var earlyLeaveMinutes = (int)(shift.EndTime - currentTime).TotalMinutes;
-                    if (earlyLeaveMinutes > 5)
+                    if (earlyLeaveMinutes > 5) // Grace period of 5 minutes
                     {
                         attendance.IsEarlyLeave = true;
                         attendance.EarlyLeaveByMinutes = earlyLeaveMinutes;
@@ -394,16 +408,32 @@ namespace PayRollManagementSystem.Controllers
             {
                 // No shift defined, just calculate basic hours
                 var totalMinutes = (currentTime - attendance.CheckInTime).TotalMinutes;
+                if (totalMinutes < 0)
+                {
+                    totalMinutes = 0;
+                }
                 attendance.TotalHours = (decimal)(totalMinutes / 60);
             }
 
             attendance.UpdatedAt = DateTime.Now;
             await _context.SaveChangesAsync();
 
+            // Build detailed message
             var message = $"Checked out at {currentTime:hh\\:mm}. Total hours: {attendance.TotalHours:0.00}";
+            
+            if (attendance.IsEarlyLeave && attendance.EarlyLeaveByMinutes > 0)
+            {
+                message += $" (Early by {attendance.EarlyLeaveByMinutes} minutes)";
+            }
+            
             if (attendance.OvertimeHours > 0)
             {
                 message += $". Overtime: {attendance.OvertimeHours:0.00} hours";
+            }
+            
+            if (attendance.IsHalfDay)
+            {
+                message += " - Marked as Half Day";
             }
 
             return Json(new { 
@@ -411,7 +441,9 @@ namespace PayRollManagementSystem.Controllers
                 message = message,
                 totalHours = attendance.TotalHours,
                 overtimeHours = attendance.OvertimeHours ?? 0,
-                isEarlyLeave = attendance.IsEarlyLeave
+                isEarlyLeave = attendance.IsEarlyLeave,
+                earlyLeaveByMinutes = attendance.EarlyLeaveByMinutes ?? 0,
+                isHalfDay = attendance.IsHalfDay
             });
         }
 

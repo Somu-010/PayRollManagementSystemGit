@@ -423,16 +423,47 @@
                         <div class="label">Total Hours</div>
                         <div class="value">@(todayAttendance.TotalHours?.ToString("0.00") ?? "0") hrs</div>
                     </div>
+                    @if (todayAttendance.IsEarlyLeave && todayAttendance.EarlyLeaveByMinutes > 0)
+                    {
+                        <div class="status-item">
+                            <div class="label">Early Leave</div>
+                            <div class="value" style="color: #fb923c;">
+                                @todayAttendance.EarlyLeaveByMinutes min
+                                <i class="fas fa-clock" style="font-size: 14px;"></i>
+                            </div>
+                        </div>
+                    }
                     @if (todayAttendance.OvertimeHours > 0)
                     {
                         <div class="status-item">
                             <div class="label">Overtime</div>
-                            <div class="value">@todayAttendance.OvertimeHours.Value.ToString("0.00") hrs</div>
+                            <div class="value" style="color: #6366f1;">
+                                @todayAttendance.OvertimeHours.Value.ToString("0.00") hrs
+                                <i class="fas fa-star" style="font-size: 14px;"></i>
+                            </div>
+                        </div>
+                    }
+                    @if (todayAttendance.IsHalfDay)
+                    {
+                        <div class="status-item">
+                            <div class="label">Day Type</div>
+                            <div class="value" style="color: #eab308;">
+                                Half Day
+                                <i class="fas fa-hourglass-half" style="font-size: 14px;"></i>
+                            </div>
                         </div>
                     }
                 </div>
             </div>
 
+            @if (todayAttendance.IsEarlyLeave)
+            {
+                <div class="alert-warning">
+                    <i class="fas fa-exclamation-triangle"></i> 
+                    You checked out early today (@todayAttendance.EarlyLeaveByMinutes minutes before shift end time).
+                </div>
+            }
+            
             <div class="alert-info">
                 <i class="fas fa-check-circle"></i> You have successfully completed your attendance for today. Have a great day!
             </div>
@@ -458,80 +489,98 @@
             const displayHours = hours % 12 || 12;
             
             const timeString = `${displayHours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')} ${ampm}`;
-            document.getElementById('currentTime').textContent = timeString;
+            const timeElement = document.getElementById('currentTime');
+            if (timeElement) {
+                timeElement.textContent = timeString;
+            }
         }
 
         setInterval(updateTime, 1000);
 
+        // Get anti-forgery token
+        function getAntiForgeryToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        }
+
         // Check In
-        document.getElementById('btnCheckIn')?.addEventListener('click', function() {
-            if (!confirm('Are you sure you want to check in now?')) {
-                return;
-            }
-
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking In...';
-
-            fetch('@Url.Action("CheckIn", "EmployeePortal")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+        const checkInBtn = document.getElementById('btnCheckIn');
+        if (checkInBtn) {
+            checkInBtn.addEventListener('click', function() {
+                if (!confirm('Are you sure you want to check in now?')) {
+                    return;
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showToast(data.message, 'error');
+
+                const btn = this;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking In...';
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('__RequestVerificationToken', getAntiForgeryToken());
+
+                fetch('@Url.Action("CheckIn", "EmployeePortal")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast(data.message, 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Check In';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('An error occurred. Please try again.', 'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Check In';
-                }
-            })
-            .catch(error => {
-                showToast('An error occurred. Please try again.', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Check In';
+                });
             });
-        });
+        }
 
         // Check Out
-        document.getElementById('btnCheckOut')?.addEventListener('click', function() {
-            if (!confirm('Are you sure you want to check out now?')) {
-                return;
-            }
-
-            const btn = this;
-            btn.disabled = true;
-            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Out...';
-
-/fetch('@Url.Action("CheckOut", "EmployeePortal")', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'RequestVerificationToken': document.querySelector('input[name="__RequestVerificationToken"]')?.value
+        const checkOutBtn = document.getElementById('btnCheckOut');
+        if (checkOutBtn) {
+            checkOutBtn.addEventListener('click', function() {
+                if (!confirm('Are you sure you want to check out now?')) {
+                    return;
                 }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    showToast(data.message, 'success');
-                    setTimeout(() => location.reload(), 1500);
-                } else {
-                    showToast(data.message, 'error');
+
+                const btn = this;
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Out...';
+
+                // Create form data
+                const formData = new FormData();
+                formData.append('__RequestVerificationToken', getAntiForgeryToken());
+
+                fetch('@Url.Action("CheckOut", "EmployeePortal")', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        showToast(data.message, 'success');
+                        setTimeout(() => location.reload(), 1500);
+                    } else {
+                        showToast(data.message, 'error');
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Check Out';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    showToast('An error occurred. Please try again.', 'error');
                     btn.disabled = false;
                     btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Check Out';
-                }
-            })
-            .catch(error => {
-                showToast('An error occurred. Please try again.', 'error');
-                btn.disabled = false;
-                btn.innerHTML = '<i class="fas fa-sign-out-alt"></i> Check Out';
+                });
             });
-        });
+        }
 
         function showToast(message, type) {
             // Use the existing toast notification system
@@ -542,11 +591,16 @@
             toast.style.right = '20px';
             toast.style.zIndex = '9999';
             toast.style.minWidth = '300px';
-            toast.innerHTML = message;
+            toast.style.padding = '15px 20px';
+            toast.style.borderRadius = '8px';
+            toast.style.boxShadow = '0 4px 12px rgba(0,0,0,0.15)';
+            toast.innerHTML = `<strong>${type === 'success' ? '?' : '?'}</strong> ${message}`;
             document.body.appendChild(toast);
             
             setTimeout(() => {
-                toast.remove();
+                toast.style.transition = 'opacity 0.3s';
+                toast.style.opacity = '0';
+                setTimeout(() => toast.remove(), 300);
             }, 5000);
         }
     </script>
