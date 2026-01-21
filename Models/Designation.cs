@@ -29,14 +29,6 @@ namespace PayRollManagementSystem.Models
         [Display(Name = "Level")]
         public string? Level { get; set; } // e.g., Entry, Mid, Senior, Executive
 
-        [Display(Name = "Minimum Salary")]
-        [Range(0, double.MaxValue, ErrorMessage = "Minimum salary must be a positive number")]
-        public decimal? MinimumSalary { get; set; }
-
-        [Display(Name = "Maximum Salary")]
-        [Range(0, double.MaxValue, ErrorMessage = "Maximum salary must be a positive number")]
-        public decimal? MaximumSalary { get; set; }
-
         [Required]
         [Display(Name = "Status")]
         public DesignationStatus Status { get; set; } = DesignationStatus.Active;

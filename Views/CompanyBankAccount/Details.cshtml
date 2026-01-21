@@ -1,0 +1,315 @@
+@model PayRollManagementSystem.Models.CompanyBankAccount
+
+@{
+    ViewData["Title"] = "Bank Account Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-university text-primary"></i> Bank Account Details
+            </h2>
+            <p class="text-muted mb-0">@Model.AccountName</p>
+        </div>
+        <div class="d-flex gap-2">
+            <a asp-action="Edit" asp-route-id="@Model.CompanyBankAccountId" class="btn btn-primary">
+                <i class="fas fa-edit"></i> Edit
+            </a>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Account Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header @(Model.IsPrimary ? "bg-primary text-white" : "bg-light") border-0 d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Account Information
+                    </h5>
+                    @if (Model.IsPrimary)
+                    {
+                        <span class="badge bg-warning text-dark">
+                            <i class="fas fa-star"></i> Primary
+                        </span>
+                    }
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Account Name</strong>
+                            <p class="mb-0">@Model.AccountName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Account Type</strong>
+                            <p class="mb-0">
+                                <span class="badge bg-info">@Model.AccountType.ToString().Replace("_", " ")</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Bank Name</strong>
+                            <p class="mb-0">@Model.BankName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Branch Name</strong>
+                            <p class="mb-0">@(Model.BranchName ?? "N/A")</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Account Number</strong>
+                            <p class="mb-0"><code class="text-dark">@Model.AccountNumber</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Routing Number</strong>
+                            <p class="mb-0"><code class="text-dark">@(Model.RoutingNumber ?? "N/A")</code></p>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.SwiftCode))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">SWIFT Code</strong>
+                                <p class="mb-0"><code class="text-dark">@Model.SwiftCode</code></p>
+                            </div>
+                        </div>
+                    }
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Status</strong>
+                            <p class="mb-0">
+                                @if (Model.Status == PayRollManagementSystem.Models.BankAccountStatus.Active)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check-circle"></i> Active</span>
+                                }
+                                else if (Model.Status == PayRollManagementSystem.Models.BankAccountStatus.Inactive)
+                                {
+                                    <span class="badge bg-secondary"><i class="fas fa-pause-circle"></i> Inactive</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger"><i class="fas fa-ban"></i> Suspended</span>
+                                }
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Created</strong>
+                            <p class="mb-0">@Model.CreatedAt.ToString("dd MMM yyyy, hh:mm tt")</p>
+                            @if (Model.UpdatedAt.HasValue)
+                            {
+                                <strong class="text-muted d-block small mb-1 mt-2">Last Updated</strong>
+                                <p class="mb-0">@Model.UpdatedAt.Value.ToString("dd MMM yyyy, hh:mm tt")</p>
+                            }
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="row">
+                            <div class="col-12">
+                                <strong class="text-muted d-block small mb-1">Description</strong>
+                                <p class="mb-0">@Model.Description</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Balance Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-success text-white border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-money-bill-wave"></i> Balance Information
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    @if (Model.AvailableBalance.HasValue)
+                    {
+                        <div class="text-center py-4">
+                            <small class="text-muted d-block mb-2">Available Balance</small>
+                            <h2 class="display-4 text-success mb-3">
+                                <i class="fas fa-money-bill-wave"></i>
+                                @Model.AvailableBalance.Value.ToString("N2")
+                            </h2>
+                            <div class="alert alert-info mb-0">
+                                <i class="fas fa-bolt"></i>
+                                <strong>Auto Balance Reduction:</strong> This balance automatically reduces when payments are completed.
+                            </div>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-4">
+                            <i class="fas fa-info-circle fa-3x text-muted mb-3 d-block"></i>
+                            <p class="text-muted mb-3">Balance tracking is not enabled for this account.</p>
+                            <a asp-action="Edit" asp-route-id="@Model.CompanyBankAccountId" class="btn btn-sm btn-primary">
+                                <i class="fas fa-edit"></i> Enable Balance Tracking
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Recent Transactions -->
+            @if (Model.PaymentTransactions != null && Model.PaymentTransactions.Any())
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-primary text-white border-0 d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history"></i> Recent Transactions
+                        </h5>
+                        <span class="badge bg-light text-dark">@Model.PaymentTransactions.Count()</span>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="bg-light">
+                                    <tr>
+                                        <th class="border-0">Date</th>
+                                        <th class="border-0">Transaction #</th>
+                                        <th class="border-0">Employee</th>
+                                        <th class="border-0">Amount</th>
+                                        <th class="border-0">Status</th>
+                                        <th class="border-0">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var transaction in Model.PaymentTransactions.OrderByDescending(t => t.InitiatedDate).Take(10))
+                                    {
+                                        <tr>
+                                            <td>@transaction.InitiatedDate.ToString("dd MMM yyyy")</td>
+                                            <td><code class="small">@transaction.TransactionNumber</code></td>
+                                            <td>@transaction.Payroll?.Employee?.Name</td>
+                                            <td class="text-danger fw-bold">-@transaction.Amount.ToString("N2")</td>
+                                            <td>
+                                                @if (transaction.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Completed)
+                                                {
+                                                    <span class="badge bg-success">Completed</span>
+                                                }
+                                                else if (transaction.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Pending)
+                                                {
+                                                    <span class="badge bg-secondary">Pending</span>
+                                                }
+                                                else if (transaction.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Processing)
+                                                {
+                                                    <span class="badge bg-warning">Processing</span>
+                                                }
+                                                else if (transaction.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Failed)
+                                                {
+                                                    <span class="badge bg-danger">Failed</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="badge bg-dark">Cancelled</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                <a asp-controller="Payment" asp-action="Details" asp-route-id="@transaction.PaymentTransactionId" 
+                                                   class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i> View
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body text-center py-5">
+                        <i class="fas fa-inbox fa-4x text-muted mb-3 d-block"></i>
+                        <h5 class="text-muted">No transactions found</h5>
+                        <p class="text-muted mb-0">This account hasn't been used for any payments yet.</p>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            <!-- Quick Actions -->
+            <div class="card border-0 shadow-sm mb-3">
+                <div class="card-header bg-gradient text-white border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt"></i> Quick Actions
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Edit" asp-route-id="@Model.CompanyBankAccountId" class="btn btn-primary">
+                            <i class="fas fa-edit"></i> Edit Account
+                        </a>
+                        @if (Model.AvailableBalance.HasValue)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.CompanyBankAccountId" class="btn btn-outline-success">
+                                <i class="fas fa-money-bill-wave"></i> Adjust Balance
+                            </a>
+                        }
+                        @if (!Model.IsPrimary)
+                        {
+                            <a asp-action="Delete" asp-route-id="@Model.CompanyBankAccountId" class="btn btn-outline-danger">
+                                <i class="fas fa-trash"></i> Delete Account
+                            </a>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics -->
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-success text-white border-0">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar"></i> Statistics
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @if (Model.PaymentTransactions != null && Model.PaymentTransactions.Any())
+                    {
+                        var completedTransactions = Model.PaymentTransactions.Where(t => t.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Completed);
+                        var totalPaid = completedTransactions.Sum(t => t.Amount);
+
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Total Transactions</small>
+                            <h4 class="mb-0">@Model.PaymentTransactions.Count()</h4>
+                        </div>
+                        <hr />
+                        <div class="mb-3">
+                            <small class="text-muted d-block">Completed Payments</small>
+                            <h4 class="mb-0">@completedTransactions.Count()</h4>
+                        </div>
+                        <hr />
+                        <div class="mb-0">
+                            <small class="text-muted d-block">Total Amount Paid</small>
+                            <h4 class="text-danger mb-0">@totalPaid.ToString("N2")</h4>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="text-center py-3">
+                            <i class="fas fa-chart-bar fa-2x text-muted mb-2 d-block"></i>
+                            <p class="text-muted mb-0 small">No transaction statistics available yet.</p>
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ToastNotification" />
+}

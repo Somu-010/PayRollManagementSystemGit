@@ -1,0 +1,225 @@
+@model IEnumerable<PayRollManagementSystem.Models.PaymentTransaction>
+
+@{
+    ViewData["Title"] = "Payment Transactions";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-money-check-alt text-primary"></i> Payment Transactions
+            </h2>
+            <p class="text-muted mb-0">View and manage salary payment transactions</p>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="text-success mb-2">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                        <h3 class="mb-0">@Model.Count(p => p.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Completed)</h3>
+                        <p class="text-muted mb-0 small">Completed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="text-warning mb-2">
+                            <i class="fas fa-clock fa-2x"></i>
+                        </div>
+                        <h3 class="mb-0">@Model.Count(p => p.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Pending || p.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Processing)</h3>
+                        <p class="text-muted mb-0 small">Pending/Processing</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="text-danger mb-2">
+                            <i class="fas fa-times-circle fa-2x"></i>
+                        </div>
+                        <h3 class="mb-0">@Model.Count(p => p.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Failed)</h3>
+                        <p class="text-muted mb-0 small">Failed</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="text-primary mb-2">
+                            <i class="fas fa-money-bill-wave fa-2x"></i>
+                        </div>
+                        <h3 class="mb-0">@Model.Count()</h3>
+                        <p class="text-muted mb-0 small">Total Transactions</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Filter Section -->
+        <div class="card border-0 shadow-sm mb-4">
+            <div class="card-body">
+                <form method="get" asp-action="Index">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <label class="form-label">Status</label>
+                            <select name="status" class="form-select">
+                                <option value="">All Status</option>
+                                <option value="Pending" selected="@(ViewData["CurrentStatus"]?.ToString() == "Pending")">Pending</option>
+                                <option value="Processing" selected="@(ViewData["CurrentStatus"]?.ToString() == "Processing")">Processing</option>
+                                <option value="Completed" selected="@(ViewData["CurrentStatus"]?.ToString() == "Completed")">Completed</option>
+                                <option value="Failed" selected="@(ViewData["CurrentStatus"]?.ToString() == "Failed")">Failed</option>
+                                <option value="Cancelled" selected="@(ViewData["CurrentStatus"]?.ToString() == "Cancelled")">Cancelled</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Month</label>
+                            <select name="month" class="form-select">
+                                <option value="">All Months</option>
+                                @for (int i = 1; i <= 12; i++)
+                                {
+                                    <option value="@i" selected="@(ViewData["CurrentMonth"]?.ToString() == i.ToString())">
+                                        @System.Globalization.CultureInfo.CurrentCulture.DateTimeFormat.GetMonthName(i)
+                                    </option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Year</label>
+                            <select name="year" class="form-select">
+                                <option value="">All Years</option>
+                                @for (int year = DateTime.Now.Year; year >= DateTime.Now.Year - 5; year--)
+                                {
+                                    <option value="@year" selected="@(ViewData["CurrentYear"]?.ToString() == year.ToString())">@year</option>
+                                }
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">&nbsp;</label>
+                            <button type="submit" class="btn btn-primary w-100">
+                                <i class="fas fa-filter"></i> Filter
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Transactions Table -->
+        <div class="card border-0 shadow-sm">
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="bg-light">
+                            <tr>
+                                <th class="border-0">Transaction #</th>
+                                <th class="border-0">Date</th>
+                                <th class="border-0">Employee</th>
+                                <th class="border-0">Pay Period</th>
+                                <th class="border-0">Amount</th>
+                                <th class="border-0">Method</th>
+                                <th class="border-0">Status</th>
+                                <th class="border-0">Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var transaction in Model)
+                            {
+                                <tr>
+                                    <td><code class="small">@transaction.TransactionNumber</code></td>
+                                    <td>@transaction.InitiatedDate.ToString("dd MMM yyyy")</td>
+                                    <td>@transaction.Payroll?.Employee?.Name</td>
+                                    <td>@transaction.Payroll?.PayPeriod</td>
+                                    <td class="fw-bold">@transaction.Amount.ToString("N2")</td>
+                                    <td>
+                                        <span class="badge bg-info">
+                                            @transaction.PaymentMethod.ToString().Replace("_", " ")
+                                        </span>
+                                    </td>
+                                    <td>
+                                        @if (transaction.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Completed)
+                                        {
+                                            <span class="badge bg-success">
+                                                <i class="fas fa-check-circle"></i> Completed
+                                            </span>
+                                        }
+                                        else if (transaction.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Processing)
+                                        {
+                                            <span class="badge bg-warning">
+                                                <i class="fas fa-spinner"></i> Processing
+                                            </span>
+                                        }
+                                        else if (transaction.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Pending)
+                                        {
+                                            <span class="badge bg-secondary">
+                                                <i class="fas fa-clock"></i> Pending
+                                            </span>
+                                        }
+                                        else if (transaction.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Failed)
+                                        {
+                                            <span class="badge bg-danger">
+                                                <i class="fas fa-times-circle"></i> Failed
+                                            </span>
+                                        }
+                                        else
+                                        {
+                                            <span class="badge bg-dark">
+                                                <i class="fas fa-ban"></i> Cancelled
+                                            </span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <a asp-action="Details" asp-route-id="@transaction.PaymentTransactionId" 
+                                           class="btn btn-sm btn-outline-primary">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-inbox fa-4x text-muted mb-3"></i>
+                <h4>No Payment Transactions Found</h4>
+                <p class="text-muted mb-0">No transactions match your filter criteria.</p>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ToastNotification" />
+}

@@ -16,19 +16,22 @@ namespace PayRollManagementSystem.Controllers
         private readonly IEmailService _emailService;
         private readonly HolidayService _holidayService;
         private readonly WorkingDaysService _workingDaysService;
+        private readonly ILogger<EmployeePortalController> _logger;
 
         public EmployeePortalController(
             ApplicationDbContext context, 
             UserManager<IdentityUser> userManager,
             IEmailService emailService,
             HolidayService holidayService,
-            WorkingDaysService workingDaysService)
+            WorkingDaysService workingDaysService,
+            ILogger<EmployeePortalController> logger)
         {
             _context = context;
             _userManager = userManager;
             _emailService = emailService;
             _holidayService = holidayService;
             _workingDaysService = workingDaysService;
+            _logger = logger;
         }
 
         // GET: EmployeePortal - Dashboard
@@ -127,7 +130,7 @@ namespace PayRollManagementSystem.Controllers
         // POST: EmployeePortal/EditProfile
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> EditProfile([Bind("EmployeeId,Phone,Address,City")] Employee model)
+        public async Task<IActionResult> EditProfile([Bind("EmployeeId,Phone,Address,City")] Employee model, IFormFile? profileImage)
         {
             var employee = await GetCurrentEmployeeAsync();
             if (employee == null)
@@ -140,6 +143,62 @@ namespace PayRollManagementSystem.Controllers
             employee.Address = model.Address;
             employee.City = model.City;
             employee.UpdatedAt = DateTime.Now;
+
+            // Handle profile image upload
+            if (profileImage != null && profileImage.Length > 0)
+            {
+                // Validate file size (5MB)
+                if (profileImage.Length > 5 * 1024 * 1024)
+                {
+                    ModelState.AddModelError("profileImage", "File size must be less than 5MB");
+                    return View(employee);
+                }
+
+                // Validate file type
+                var allowedExtensions = new[] { ".jpg", ".jpeg", ".png", ".gif" };
+                var extension = Path.GetExtension(profileImage.FileName).ToLowerInvariant();
+                if (!allowedExtensions.Contains(extension))
+                {
+                    ModelState.AddModelError("profileImage", "Only JPG, PNG, and GIF files are allowed");
+                    return View(employee);
+                }
+
+                try
+                {
+                    // Create uploads directory if it doesn't exist
+                    var uploadsFolder = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", "uploads", "profiles");
+                    Directory.CreateDirectory(uploadsFolder);
+
+                    // Delete old image if exists
+                    if (!string.IsNullOrEmpty(employee.ProfileImagePath))
+                    {
+                        var oldImagePath = Path.Combine(Directory.GetCurrentDirectory(), "wwwroot", employee.ProfileImagePath.TrimStart('/'));
+                        if (System.IO.File.Exists(oldImagePath))
+                        {
+                            System.IO.File.Delete(oldImagePath);
+                        }
+                    }
+
+                    // Generate unique filename
+                    var uniqueFileName = $"{employee.EmployeeId}_{Guid.NewGuid()}{extension}";
+                    var filePath = Path.Combine(uploadsFolder, uniqueFileName);
+
+                    // Save file
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        await profileImage.CopyToAsync(stream);
+                    }
+
+                    // Update employee profile image path
+                    employee.ProfileImagePath = $"/uploads/profiles/{uniqueFileName}";
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError($"Error uploading profile image: {ex.Message}");
+                    TempData["Error"] = "Failed to upload profile image. Please try again.";
+                    return View(employee);
+                }
+            }
 
             try
             {

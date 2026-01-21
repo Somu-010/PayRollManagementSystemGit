@@ -315,6 +315,38 @@
         .role-hr { background: #dbeafe; color: #3b82f6; }
         .role-employee { background: #d1f4e0; color: #10b981; }
 
+        /* User Info */
+        .user-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            background: var(--primary-gradient);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .user-details {
+            display: flex;
+            flex-direction: column;
+            gap: 2px;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 500;
+            color: #2c3e50;
+        }
+
         .btn-logout {
             padding: 8px 16px;
             background: var(--primary-gradient);
@@ -526,6 +558,20 @@
                                asp-controller="Payroll" asp-action="Index">
                                 <span class="nav-icon">💵</span>
                                 Payroll
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "Payment" ? "active" : "")"
+                               asp-controller="Payment" asp-action="Index">
+                                <span class="nav-icon">💳</span>
+                                Payment Transactions
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link @(ViewContext.RouteData.Values["controller"]?.ToString() == "CompanyBankAccount" ? "active" : "")"
+                               asp-controller="CompanyBankAccount" asp-action="Index">
+                                <span class="nav-icon">🏦</span>
+                                Company Bank Accounts
                             </a>
                         </li>
                     </ul>

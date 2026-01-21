@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PayRollManagementSystem.Data;
 
@@ -11,9 +12,11 @@ using PayRollManagementSystem.Data;
 namespace PayRollManagementSystem.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260121141650_RemoveSalaryColumnsFromDesignation")]
+    partial class RemoveSalaryColumnsFromDesignation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -379,7 +382,7 @@ namespace PayRollManagementSystem.Data.Migrations
                         .HasColumnType("int");
 
                     b.Property<decimal?>("AvailableBalance")
-                        .HasColumnType("decimal(18,2)");
+                        .HasColumnType("decimal(28,2)");
 
                     b.Property<string>("BankName")
                         .IsRequired()
@@ -387,6 +390,7 @@ namespace PayRollManagementSystem.Data.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.Property<string>("BranchName")
+                        .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
 
@@ -773,10 +777,6 @@ namespace PayRollManagementSystem.Data.Migrations
                         .HasMaxLength(10)
                         .HasColumnType("nvarchar(10)");
 
-                    b.Property<string>("ProfileImagePath")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
                     b.Property<string>("RoutingNumber")
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
@@ -991,7 +991,7 @@ namespace PayRollManagementSystem.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int?>("CompanyBankAccountId")
+                    b.Property<int>("CompanyBankAccountId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("CompletedDate")
@@ -1498,9 +1498,10 @@ namespace PayRollManagementSystem.Data.Migrations
             modelBuilder.Entity("PayRollManagementSystem.Models.PaymentTransaction", b =>
                 {
                     b.HasOne("PayRollManagementSystem.Models.CompanyBankAccount", "CompanyBankAccount")
-                        .WithMany("PaymentTransactions")
+                        .WithMany()
                         .HasForeignKey("CompanyBankAccountId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
 
                     b.HasOne("PayRollManagementSystem.Models.Payroll", "Payroll")
                         .WithMany()
@@ -1540,11 +1541,6 @@ namespace PayRollManagementSystem.Data.Migrations
                     b.Navigation("AllowanceDeduction");
 
                     b.Navigation("Payroll");
-                });
-
-            modelBuilder.Entity("PayRollManagementSystem.Models.CompanyBankAccount", b =>
-                {
-                    b.Navigation("PaymentTransactions");
                 });
 
             modelBuilder.Entity("PayRollManagementSystem.Models.ComponentTemplate", b =>

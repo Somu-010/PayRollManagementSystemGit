@@ -1,0 +1,418 @@
+@model PayRollManagementSystem.Models.PaymentTransaction
+
+@{
+    ViewData["Title"] = "Payment Details";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-receipt text-primary"></i> Payment Transaction Details
+            </h2>
+            <p class="text-muted mb-0">Transaction #@Model.TransactionNumber</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Transaction Status -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-body text-center p-4">
+                    @if (Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Completed)
+                    {
+                        <i class="fas fa-check-circle fa-4x text-success mb-3"></i>
+                        <h3 class="text-success mb-2">Payment Completed</h3>
+                        <p class="text-muted mb-0">Transaction completed on @Model.CompletedDate?.ToString("dd MMMM yyyy, hh:mm tt")</p>
+                    }
+                    else if (Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Processing)
+                    {
+                        <i class="fas fa-spinner fa-spin fa-4x text-warning mb-3"></i>
+                        <h3 class="text-warning mb-2">Payment Processing</h3>
+                        <p class="text-muted mb-0">Please wait while we process your payment...</p>
+                    }
+                    else if (Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Failed)
+                    {
+                        <i class="fas fa-times-circle fa-4x text-danger mb-3"></i>
+                        <h3 class="text-danger mb-2">Payment Failed</h3>
+                        <p class="text-muted mb-0">@Model.ErrorMessage</p>
+                    }
+                    else if (Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Cancelled)
+                    {
+                        <i class="fas fa-ban fa-4x text-dark mb-3"></i>
+                        <h3 class="mb-2">Payment Cancelled</h3>
+                        <p class="text-muted mb-0">This payment was cancelled</p>
+                    }
+                    else
+                    {
+                        <i class="fas fa-clock fa-4x text-secondary mb-3"></i>
+                        <h3 class="mb-2">Payment Pending</h3>
+                        <p class="text-muted mb-0">Waiting for confirmation</p>
+                    }
+                </div>
+            </div>
+
+            <!-- Transaction Information -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-primary text-white border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Transaction Information
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Transaction Number</strong>
+                            <p class="mb-0"><code class="text-dark">@Model.TransactionNumber</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Amount</strong>
+                            <h4 class="text-success mb-0">@Model.Amount.ToString("N2")</h4>
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Payment Method</strong>
+                            <p class="mb-0">
+                                <span class="badge bg-info">@Model.PaymentMethod.ToString().Replace("_", " ")</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Status</strong>
+                            <p class="mb-0">
+                                @if (Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Completed)
+                                {
+                                    <span class="badge bg-success"><i class="fas fa-check-circle"></i> Completed</span>
+                                }
+                                else if (Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Processing)
+                                {
+                                    <span class="badge bg-warning"><i class="fas fa-spinner"></i> Processing</span>
+                                }
+                                else if (Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Pending)
+                                {
+                                    <span class="badge bg-secondary"><i class="fas fa-clock"></i> Pending</span>
+                                }
+                                else if (Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Failed)
+                                {
+                                    <span class="badge bg-danger"><i class="fas fa-times-circle"></i> Failed</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-dark"><i class="fas fa-ban"></i> Cancelled</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+
+                    @if (!string.IsNullOrEmpty(Model.BankTransactionId))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <strong class="text-muted d-block small mb-1">Bank Transaction ID</strong>
+                                <p class="mb-0"><code class="text-dark">@Model.BankTransactionId</code></p>
+                            </div>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.SslTransactionId))
+                    {
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">SSLCommerz Transaction ID</strong>
+                                <p class="mb-0"><code class="text-dark">@Model.SslTransactionId</code></p>
+                            </div>
+                            @if (!string.IsNullOrEmpty(Model.CardType))
+                            {
+                                <div class="col-md-6">
+                                    <strong class="text-muted d-block small mb-1">Card Details</strong>
+                                    <p class="mb-0">@Model.CardBrand @Model.CardType</p>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.Remarks))
+                    {
+                        <div class="row">
+                            <div class="col-12">
+                                <strong class="text-muted d-block small mb-1">Remarks</strong>
+                                <p class="mb-0">@Model.Remarks</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Employee & Payroll Info -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-light border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user text-primary"></i> Employee & Payroll Details
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Employee Name</strong>
+                            <p class="mb-0">@Model.Payroll?.Employee?.Name</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Employee Code</strong>
+                            <p class="mb-0">@Model.Payroll?.Employee?.EmployeeCode</p>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Payroll Number</strong>
+                            <p class="mb-0">@Model.Payroll?.PayrollNumber</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Pay Period</strong>
+                            <p class="mb-0">@Model.Payroll?.PayPeriod</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company Bank Account (FROM) -->
+            @if (Model.CompanyBankAccount != null)
+            {
+                <div class="card border-0 shadow-sm mb-4">
+                    <div class="card-header bg-info text-white border-0">
+                        <h5 class="mb-0">
+                            <i class="fas fa-university"></i> Company Bank Account (FROM)
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">Account Name</strong>
+                                <p class="mb-0">@Model.CompanyBankAccount.AccountName</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">Bank Name</strong>
+                                <p class="mb-0">@Model.CompanyBankAccount.BankName</p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">Account Number</strong>
+                                <p class="mb-0"><code class="text-dark">@Model.CompanyBankAccount.AccountNumber</code></p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">Branch</strong>
+                                <p class="mb-0">@Model.CompanyBankAccount.BranchName</p>
+                            </div>
+                        </div>
+                        @if (Model.CompanyBankAccount.AvailableBalance.HasValue && Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Completed)
+                        {
+                            <div class="alert alert-success border-0 mt-3 mb-0">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>Balance Auto-Reduced:</strong> The account balance was automatically reduced by <strong>@Model.Amount.ToString("N2")</strong> when this payment completed.
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            <!-- Employee Payment Details (TO) -->
+            <div class="card border-0 shadow-sm mb-4">
+                <div class="card-header bg-warning text-dark border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-arrow-right"></i> Employee Payment Details (TO)
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row">
+                        @if (!string.IsNullOrEmpty(Model.EmployeeBankName))
+                        {
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">Bank Name</strong>
+                                <p class="mb-0">@Model.EmployeeBankName</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">Account Number</strong>
+                                <p class="mb-0"><code class="text-dark">@Model.EmployeeAccountNumber</code></p>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(Model.MobileBankingNumber))
+                        {
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">Mobile Banking Provider</strong>
+                                <p class="mb-0">@Model.MobileBankingProvider</p>
+                            </div>
+                            <div class="col-md-6">
+                                <strong class="text-muted d-block small mb-1">Mobile Number</strong>
+                                <p class="mb-0">@Model.MobileBankingNumber</p>
+                            </div>
+                        }
+                        else if (!string.IsNullOrEmpty(Model.ChequeNumber))
+                        {
+                            <div class="col-12">
+                                <strong class="text-muted d-block small mb-1">Cheque Number</strong>
+                                <p class="mb-0">@Model.ChequeNumber</p>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="col-12">
+                                <strong class="text-muted d-block small mb-1">Payment Method</strong>
+                                <p class="mb-0">@Model.PaymentMethod</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Mark as Completed (for manual payments) -->
+            @if (Model.PaymentStatus == PayRollManagementSystem.Models.PaymentStatus.Pending && 
+                 Model.PaymentMethod != PayRollManagementSystem.Models.PaymentMethod.SSLCommerz)
+            {
+                <div class="card border-success border-2 border-0 shadow-sm">
+                    <div class="card-header bg-success text-white border-0">
+                        <h5 class="mb-0">
+                            <i class="fas fa-check"></i> Mark Payment as Completed
+                        </h5>
+                    </div>
+                    <div class="card-body p-4">
+                        <form id="completePaymentForm">
+                            @Html.AntiForgeryToken()
+                            <div class="mb-3">
+                                <label for="bankTransactionId" class="form-label">Bank Transaction ID / Reference Number</label>
+                                <input type="text" class="form-control" id="bankTransactionId" name="bankTransactionId" required>
+                                <small class="text-muted">Enter the transaction reference from your bank</small>
+                            </div>
+                            <div class="mb-3">
+                                <label for="remarks" class="form-label">Remarks (Optional)</label>
+                                <textarea class="form-control" id="remarks" name="remarks" rows="3"></textarea>
+                            </div>
+                            <button type="submit" class="btn btn-success">
+                                <i class="fas fa-check-circle"></i> Confirm Payment Completed
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Timeline Sidebar -->
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient text-white border-0" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                    <h6 class="mb-0">
+                        <i class="fas fa-history"></i> Transaction Timeline
+                    </h6>
+                </div>
+                <div class="card-body p-4">
+                    <div class="timeline">
+                        <div class="timeline-item mb-4">
+                            <div class="d-flex">
+                                <div class="flex-shrink-0">
+                                    <div class="timeline-icon bg-primary text-white">
+                                        <i class="fas fa-circle"></i>
+                                    </div>
+                                </div>
+                                <div class="flex-grow-1 ms-3">
+                                    <strong class="d-block">Payment Initiated</strong>
+                                    <small class="text-muted d-block">@Model.InitiatedDate.ToString("dd MMM yyyy, hh:mm tt")</small>
+                                    <small class="text-muted">By: @Model.InitiatedBy</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        @if (Model.ProcessedDate.HasValue)
+                        {
+                            <div class="timeline-item mb-4">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <div class="timeline-icon bg-info text-white">
+                                            <i class="fas fa-circle"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <strong class="d-block">Payment Processed</strong>
+                                        <small class="text-muted d-block">@Model.ProcessedDate?.ToString("dd MMM yyyy, hh:mm tt")</small>
+                                        @if (!string.IsNullOrEmpty(Model.ProcessedBy))
+                                        {
+                                            <small class="text-muted">By: @Model.ProcessedBy</small>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        @if (Model.CompletedDate.HasValue)
+                        {
+                            <div class="timeline-item">
+                                <div class="d-flex">
+                                    <div class="flex-shrink-0">
+                                        <div class="timeline-icon bg-success text-white">
+                                            <i class="fas fa-check-circle"></i>
+                                        </div>
+                                    </div>
+                                    <div class="flex-grow-1 ms-3">
+                                        <strong class="d-block">Payment Completed</strong>
+                                        <small class="text-muted d-block">@Model.CompletedDate?.ToString("dd MMM yyyy, hh:mm tt")</small>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ToastNotification" />
+    
+    <script>
+        document.getElementById('completePaymentForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData();
+            formData.append('id', '@Model.PaymentTransactionId');
+            formData.append('bankTransactionId', document.getElementById('bankTransactionId').value);
+            formData.append('remarks', document.getElementById('remarks').value);
+            formData.append('__RequestVerificationToken', document.querySelector('input[name="__RequestVerificationToken"]').value);
+            
+            try {
+                const response = await fetch('@Url.Action("MarkAsCompleted", "Payment")', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    location.reload();
+                } else {
+                    alert(result.message);
+                }
+            } catch (error) {
+                alert('An error occurred while processing the request.');
+            }
+        });
+    </script>
+}

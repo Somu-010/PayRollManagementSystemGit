@@ -97,9 +97,7 @@ namespace PayRollManagementSystem.Controllers
                     d.Title,
                     d.DesignationCode,
                     DepartmentName = d.Department!.Name,
-                    EmployeeCount = d.Employees!.Count,
-                    d.MinimumSalary,
-                    d.MaximumSalary
+                    EmployeeCount = d.Employees!.Count
                 })
                 .ToListAsync();
 

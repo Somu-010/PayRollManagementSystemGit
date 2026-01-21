@@ -26,6 +26,8 @@ namespace PayRollManagementSystem.Data
         public DbSet<CompanySetting> CompanySettings { get; set; }
         public DbSet<Holiday> Holidays { get; set; }
         public DbSet<WeekendSetting> WeekendSettings { get; set; }
+        public DbSet<CompanyBankAccount> CompanyBankAccounts { get; set; }
+        public DbSet<PaymentTransaction> PaymentTransactions { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -160,6 +162,31 @@ namespace PayRollManagementSystem.Data
                 entity.HasOne(pd => pd.AllowanceDeduction)
                     .WithMany()
                     .HasForeignKey(pd => pd.AllowanceDeductionId)
+                    .OnDelete(DeleteBehavior.Restrict);
+            });
+
+            // Configure CompanyBankAccount entity
+            modelBuilder.Entity<CompanyBankAccount>(entity =>
+            {
+                entity.HasKey(c => c.CompanyBankAccountId);
+                entity.HasIndex(c => c.AccountNumber).IsUnique();
+            });
+
+            // Configure PaymentTransaction entity
+            modelBuilder.Entity<PaymentTransaction>(entity =>
+            {
+                entity.HasKey(pt => pt.PaymentTransactionId);
+                entity.HasIndex(pt => pt.TransactionNumber).IsUnique();
+                entity.HasIndex(pt => pt.SslTransactionId);
+
+                entity.HasOne(pt => pt.Payroll)
+                    .WithMany()
+                    .HasForeignKey(pt => pt.PayrollId)
+                    .OnDelete(DeleteBehavior.Restrict);
+
+                entity.HasOne(pt => pt.CompanyBankAccount)
+                    .WithMany(c => c.PaymentTransactions)
+                    .HasForeignKey(pt => pt.CompanyBankAccountId)
                     .OnDelete(DeleteBehavior.Restrict);
             });
         }

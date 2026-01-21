@@ -285,7 +285,7 @@
             if (todayAttendance.CheckOutTime.HasValue)
             {
                 bannerClass = "checked-out";
-                statusTitle = $"? Checked Out at {todayAttendance.CheckOutTime.Value:hh\\:mm}";
+                statusTitle = $" Checked Out at {todayAttendance.CheckOutTime.Value:hh\\:mm}";
                 statusText = $"Total Hours: {todayAttendance.TotalHours:0.00} hrs";
                 if (todayAttendance.OvertimeHours > 0)
                 {
@@ -295,7 +295,7 @@
             else
             {
                 bannerClass = "checked-in";
-                statusTitle = $"? Checked In at {todayAttendance.CheckInTime:hh\\:mm}";
+                statusTitle = $" Checked In at {todayAttendance.CheckInTime:hh\\:mm}";
                 statusText = todayAttendance.IsLate ? $"Late by {todayAttendance.LateByMinutes} minutes" : "On time";
             }
         }

@@ -1,185 +1,208 @@
-@{
-    ViewData["Title"] = "Link Your Account";
-    Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
+﻿@{
+    ViewData["Title"] = "Account Registration Required";
+    Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
 <style>
-    .link-container {
-        max-width: 500px;
-        margin: 50px auto;
+    .registration-container {
+        min-height: 80vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 40px 20px;
+        background: linear-gradient(135deg, #e8f4f8 0%, #f8fafb 100%);
     }
 
-    .link-card {
+    .registration-card {
         background: white;
         border-radius: 20px;
-        padding: 50px 40px;
-        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        padding: 50px;
+        max-width: 600px;
+        width: 100%;
+        box-shadow: 0 10px 40px rgba(33, 147, 176, 0.1);
         text-align: center;
     }
 
-    .link-icon {
-        width: 100px;
-        height: 100px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .registration-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 30px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        margin: 0 auto 30px;
-        font-size: 48px;
+        font-size: 60px;
+        color: white;
+        animation: pulse 2s infinite;
     }
 
-    .link-title {
-        font-size: 28px;
+    @@keyframes pulse {
+        0%, 100% {
+            transform: scale(1);
+            box-shadow: 0 0 0 0 rgba(33, 147, 176, 0.4);
+        }
+        50% {
+            transform: scale(1.05);
+            box-shadow: 0 0 0 20px rgba(33, 147, 176, 0);
+        }
+    }
+
+    .registration-title {
+        font-size: 32px;
         font-weight: 700;
         color: #2c3e50;
-        margin-bottom: 15px;
+        margin-bottom: 20px;
     }
 
-    .link-description {
+    .registration-subtitle {
+        font-size: 18px;
         color: #5a6c7d;
-        font-size: 16px;
         margin-bottom: 30px;
         line-height: 1.6;
     }
 
-    .form-group {
-        margin-bottom: 20px;
+    .info-box {
+        background: #e8f4f8;
+        border-left: 4px solid #2193b0;
+        padding: 20px;
+        border-radius: 10px;
         text-align: left;
+        margin: 30px 0;
     }
 
-    .form-group label {
-        display: block;
-        font-size: 14px;
+    .info-box h4 {
+        color: #2193b0;
+        margin-bottom: 15px;
+        font-size: 18px;
         font-weight: 600;
+    }
+
+    .info-box ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+    }
+
+    .info-box li {
+        padding: 10px 0;
         color: #2c3e50;
-        margin-bottom: 8px;
+        font-size: 15px;
+        display: flex;
+        align-items: flex-start;
+        gap: 10px;
     }
 
-    .form-control {
-        width: 100%;
-        padding: 14px 18px;
-        border: 2px solid #e8e8e8;
-        border-radius: 12px;
-        font-size: 16px;
-        transition: all 0.3s;
+    .info-box li::before {
+        content: "✓";
+        color: #10b981;
+        font-weight: bold;
+        font-size: 18px;
+        flex-shrink: 0;
     }
 
-    .form-control:focus {
-        outline: none;
-        border-color: #667eea;
-        box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+    .contact-section {
+        margin-top: 30px;
+        padding-top: 30px;
+        border-top: 2px solid #e8f4f8;
     }
 
-    .btn-link-account {
-        width: 100%;
-        padding: 16px;
-        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    .contact-section h4 {
+        color: #2c3e50;
+        margin-bottom: 15px;
+        font-size: 20px;
+    }
+
+    .contact-info {
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        flex-wrap: wrap;
+        margin-top: 20px;
+    }
+
+    .contact-item {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 12px 20px;
+        background: #f8fafb;
+        border-radius: 10px;
+        color: #2193b0;
+        font-weight: 600;
+    }
+
+    .btn-logout {
+        margin-top: 30px;
+        padding: 15px 40px;
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         color: white;
         border: none;
-        border-radius: 12px;
+        border-radius: 10px;
         font-size: 16px;
         font-weight: 600;
         cursor: pointer;
         transition: all 0.3s;
-        margin-top: 10px;
+        box-shadow: 0 4px 15px rgba(33, 147, 176, 0.3);
     }
 
-    .btn-link-account:hover {
+    .btn-logout:hover {
         transform: translateY(-2px);
-        box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
-    }
-
-    .info-box {
-        background: #f8fafb;
-        border-radius: 12px;
-        padding: 20px;
-        margin-top: 25px;
-        text-align: left;
-    }
-
-    .info-box h4 {
-        font-size: 14px;
-        color: #2c3e50;
-        margin-bottom: 10px;
-        display: flex;
-        align-items: center;
-        gap: 8px;
-    }
-
-    .info-box ul {
-        margin: 0;
-        padding-left: 20px;
-        color: #5a6c7d;
-        font-size: 13px;
-    }
-
-    .info-box li {
-        margin-bottom: 5px;
-    }
-
-    .validation-error {
-        background: rgba(239, 68, 68, 0.1);
-        border: 1px solid rgba(239, 68, 68, 0.2);
-        color: #ef4444;
-        padding: 15px;
-        border-radius: 10px;
-        margin-bottom: 20px;
-        text-align: left;
-        font-size: 14px;
-    }
-
-    .validation-error i {
-        margin-right: 8px;
+        box-shadow: 0 6px 20px rgba(33, 147, 176, 0.4);
     }
 </style>
 
-<div class="link-container">
-    <div class="link-card">
-        <div class="link-icon">??</div>
-        <h1 class="link-title">Link Your Account</h1>
-        <p class="link-description">
-            To access the Employee Portal, you need to link your user account with your employee record.
-            Please enter your Employee Code and registered Email.
+<div class="registration-container">
+    <div class="registration-card">
+        <div class="registration-icon">
+            <i class="fas fa-user-lock"></i>
+        </div>
+        
+        <h1 class="registration-title">Account Access Pending</h1>
+        <p class="registration-subtitle">
+            Thank you for registering! Your account has been created successfully, 
+            but you don't have access to the Employee Portal yet.
         </p>
 
-        <form asp-action="LinkAccount" method="post">
-            @Html.AntiForgeryToken()
-
-            <div asp-validation-summary="All" class="validation-error" style="display: @(ViewData.ModelState.ErrorCount > 0 ? "block" : "none");"></div>
-
-            <div class="form-group">
-                <label for="employeeCode">Employee Code</label>
-                <input type="text" id="employeeCode" name="employeeCode" class="form-control" placeholder="e.g., EMP001" required />
-            </div>
-
-            <div class="form-group">
-                <label for="email">Registered Email</label>
-                <input type="email" id="email" name="email" class="form-control" placeholder="your.email@company.com" required />
-            </div>
-
-            <button type="submit" class="btn-link-account">
-                <i class="fas fa-link"></i> Link Account
-            </button>
-        </form>
-
         <div class="info-box">
-            <h4><i class="fas fa-info-circle" style="color: #667eea;"></i> How to find your Employee Code?</h4>
+            <h4><i class="fas fa-info-circle"></i> What Happens Next?</h4>
             <ul>
-                <li>Check your employee ID card</li>
-                <li>Look at your welcome email from HR</li>
-                <li>Contact your HR department for assistance</li>
+                <li>Your account will be reviewed by the HR/Admin team</li>
+                <li>Admin will link your account to your employee profile</li>
+                <li>You'll receive an email confirmation once activated</li>
+                <li>After activation, you can access the Employee Portal</li>
             </ul>
         </div>
+
+        <div class="info-box" style="background: #fff3cd; border-left-color: #ffc107;">
+            <h4 style="color: #856404;"><i class="fas fa-clock"></i> Expected Timeline</h4>
+            <ul>
+                <li style="color: #856404;">Account activation typically takes 1-2 business days</li>
+                <li style="color: #856404;">You'll be notified via email at: <strong>@User.Identity?.Name</strong></li>
+            </ul>
+        </div>
+
+        <div class="contact-section">
+            <h4>Need Help?</h4>
+            <p style="color: #5a6c7d; margin-bottom: 20px;">
+                If you have any questions or need immediate assistance, please contact:
+            </p>
+            <div class="contact-info">
+                <div class="contact-item">
+                    <i class="fas fa-envelope"></i>
+                    <span>hr@company.com</span>
+                </div>
+                <div class="contact-item">
+                    <i class="fas fa-phone"></i>
+                    <span>+880-XXX-XXXXX</span>
+                </div>
+            </div>
+        </div>
+
+        <form asp-area="Identity" asp-page="/Account/Logout" asp-route-returnUrl="@Url.Action("Index", "Landing")" method="post">
+            <button type="submit" class="btn-logout">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
+        </form>
     </div>
 </div>
-
-@section Scripts {
-    <script>
-        // Show validation errors if present
-        const errorSummary = document.querySelector('.validation-error');
-        if (errorSummary && errorSummary.querySelector('li')) {
-            errorSummary.style.display = 'block';
-        }
-    </script>
-}

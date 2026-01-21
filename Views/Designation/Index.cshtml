@@ -504,7 +504,6 @@
                     <th>Designation</th>
                     <th>Department</th>
                     <th>Level</th>
-                    <th>Salary Range</th>
                     <th>Employees</th>
                     <th>Status</th>
                     <th>Actions</th>
@@ -527,16 +526,6 @@
                             </td>
                             <td>@(item.Department?.Name ?? "N/A")</td>
                             <td>@(item.Level ?? "-")</td>
-                            <td>
-                                @if (item.MinimumSalary.HasValue || item.MaximumSalary.HasValue)
-                                {
-                                    <span>@(item.MinimumSalary?.ToString("N0") ?? "0") - @(item.MaximumSalary?.ToString("N0") ?? "0")</span>
-                                }
-                                else
-                                {
-                                    <span>-</span>
-                                }
-                            </td>
                             <td>
                                 <span class="employee-count">
                                     <span>👥</span>
@@ -566,7 +555,7 @@
                 else
                 {
                     <tr>
-                        <td colspan="7" class="no-records">
+                        <td colspan="6" class="no-records">
                             <h3>No designations found</h3>
                             <p>Start by adding your first designation</p>
                         </td>
@@ -621,18 +610,6 @@
                         <option value="Senior">Senior</option>
                         <option value="Executive">Executive</option>
                     </select>
-                </div>
-            </div>
-
-            <div class="form-grid">
-                <div class="form-group">
-                    <label>Minimum Salary</label>
-                    <input type="number" id="edit_MinimumSalary" name="MinimumSalary" class="form-control" step="0.01" />
-                </div>
-
-                <div class="form-group">
-                    <label>Maximum Salary</label>
-                    <input type="number" id="edit_MaximumSalary" name="MaximumSalary" class="form-control" step="0.01" />
                 </div>
             </div>
 
@@ -725,8 +702,6 @@
                 document.getElementById('edit_Title').value = data.title;
                 document.getElementById('edit_DepartmentId').value = data.departmentId;
                 document.getElementById('edit_Level').value = data.level || '';
-                document.getElementById('edit_MinimumSalary').value = data.minimumSalary || '';
-                document.getElementById('edit_MaximumSalary').value = data.maximumSalary || '';
                 document.getElementById('edit_Status').value = data.status;
                 document.getElementById('edit_Description').value = data.description || '';
 

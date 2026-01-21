@@ -290,6 +290,73 @@
             </div>
         </div>
 
+        <!-- Payment Information -->
+        <h3 class="form-section-title">💰 Payment Information</h3>
+        <div class="form-grid">
+            <div class="form-group">
+                <label asp-for="PaymentMethod">Payment Method <span class="required">*</span></label>
+                <select asp-for="PaymentMethod" class="form-control" id="paymentMethodSelect" asp-items="Html.GetEnumSelectList<PayRollManagementSystem.Models.PaymentMethodPreference>()"></select>
+                <span asp-validation-for="PaymentMethod" class="text-danger"></span>
+            </div>
+        </div>
+
+        <!-- Bank Transfer Fields -->
+        <div id="bankTransferFields" class="payment-fields" style="display: none;">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="BankName">Bank Name</label>
+                    <input asp-for="BankName" class="form-control" placeholder="e.g., Islami Bank Bangladesh Ltd" />
+                    <span asp-validation-for="BankName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="BankAccountNumber">Bank Account Number</label>
+                    <input asp-for="BankAccountNumber" class="form-control" placeholder="Enter account number" />
+                    <span asp-validation-for="BankAccountNumber" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="BranchName">Branch Name</label>
+                    <input asp-for="BranchName" class="form-control" placeholder="e.g., Gulshan Branch" />
+                    <span asp-validation-for="BranchName" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="RoutingNumber">Routing Number</label>
+                    <input asp-for="RoutingNumber" class="form-control" placeholder="Optional" />
+                    <span asp-validation-for="RoutingNumber" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Banking Fields -->
+        <div id="mobileBankingFields" class="payment-fields" style="display: none;">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label asp-for="MobileBankingProvider">Mobile Banking Provider</label>
+                    <select asp-for="MobileBankingProvider" class="form-control" asp-items="Html.GetEnumSelectList<PayRollManagementSystem.Models.MobileBankingProvider>()">
+                        <option value="">-- Select Provider --</option>
+                    </select>
+                    <span asp-validation-for="MobileBankingProvider" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="MobileBankingNumber">Mobile Banking Number</label>
+                    <input asp-for="MobileBankingNumber" class="form-control" placeholder="e.g., 01712345678" />
+                    <span asp-validation-for="MobileBankingNumber" class="text-danger"></span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Payment Notes -->
+        <div class="form-grid">
+            <div class="form-group">
+                <label asp-for="PaymentNotes">Payment Notes</label>
+                <textarea asp-for="PaymentNotes" class="form-control" rows="3" placeholder="Optional payment notes or special instructions"></textarea>
+                <span asp-validation-for="PaymentNotes" class="text-danger"></span>
+            </div>
+        </div>
+
         <div class="form-actions">
             <a asp-action="Index" class="btn-cancel">Cancel</a>
             <button type="submit" class="btn-submit">✓ Create Employee</button>
@@ -325,6 +392,32 @@
 
             // Reset designation selection
             designationSelect.value = '';
+        });
+
+        // Handle payment method selection
+        document.getElementById('paymentMethodSelect').addEventListener('change', function() {
+            const paymentMethod = this.value;
+            const bankTransferFields = document.getElementById('bankTransferFields');
+            const mobileBankingFields = document.getElementById('mobileBankingFields');
+
+            // Hide all payment fields
+            bankTransferFields.style.display = 'none';
+            mobileBankingFields.style.display = 'none';
+
+            // Show relevant fields based on selection
+            if (paymentMethod === 'BankTransfer') {
+                bankTransferFields.style.display = 'block';
+            } else if (paymentMethod === 'MobileBanking') {
+                mobileBankingFields.style.display = 'block';
+            }
+        });
+
+        // Trigger on page load if there's a value
+        document.addEventListener('DOMContentLoaded', function() {
+            const paymentMethodSelect = document.getElementById('paymentMethodSelect');
+            if (paymentMethodSelect.value) {
+                paymentMethodSelect.dispatchEvent(new Event('change'));
+            }
         });
     </script>
 }

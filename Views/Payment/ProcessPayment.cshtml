@@ -1,0 +1,324 @@
+@model PayRollManagementSystem.Models.Payroll
+
+@{
+    ViewData["Title"] = "Process Payment";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var companyAccounts = ViewBag.CompanyBankAccounts as List<PayRollManagementSystem.Models.CompanyBankAccount>;
+    var primaryAccount = ViewBag.PrimaryAccount as PayRollManagementSystem.Models.CompanyBankAccount;
+}
+
+<div class="container py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-money-check-alt"></i> Process Payment</h2>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-controller="Payroll" asp-action="Details" asp-route-id="@Model.PayrollId" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back
+            </a>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-8">
+            <!-- Payroll Summary -->
+            <div class="card mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice-dollar"></i> Payroll Summary</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Employee:</strong> @Model.Employee?.Name</p>
+                            <p><strong>Employee Code:</strong> @Model.Employee?.EmployeeCode</p>
+                            <p><strong>Department:</strong> @Model.Employee?.DepartmentNavigation?.Name</p>
+                        </div>
+                        <div class="col-md-6">
+                            <p><strong>Payroll Number:</strong> @Model.PayrollNumber</p>
+                            <p><strong>Pay Period:</strong> @Model.PayPeriod</p>
+                            <p><strong>Payment Date:</strong> @Model.PaymentDate.ToString("dd MMM yyyy")</p>
+                        </div>
+                    </div>
+                    <hr />
+                    <div class="row">
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted">Gross Salary</small>
+                                <h4>@Model.GrossSalary.ToString("N2")</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-light rounded">
+                                <small class="text-muted">Deductions</small>
+                                <h4 class="text-danger">@Model.TotalDeductions.ToString("N2")</h4>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="text-center p-3 bg-success text-white rounded">
+                                <small>Net Salary</small>
+                                <h4>@Model.NetSalary.ToString("N2")</h4>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Company Bank Account (FROM) -->
+            @if (companyAccounts != null && companyAccounts.Any())
+            {
+                <div class="card mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-university"></i> Company Bank Account (FROM)</h5>
+                    </div>
+                    <div class="card-body">
+                        @if (primaryAccount != null)
+                        {
+                            <div class="alert alert-success">
+                                <i class="fas fa-star"></i> <strong>Primary Account:</strong> @primaryAccount.AccountName
+                                <br /><small>@primaryAccount.BankName - @primaryAccount.AccountNumber</small>
+                                @if (primaryAccount.AvailableBalance.HasValue)
+                                {
+                                    <br /><small>Available Balance: <strong>@primaryAccount.AvailableBalance.Value.ToString("N2")</strong></small>
+                                }
+                            </div>
+                        }
+                        <form id="paymentForm" asp-action="InitiatePayment" method="post">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="payrollId" value="@Model.PayrollId" />
+
+                            <div class="mb-3">
+                                <label class="form-label">Select Company Account to Pay From:</label>
+                                <select name="companyBankAccountId" class="form-select" required>
+                                    @foreach (var account in companyAccounts)
+                                    {
+                                        <option value="@account.CompanyBankAccountId" selected="@(account.IsPrimary)">
+                                            @account.AccountName - @account.BankName (@account.AccountNumber)
+                                            @if (account.AvailableBalance.HasValue)
+                                            {
+                                                <text> - Balance: @account.AvailableBalance.Value.ToString("N2")</text>
+                                            }
+                                            @if (account.IsPrimary)
+                                            {
+                                                <text> - Primary</text>
+                                            }
+                                        </option>
+                                    }
+                                </select>
+                                <small class="text-muted">?? The balance will be automatically reduced when payment completes</small>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>No Company Bank Account Found!</strong>
+                    <p class="mb-0">Please add a company bank account before processing payments.</p>
+                    <a asp-controller="CompanyBankAccount" asp-action="Create" class="btn btn-danger btn-sm mt-2">
+                        <i class="fas fa-plus"></i> Add Company Bank Account
+                    </a>
+                </div>
+            }
+
+            <!-- Employee Payment Details (TO) -->
+            <div class="card mb-4">
+                <div class="card-header bg-warning">
+                    <h5 class="mb-0"><i class="fas fa-user"></i> Employee Payment Details (TO)</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <p><strong>Payment Method:</strong>
+                                <span class="badge bg-primary">@Model.Employee?.PaymentMethod</span>
+                            </p>
+                        </div>
+                        <div class="col-md-6">
+                            @if (Model.Employee?.PaymentMethod == PayRollManagementSystem.Models.PaymentMethodPreference.BankTransfer)
+                            {
+                                <p><strong>Bank:</strong> @Model.Employee?.BankName</p>
+                                <p><strong>Account:</strong> @Model.Employee?.BankAccountNumber</p>
+                                <p><strong>Branch:</strong> @Model.Employee?.BranchName</p>
+                            }
+                            else if (Model.Employee?.PaymentMethod == PayRollManagementSystem.Models.PaymentMethodPreference.MobileBanking)
+                            {
+                                <p><strong>Provider:</strong> @Model.Employee?.MobileBankingProvider</p>
+                                <p><strong>Number:</strong> @Model.Employee?.MobileBankingNumber</p>
+                            }
+                            else if (Model.Employee?.PaymentMethod == PayRollManagementSystem.Models.PaymentMethodPreference.Cheque)
+                            {
+                                <p><strong>Payment:</strong> Via Cheque</p>
+                            }
+                            else
+                            {
+                                <p><strong>Payment:</strong> Cash</p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Payment Method Selection -->
+            @if (companyAccounts != null && companyAccounts.Any())
+            {
+                <div class="card">
+                    <div class="card-header">
+                        <h5 class="mb-0"><i class="fas fa-credit-card"></i> Select Payment Method</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3 mb-4">
+                            <!-- SSLCommerz Payment Gateway -->
+                            <div class="col-md-6">
+                                <div class="form-check payment-option">
+                                    <input form="paymentForm" class="form-check-input" type="radio" name="paymentMethod" id="sslcommerz" value="SSLCommerz" checked>
+                                    <label class="form-check-label w-100" for="sslcommerz">
+                                        <div class="p-3 border rounded bg-light">
+                                            <i class="fas fa-credit-card fa-2x text-danger mb-2"></i>
+                                            <h6 class="mt-2 mb-1">SSLCommerz</h6>
+                                            <small class="text-muted d-block">Online Payment Gateway</small>
+                                            <div class="mt-2">
+                                                <span class="badge bg-success badge-sm">Instant</span>
+                                                <span class="badge bg-info badge-sm">Secure</span>
+                                                <span class="badge bg-primary badge-sm">Recommended</span>
+                                            </div>
+                                            <small class="d-block mt-2 text-success">?? Card, bKash, Nagad, Rocket</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="col-md-6">
+                                <div class="form-check payment-option">
+                                    <input form="paymentForm" class="form-check-input" type="radio" name="paymentMethod" id="bankTransfer" value="BankTransfer">
+                                    <label class="form-check-label w-100" for="bankTransfer">
+                                        <div class="p-3 border rounded">
+                                            <i class="fas fa-university fa-2x text-primary"></i>
+                                            <h6 class="mt-2">Bank Transfer</h6>
+                                            <small class="text-muted">Direct bank transfer</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check payment-option">
+                                    <input form="paymentForm" class="form-check-input" type="radio" name="paymentMethod" id="mobileBanking" value="MobileBanking">
+                                    <label class="form-check-label w-100" for="mobileBanking">
+                                        <div class="p-3 border rounded">
+                                            <i class="fas fa-mobile-alt fa-2x text-info"></i>
+                                            <h6 class="mt-2">Mobile Banking</h6>
+                                            <small class="text-muted">bKash, Nagad, Rocket</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-check payment-option">
+                                    <input form="paymentForm" class="form-check-input" type="radio" name="paymentMethod" id="cheque" value="Cheque">
+                                    <label class="form-check-label w-100" for="cheque">
+                                        <div class="p-3 border rounded">
+                                            <i class="fas fa-money-check fa-2x text-warning"></i>
+                                            <h6 class="mt-2">Cheque</h6>
+                                            <small class="text-muted">Bank cheque payment</small>
+                                        </div>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle"></i>
+                            <strong>Note:</strong>
+                            <span id="paymentNote">SSLCommerz provides instant, secure online payment processing. You will be redirected to the payment gateway.</span>
+                        </div>
+
+                        <div class="alert alert-success">
+                            <i class="fas fa-bolt"></i>
+                            <strong>Auto Balance Reduction:</strong> When payment completes, the company bank account balance will be automatically reduced by @Model.NetSalary.ToString("N2")
+                        </div>
+
+                        <div class="d-grid gap-2">
+                            <button type="submit" form="paymentForm" class="btn btn-primary btn-lg">
+                                <i class="fas fa-arrow-right"></i> <span id="submitButtonText">Pay via SSLCommerz</span>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <!-- Help Section -->
+        <div class="col-lg-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <h5 class="mb-0"><i class="fas fa-question-circle"></i> Payment Guide</h5>
+                </div>
+                <div class="card-body">
+                    <h6><i class="fas fa-university"></i> Company Bank Account</h6>
+                    <p class="small">Select which company account to use for this payment. Balance will auto-reduce on completion.</p>
+
+                    <h6 class="mt-3"><i class="fas fa-user"></i> Employee Details</h6>
+                    <p class="small">Payment will be sent to employee's registered payment method.</p>
+
+                    <h6 class="mt-3"><i class="fas fa-check-circle"></i> Process</h6>
+                    <p class="small">Payment will be tracked and balance automatically updated.</p>
+
+                    <hr />
+
+                    <div class="alert alert-sm alert-primary mb-0">
+                        <i class="fas fa-shield-alt"></i> All transactions are securely recorded.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .payment-option {
+        cursor: pointer;
+    }
+
+    .payment-option input[type="radio"]:checked + label .p-3 {
+        background-color: #e7f3ff;
+        border-color: #0d6efd !important;
+        border-width: 2px;
+    }
+
+    .payment-option label {
+        cursor: pointer;
+    }
+</style>
+
+@section Scripts {
+    <partial name="_ToastNotification" />
+
+    <script>
+        // Update button text and note based on selected payment method
+        document.querySelectorAll('input[name="paymentMethod"]').forEach(radio => {
+            radio.addEventListener('change', function () {
+                const paymentNote = document.getElementById('paymentNote');
+                const submitButtonText = document.getElementById('submitButtonText');
+
+                switch (this.value) {
+                    case 'SSLCommerz':
+                        paymentNote.textContent = 'SSLCommerz provides instant, secure online payment processing. You will be redirected to the payment gateway.';
+                        submitButtonText.textContent = 'Pay via SSLCommerz';
+                        break;
+                    case 'BankTransfer':
+                        paymentNote.textContent = 'Payment will be transferred to employee\'s registered bank account.';
+                        submitButtonText.textContent = 'Process Bank Transfer';
+                        break;
+                    case 'MobileBanking':
+                        paymentNote.textContent = 'Payment will be sent to employee\'s mobile banking account.';
+                        submitButtonText.textContent = 'Process Mobile Banking';
+                        break;
+                    case 'Cheque':
+                        paymentNote.textContent = 'A cheque will be issued for this payment.';
+                        submitButtonText.textContent = 'Process Cheque Payment';
+                        break;
+                }
+            });
+        });
+    </script>
+}

@@ -101,7 +101,7 @@ namespace PayRollManagementSystem.Controllers
         // POST: Designation/Create
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("DesignationCode,Title,Description,DepartmentId,Level,MinimumSalary,MaximumSalary,Status")] Designation designation)
+        public async Task<IActionResult> Create([Bind("DesignationCode,Title,Description,DepartmentId,Level,Status")] Designation designation)
         {
             if (ModelState.IsValid)
             {
@@ -109,19 +109,6 @@ namespace PayRollManagementSystem.Controllers
                 if (await _context.Designations.AnyAsync(d => d.DesignationCode == designation.DesignationCode))
                 {
                     ModelState.AddModelError("DesignationCode", "Designation code already exists.");
-                    ViewBag.GeneratedDesignationCode = designation.DesignationCode;
-                    ViewBag.Departments = await _context.Departments
-                        .Where(d => d.Status == DepartmentStatus.Active)
-                        .OrderBy(d => d.Name)
-                        .ToListAsync();
-                    return View(designation);
-                }
-
-                // Validate salary range
-                if (designation.MinimumSalary.HasValue && designation.MaximumSalary.HasValue
-                    && designation.MinimumSalary > designation.MaximumSalary)
-                {
-                    ModelState.AddModelError("MaximumSalary", "Maximum salary must be greater than minimum salary.");
                     ViewBag.GeneratedDesignationCode = designation.DesignationCode;
                     ViewBag.Departments = await _context.Departments
                         .Where(d => d.Status == DepartmentStatus.Active)
@@ -169,8 +156,6 @@ namespace PayRollManagementSystem.Controllers
                 departmentId = designation.DepartmentId,
                 departmentName = designation.Department?.Name,
                 level = designation.Level,
-                minimumSalary = designation.MinimumSalary,
-                maximumSalary = designation.MaximumSalary,
                 status = designation.Status.ToString()
             });
         }
@@ -190,19 +175,10 @@ namespace PayRollManagementSystem.Controllers
                         return Json(new { success = false, message = "Designation not found." });
                     }
 
-                    // Validate salary range
-                    if (designation.MinimumSalary.HasValue && designation.MaximumSalary.HasValue
-                        && designation.MinimumSalary > designation.MaximumSalary)
-                    {
-                        return Json(new { success = false, message = "Maximum salary must be greater than minimum salary." });
-                    }
-
                     existingDesig.Title = designation.Title;
                     existingDesig.Description = designation.Description;
                     existingDesig.DepartmentId = designation.DepartmentId;
                     existingDesig.Level = designation.Level;
-                    existingDesig.MinimumSalary = designation.MinimumSalary;
-                    existingDesig.MaximumSalary = designation.MaximumSalary;
                     existingDesig.Status = designation.Status;
                     existingDesig.UpdatedAt = DateTime.Now;
 

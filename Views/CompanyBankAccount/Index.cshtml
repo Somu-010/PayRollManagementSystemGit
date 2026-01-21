@@ -1,0 +1,211 @@
+@model IEnumerable<PayRollManagementSystem.Models.CompanyBankAccount>
+
+@{
+    ViewData["Title"] = "Company Bank Accounts";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-university text-primary"></i> Company Bank Accounts
+            </h2>
+            <p class="text-muted mb-0">Manage company bank accounts for salary payments</p>
+        </div>
+        <div>
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="fas fa-plus"></i> Add Bank Account
+            </a>
+        </div>
+    </div>
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-exclamation-triangle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+    }
+
+    @if (Model != null && Model.Any())
+    {
+        <!-- Summary Cards -->
+        <div class="row mb-4">
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="text-primary mb-2">
+                            <i class="fas fa-university fa-2x"></i>
+                        </div>
+                        <h3 class="mb-0">@Model.Count()</h3>
+                        <p class="text-muted mb-0 small">Total Accounts</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="text-success mb-2">
+                            <i class="fas fa-check-circle fa-2x"></i>
+                        </div>
+                        <h3 class="mb-0">@Model.Count(a => a.Status == PayRollManagementSystem.Models.BankAccountStatus.Active)</h3>
+                        <p class="text-muted mb-0 small">Active Accounts</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="text-warning mb-2">
+                            <i class="fas fa-star fa-2x"></i>
+                        </div>
+                        <h3 class="mb-0">@Model.Count(a => a.IsPrimary)</h3>
+                        <p class="text-muted mb-0 small">Primary Account</p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-3">
+                <div class="card border-0 shadow-sm h-100">
+                    <div class="card-body text-center">
+                        <div class="text-info mb-2">
+                            <i class="fas fa-money-bill-wave fa-2x"></i>
+                        </div>
+                        <h3 class="mb-0">@Model.Where(a => a.AvailableBalance.HasValue).Sum(a => a.AvailableBalance ?? 0).ToString("N2")</h3>
+                        <p class="text-muted mb-0 small">Total Balance</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Account Cards -->
+        <div class="row">
+            @foreach (var account in Model)
+            {
+                <div class="col-md-6 col-lg-4 mb-4">
+                    <div class="card border-0 shadow-sm h-100 @(account.IsPrimary ? "border-primary border-2" : "")">
+                        @if (account.IsPrimary)
+                        {
+                            <div class="card-header bg-primary text-white border-0">
+                                <i class="fas fa-star"></i> Primary Account
+                            </div>
+                        }
+                        else if (account.Status == PayRollManagementSystem.Models.BankAccountStatus.Inactive)
+                        {
+                            <div class="card-header bg-secondary text-white border-0">
+                                <i class="fas fa-pause-circle"></i> Inactive
+                            </div>
+                        }
+                        else if (account.Status == PayRollManagementSystem.Models.BankAccountStatus.Suspended)
+                        {
+                            <div class="card-header bg-danger text-white border-0">
+                                <i class="fas fa-ban"></i> Suspended
+                            </div>
+                        }
+
+                        <div class="card-body">
+                            <h5 class="card-title mb-3">
+                                <i class="fas fa-university text-primary"></i>
+                                @account.AccountName
+                            </h5>
+
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Bank Name</small>
+                                <strong>@account.BankName</strong>
+                            </div>
+
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Account Number</small>
+                                <code class="text-dark">@account.AccountNumber</code>
+                            </div>
+
+                            @if (!string.IsNullOrEmpty(account.BranchName))
+                            {
+                                <div class="mb-3">
+                                    <small class="text-muted d-block">Branch</small>
+                                    <strong>@account.BranchName</strong>
+                                </div>
+                            }
+
+                            <div class="mb-3">
+                                <small class="text-muted d-block">Account Type</small>
+                                <span class="badge bg-info">
+                                    @account.AccountType.ToString().Replace("_", " ")
+                                </span>
+                            </div>
+
+                            @if (account.AvailableBalance.HasValue)
+                            {
+                                <div class="mb-3 p-3 bg-light rounded">
+                                    <small class="text-muted d-block">Available Balance</small>
+                                    <h4 class="mb-1 text-success">
+                                        <i class="fas fa-money-bill-wave"></i>
+                                        @account.AvailableBalance.Value.ToString("N2")
+                                    </h4>
+                                    <small class="text-muted">
+                                        <i class="fas fa-bolt text-warning"></i> Auto-reduces on payment
+                                    </small>
+                                </div>
+                            }
+
+                            @if (account.Status == PayRollManagementSystem.Models.BankAccountStatus.Active)
+                            {
+                                <span class="badge bg-success">
+                                    <i class="fas fa-check-circle"></i> Active
+                                </span>
+                            }
+                        </div>
+
+                        <div class="card-footer bg-white border-0">
+                            <div class="btn-group w-100" role="group">
+                                <a asp-action="Details" asp-route-id="@account.CompanyBankAccountId" 
+                                   class="btn btn-sm btn-outline-primary">
+                                    <i class="fas fa-eye"></i> Details
+                                </a>
+                                <a asp-action="Edit" asp-route-id="@account.CompanyBankAccountId" 
+                                   class="btn btn-sm btn-outline-secondary">
+                                    <i class="fas fa-edit"></i> Edit
+                                </a>
+                                @if (!account.IsPrimary)
+                                {
+                                    <a asp-action="Delete" asp-route-id="@account.CompanyBankAccountId" 
+                                       class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i> Delete
+                                    </a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="card border-0 shadow-sm">
+            <div class="card-body text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-university fa-4x text-muted"></i>
+                </div>
+                <h4>No Company Bank Accounts Found</h4>
+                <p class="text-muted mb-4">Create your first company bank account to start processing salary payments.</p>
+                <a asp-action="Create" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> Add First Account
+                </a>
+            </div>
+        </div>
+    }
+</div>
+
+@section Scripts {
+    <partial name="_ToastNotification" />
+}

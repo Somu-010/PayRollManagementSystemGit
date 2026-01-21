@@ -189,9 +189,16 @@
         <a asp-action="EditProfile" class="btn-edit-profile">
             <i class="fas fa-edit"></i> Edit Profile
         </a>
-        <div class="profile-avatar">
-            @Model.Name.Substring(0, Math.Min(2, Model.Name.Length)).ToUpper()
-        </div>
+        @if (!string.IsNullOrEmpty(Model.ProfileImagePath))
+        {
+            <img src="@Model.ProfileImagePath" alt="@Model.Name" class="profile-avatar" style="object-fit: cover; font-size: 0;" />
+        }
+        else
+        {
+            <div class="profile-avatar">
+                @Model.Name.Substring(0, Math.Min(2, Model.Name.Length)).ToUpper()
+            </div>
+        }
         <div class="profile-name">@Model.Name</div>
         <div class="profile-title">@(Model.DesignationNavigation?.Title ?? Model.Designation) - @(Model.DepartmentNavigation?.Name ?? Model.Department)</div>
         <span class="profile-badge">

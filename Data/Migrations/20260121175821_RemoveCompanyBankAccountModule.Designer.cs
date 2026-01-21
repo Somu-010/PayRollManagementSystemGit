@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using PayRollManagementSystem.Data;
 
@@ -11,9 +12,11 @@ using PayRollManagementSystem.Data;
 namespace PayRollManagementSystem.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260121175821_RemoveCompanyBankAccountModule")]
+    partial class RemoveCompanyBankAccountModule
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -355,71 +358,6 @@ namespace PayRollManagementSystem.Data.Migrations
                     b.HasIndex("EmployeeId");
 
                     b.ToTable("Attendances");
-                });
-
-            modelBuilder.Entity("PayRollManagementSystem.Models.CompanyBankAccount", b =>
-                {
-                    b.Property<int>("CompanyBankAccountId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("CompanyBankAccountId"));
-
-                    b.Property<string>("AccountName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("AccountNumber")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("AccountType")
-                        .HasColumnType("int");
-
-                    b.Property<decimal?>("AvailableBalance")
-                        .HasColumnType("decimal(18,2)");
-
-                    b.Property<string>("BankName")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<string>("BranchName")
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(500)
-                        .HasColumnType("nvarchar(500)");
-
-                    b.Property<bool>("IsPrimary")
-                        .HasColumnType("bit");
-
-                    b.Property<string>("RoutingNumber")
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("int");
-
-                    b.Property<string>("SwiftCode")
-                        .HasMaxLength(20)
-                        .HasColumnType("nvarchar(20)");
-
-                    b.Property<DateTime?>("UpdatedAt")
-                        .HasColumnType("datetime2");
-
-                    b.HasKey("CompanyBankAccountId");
-
-                    b.HasIndex("AccountNumber")
-                        .IsUnique();
-
-                    b.ToTable("CompanyBankAccounts");
                 });
 
             modelBuilder.Entity("PayRollManagementSystem.Models.CompanySetting", b =>
@@ -991,9 +929,6 @@ namespace PayRollManagementSystem.Data.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
-                    b.Property<int?>("CompanyBankAccountId")
-                        .HasColumnType("int");
-
                     b.Property<DateTime?>("CompletedDate")
                         .HasColumnType("datetime2");
 
@@ -1066,8 +1001,6 @@ namespace PayRollManagementSystem.Data.Migrations
                         .HasColumnType("nvarchar(100)");
 
                     b.HasKey("PaymentTransactionId");
-
-                    b.HasIndex("CompanyBankAccountId");
 
                     b.HasIndex("PayrollId");
 
@@ -1497,18 +1430,11 @@ namespace PayRollManagementSystem.Data.Migrations
 
             modelBuilder.Entity("PayRollManagementSystem.Models.PaymentTransaction", b =>
                 {
-                    b.HasOne("PayRollManagementSystem.Models.CompanyBankAccount", "CompanyBankAccount")
-                        .WithMany("PaymentTransactions")
-                        .HasForeignKey("CompanyBankAccountId")
-                        .OnDelete(DeleteBehavior.Restrict);
-
                     b.HasOne("PayRollManagementSystem.Models.Payroll", "Payroll")
                         .WithMany()
                         .HasForeignKey("PayrollId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired();
-
-                    b.Navigation("CompanyBankAccount");
 
                     b.Navigation("Payroll");
                 });
@@ -1540,11 +1466,6 @@ namespace PayRollManagementSystem.Data.Migrations
                     b.Navigation("AllowanceDeduction");
 
                     b.Navigation("Payroll");
-                });
-
-            modelBuilder.Entity("PayRollManagementSystem.Models.CompanyBankAccount", b =>
-                {
-                    b.Navigation("PaymentTransactions");
                 });
 
             modelBuilder.Entity("PayRollManagementSystem.Models.ComponentTemplate", b =>

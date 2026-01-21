@@ -263,15 +263,6 @@
                 <div class="stat-label">👥 Total Employees</div>
                 <div class="stat-value">@Model.EmployeeCount</div>
             </div>
-            @if (Model.MinimumSalary.HasValue || Model.MaximumSalary.HasValue)
-            {
-                <div class="stat-card">
-                    <div class="stat-label">💰 Salary Range</div>
-                    <div class="stat-value" style="font-size: 20px;">
-                        @(Model.MinimumSalary?.ToString("N0") ?? "0") - @(Model.MaximumSalary?.ToString("N0") ?? "0")
-                    </div>
-                </div>
-            }
         </div>
 
         <!-- Designation Information -->
@@ -312,43 +303,6 @@
                 </div>
             </div>
         </div>
-
-        <!-- Salary Information -->
-        @if (Model.MinimumSalary.HasValue || Model.MaximumSalary.HasValue)
-        {
-            <h3 class="section-title">💰 Salary Information</h3>
-            <div class="details-grid">
-                @if (Model.MinimumSalary.HasValue)
-                {
-                    <div class="detail-item">
-                        <div class="detail-label">Minimum Salary</div>
-                        <div class="detail-value">
-                            <span class="detail-icon">💵</span>@Model.MinimumSalary.Value.ToString("N2")
-                        </div>
-                    </div>
-                }
-
-                @if (Model.MaximumSalary.HasValue)
-                {
-                    <div class="detail-item">
-                        <div class="detail-label">Maximum Salary</div>
-                        <div class="detail-value">
-                            <span class="detail-icon">💵</span>@Model.MaximumSalary.Value.ToString("N2")
-                        </div>
-                    </div>
-                }
-
-                @if (Model.MinimumSalary.HasValue && Model.MaximumSalary.HasValue)
-                {
-                    <div class="detail-item">
-                        <div class="detail-label">Average Salary</div>
-                        <div class="detail-value">
-                            <span class="detail-icon">💰</span>@(((Model.MinimumSalary.Value + Model.MaximumSalary.Value) / 2).ToString("N2"))
-                        </div>
-                    </div>
-                }
-            </div>
-        }
 
         <!-- Description -->
         @if (!string.IsNullOrEmpty(Model.Description))

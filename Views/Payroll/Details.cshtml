@@ -428,6 +428,12 @@
     <h1 class="page-title">Payslip Details</h1>
     <div class="header-actions">
         <button onclick="window.print()" class="btn-print">Print Payslip</button>
+        @if (Model.Status == PayRollManagementSystem.Models.PayrollStatus.Approved)
+        {
+            <a asp-controller="Payment" asp-action="ProcessPayment" asp-route-id="@Model.PayrollId" class="btn btn-success">
+                <i class="fas fa-money-check-alt"></i> Process Payment
+            </a>
+        }
         @if (Model.Status == PayRollManagementSystem.Models.PayrollStatus.Pending || Model.Status == PayRollManagementSystem.Models.PayrollStatus.Draft)
         {
             <a asp-action="Approve" asp-route-id="@Model.PayrollId" class="btn-approve">Approve</a>

@@ -102,6 +102,42 @@ namespace PayRollManagementSystem.Models
         // Navigation property to Shift
         [ForeignKey("ShiftId")]
         public virtual Shift? ShiftNavigation { get; set; }
+
+        // Payment Information
+        [Required]
+        [Display(Name = "Payment Method")]
+        public PaymentMethodPreference PaymentMethod { get; set; } = PaymentMethodPreference.BankTransfer;
+
+        [StringLength(100)]
+        [Display(Name = "Bank Name")]
+        public string? BankName { get; set; }
+
+        [StringLength(50)]
+        [Display(Name = "Bank Account Number")]
+        public string? BankAccountNumber { get; set; }
+
+        [StringLength(100)]
+        [Display(Name = "Branch Name")]
+        public string? BranchName { get; set; }
+
+        [StringLength(50)]
+        [Display(Name = "Routing Number")]
+        public string? RoutingNumber { get; set; }
+
+        [StringLength(15)]
+        [Display(Name = "Mobile Banking Number")]
+        public string? MobileBankingNumber { get; set; }
+
+        [Display(Name = "Mobile Banking Provider")]
+        public MobileBankingProvider? MobileBankingProvider { get; set; }
+
+        [StringLength(200)]
+        [Display(Name = "Payment Notes")]
+        public string? PaymentNotes { get; set; }
+
+        [StringLength(500)]
+        [Display(Name = "Profile Image")]
+        public string? ProfileImagePath { get; set; }
     }
 
     public enum EmploymentStatus
@@ -115,6 +151,27 @@ namespace PayRollManagementSystem.Models
     {
         Male,
         Female,
+        Other
+    }
+
+    public enum PaymentMethodPreference
+    {
+        [Display(Name = "Bank Transfer")]
+        BankTransfer,
+        [Display(Name = "Mobile Banking")]
+        MobileBanking,
+        [Display(Name = "Cheque")]
+        Cheque,
+        [Display(Name = "Cash")]
+        Cash
+    }
+
+    public enum MobileBankingProvider
+    {
+        bKash,
+        Nagad,
+        Rocket,
+        [Display(Name = "Other")]
         Other
     }
 }

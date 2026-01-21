@@ -1,0 +1,245 @@
+@model PayRollManagementSystem.Models.CompanyBankAccount
+
+@{
+    ViewData["Title"] = "Delete Company Bank Account";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var hasTransactions = ViewBag.HasTransactions as bool? ?? false;
+}
+
+<div class="container-fluid">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h2 class="mb-1">
+                <i class="fas fa-trash text-danger"></i> Delete Company Bank Account
+            </h2>
+            <p class="text-muted mb-0">Confirm deletion</p>
+        </div>
+        <div>
+            <a asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to List
+            </a>
+        </div>
+    </div>
+
+    @if (hasTransactions)
+    {
+        <div class="alert alert-danger border-0 shadow-sm">
+            <h4 class="alert-heading">
+                <i class="fas fa-exclamation-triangle"></i> Cannot Delete Account
+            </h4>
+            <p>This account has payment transactions associated with it and cannot be deleted.</p>
+            <hr />
+            <p class="mb-0">
+                You can mark it as <strong>Inactive</strong> instead.
+                <a asp-action="Edit" asp-route-id="@Model.CompanyBankAccountId" class="btn btn-warning btn-sm ms-2">
+                    <i class="fas fa-edit"></i> Edit Account
+                </a>
+            </p>
+        </div>
+    }
+    else
+    {
+        <div class="alert alert-warning border-0 shadow-sm">
+            <h4 class="alert-heading">
+                <i class="fas fa-exclamation-triangle"></i> Warning
+            </h4>
+            <p>Are you sure you want to delete this company bank account?</p>
+            <p class="mb-0"><strong>This action cannot be undone!</strong></p>
+        </div>
+    }
+
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm @(hasTransactions ? "border-danger" : "border-warning") border-2">
+                <div class="card-header @(hasTransactions ? "bg-danger" : "bg-warning") @(hasTransactions ? "text-white" : "text-dark") border-0">
+                    <h5 class="mb-0">
+                        <i class="fas fa-info-circle"></i> Account Details
+                    </h5>
+                </div>
+                <div class="card-body p-4">
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Account Name</strong>
+                            <p class="mb-0">@Model.AccountName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Account Type</strong>
+                            <p class="mb-0">
+                                <span class="badge bg-info">@Model.AccountType.ToString().Replace("_", " ")</span>
+                            </p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Bank Name</strong>
+                            <p class="mb-0">@Model.BankName</p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Branch Name</strong>
+                            <p class="mb-0">@(Model.BranchName ?? "N/A")</p>
+                        </div>
+                    </div>
+
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Account Number</strong>
+                            <p class="mb-0"><code class="text-dark">@Model.AccountNumber</code></p>
+                        </div>
+                        <div class="col-md-6">
+                            <strong class="text-muted d-block small mb-1">Status</strong>
+                            <p class="mb-0">
+                                @if (Model.Status == PayRollManagementSystem.Models.BankAccountStatus.Active)
+                                {
+                                    <span class="badge bg-success">Active</span>
+                                }
+                                else if (Model.Status == PayRollManagementSystem.Models.BankAccountStatus.Inactive)
+                                {
+                                    <span class="badge bg-secondary">Inactive</span>
+                                }
+                                else
+                                {
+                                    <span class="badge bg-danger">Suspended</span>
+                                }
+                            </p>
+                        </div>
+                    </div>
+
+                    @if (Model.AvailableBalance.HasValue)
+                    {
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <strong class="text-muted d-block small mb-1">Available Balance</strong>
+                                <h4 class="text-success mb-0">@Model.AvailableBalance.Value.ToString("N2")</h4>
+                            </div>
+                        </div>
+                    }
+
+                    @if (Model.IsPrimary)
+                    {
+                        <div class="alert alert-info border-0">
+                            <i class="fas fa-star"></i> This is the <strong>Primary Account</strong>
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(Model.Description))
+                    {
+                        <div class="row">
+                            <div class="col-12">
+                                <strong class="text-muted d-block small mb-1">Description</strong>
+                                <p class="mb-0">@Model.Description</p>
+                            </div>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (!hasTransactions)
+            {
+                <div class="card border-danger border-2 border-0 shadow-sm mt-3">
+                    <div class="card-body p-4">
+                        <form asp-action="Delete" method="post">
+                            <input type="hidden" asp-for="CompanyBankAccountId" />
+
+                            <div class="form-check mb-3 p-3 bg-light rounded">
+                                <input class="form-check-input" type="checkbox" id="confirmDelete" required />
+                                <label class="form-check-label fw-bold" for="confirmDelete">
+                                    <i class="fas fa-exclamation-triangle text-danger"></i>
+                                    I understand this action cannot be undone
+                                </label>
+                            </div>
+
+                            <div class="d-flex gap-2">
+                                <button type="submit" class="btn btn-danger">
+                                    <i class="fas fa-trash"></i> Delete Account
+                                </button>
+                                <a asp-action="Details" asp-route-id="@Model.CompanyBankAccountId" class="btn btn-outline-info">
+                                    <i class="fas fa-eye"></i> View Details
+                                </a>
+                                <a asp-action="Index" class="btn btn-outline-secondary">
+                                    <i class="fas fa-times"></i> Cancel
+                                </a>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            }
+        </div>
+
+        <div class="col-lg-4">
+            @if (hasTransactions)
+            {
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-info text-white border-0">
+                        <h6 class="mb-0">
+                            <i class="fas fa-lightbulb"></i> Alternative Actions
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-3"><strong>Instead of deleting, you can:</strong></p>
+
+                        <div class="d-grid gap-2">
+                            <a asp-action="Edit" asp-route-id="@Model.CompanyBankAccountId" class="btn btn-warning">
+                                <i class="fas fa-pause-circle"></i> Mark as Inactive
+                            </a>
+
+                            <a asp-action="Details" asp-route-id="@Model.CompanyBankAccountId" class="btn btn-outline-primary">
+                                <i class="fas fa-eye"></i> View Details
+                            </a>
+                        </div>
+
+                        <hr />
+
+                        <p class="small text-muted mb-0">
+                            <i class="fas fa-info-circle"></i>
+                            Inactive accounts are hidden from payment selection but maintain transaction history.
+                        </p>
+                    </div>
+                </div>
+            }
+            else
+            {
+                <div class="card border-0 shadow-sm mb-3">
+                    <div class="card-header bg-warning text-dark border-0">
+                        <h6 class="mb-0">
+                            <i class="fas fa-exclamation-triangle"></i> Warning
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <h6 class="mb-2">Deleting this account will:</h6>
+                        <ul class="small mb-3">
+                            <li>Permanently remove the account</li>
+                            <li>Remove it from the list</li>
+                            <li>Cannot be undone</li>
+                        </ul>
+
+                        <hr />
+
+                        <h6 class="mb-2">This account has:</h6>
+                        <ul class="small mb-0">
+                            <li class="text-success"><strong>No payment transactions</strong></li>
+                            <li class="text-success">Safe to delete</li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div class="card border-0 shadow-sm">
+                    <div class="card-header bg-success text-white border-0">
+                        <h6 class="mb-0">
+                            <i class="fas fa-shield-alt"></i> Safe Deletion
+                        </h6>
+                    </div>
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3 d-block"></i>
+                        <p class="small text-muted mb-0">This account can be safely deleted as it has no associated payment transactions.</p>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ToastNotification" />
+}

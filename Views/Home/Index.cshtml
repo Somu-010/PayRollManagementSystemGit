@@ -466,10 +466,10 @@
             {
                 @foreach (var emp in ViewBag.RecentEmployees)
                 {
-                    string[] nameParts = emp.Name.Split(' ');
-                    string initials = nameParts.Length > 1 
+                    string[] nameParts = emp.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    string initials = nameParts.Length > 1 && nameParts[0].Length > 0 && nameParts[1].Length > 0
                         ? nameParts[0].Substring(0, 1) + nameParts[1].Substring(0, 1)
-                        : emp.Name.Substring(0, Math.Min(2, emp.Name.Length));
+                        : emp.Name.Length > 0 ? emp.Name.Substring(0, Math.Min(2, emp.Name.Length)) : "NA";
                     <div class="recent-item">
                         <div class="item-info">
                             <div class="item-avatar">@initials.ToUpper()</div>
@@ -502,10 +502,10 @@
                 @foreach (var att in ViewBag.RecentAttendance)
                 {
                     string employeeName = att.EmployeeName ?? "Unknown";
-                    string[] nameParts = employeeName.Split(' ');
-                    string initials = nameParts.Length > 1 
+                    string[] nameParts = employeeName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
+                    string initials = nameParts.Length > 1 && nameParts[0].Length > 0 && nameParts[1].Length > 0
                         ? nameParts[0].Substring(0, 1) + nameParts[1].Substring(0, 1)
-                        : employeeName.Substring(0, Math.Min(2, employeeName.Length));
+                        : employeeName.Length > 0 ? employeeName.Substring(0, Math.Min(2, employeeName.Length)) : "NA";
                     
                     string statusValue = att.Status.ToString();
                     string statusClass = statusValue == "Present" ? "badge-present" : 
@@ -556,9 +556,10 @@
             {
                 @foreach (var dept in ViewBag.TopDepartments)
                 {
+                    string deptInitials = dept.Name.Length > 0 ? dept.Name.Substring(0, Math.Min(2, dept.Name.Length)) : "NA";
                     <div class="recent-item">
                         <div class="item-info">
-                            <div class="dept-avatar">@dept.Name.Substring(0, Math.Min(2, dept.Name.Length)).ToUpper()</div>
+                            <div class="dept-avatar">@deptInitials.ToUpper()</div>
                             <div class="item-details">
                                 <h4>@dept.Name</h4>
                                 <p>@dept.DepartmentCode • Department</p>
@@ -587,11 +588,10 @@
             {
                 @foreach (var desig in ViewBag.TopDesignations)
                 {
-                    var minSalary = desig.MinimumSalary as decimal?;
-                    var maxSalary = desig.MaximumSalary as decimal?;
+                    string desigInitials = desig.Title.Length > 0 ? desig.Title.Substring(0, Math.Min(2, desig.Title.Length)) : "NA";
                     <div class="recent-item">
                         <div class="item-info">
-                            <div class="desig-avatar">@desig.Title.Substring(0, Math.Min(2, desig.Title.Length)).ToUpper()</div>
+                            <div class="desig-avatar">@desigInitials.ToUpper()</div>
                             <div class="item-details">
                                 <h4>@desig.Title</h4>
                                 <p>@desig.DesignationCode • @desig.DepartmentName</p>
@@ -599,10 +599,6 @@
                         </div>
                         <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
                             <span class="item-count">@desig.EmployeeCount <span style="font-size: 12px; color: #5a6c7d;">emp</span></span>
-                            @if (minSalary.HasValue && maxSalary.HasValue)
-                            {
-                                <span class="item-salary">৳@minSalary.Value.ToString("N0")-৳@maxSalary.Value.ToString("N0")</span>
-                            }
                         </div>
                     </div>
                 }
@@ -626,7 +622,7 @@
             {
                 @foreach (var shift in ViewBag.TopShifts)
                 {
-                    string shiftInitials = shift.ShiftName.Substring(0, Math.Min(2, shift.ShiftName.Length));
+                    string shiftInitials = shift.ShiftName.Length > 0 ? shift.ShiftName.Substring(0, Math.Min(2, shift.ShiftName.Length)) : "NA";
                     <div class="recent-item">
                         <div class="item-info">
                             <div class="shift-avatar">@shiftInitials.ToUpper()</div>

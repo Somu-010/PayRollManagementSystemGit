@@ -1,0 +1,221 @@
+@model IEnumerable<PayRollManagementSystem.Models.PaymentTransaction>
+
+@{
+    ViewData["Title"] = "Fix Stuck Payments";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-md-6">
+            <h2><i class="fas fa-tools"></i> Fix Stuck Payments</h2>
+            <p class="text-muted">Payments stuck in "Processing" status</p>
+        </div>
+        <div class="col-md-6 text-end">
+            <a asp-controller="Payment" asp-action="Index" class="btn btn-outline-secondary">
+                <i class="fas fa-arrow-left"></i> Back to Payments
+            </a>
+        </div>
+    </div>
+
+    @if (Model.Any())
+    {
+        <!-- Fix All Button -->
+        <div class="alert alert-warning">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>Found @Model.Count() stuck payment(s)</strong>
+                    <p class="mb-0">These payments are stuck in "Processing" status and need to be fixed.</p>
+                </div>
+                <div class="col-md-4 text-end">
+                    <form id="fixAllForm" method="post" asp-action="FixAllStuckPayments" style="display: inline;">
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-warning btn-lg">
+                            <i class="fas fa-magic"></i> Fix All Payments
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <!-- Stuck Payments Table -->
+        <div class="card">
+            <div class="card-header bg-danger text-white">
+                <h5 class="mb-0"><i class="fas fa-exclamation-circle"></i> Stuck Payments</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>Transaction #</th>
+                                <th>Employee</th>
+                                <th>Amount</th>
+                                <th>Initiated Date</th>
+                                <th>Method</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr id="payment-row-@item.PaymentTransactionId">
+                                    <td>
+                                        <strong>@item.TransactionNumber</strong>
+                                    </td>
+                                    <td>
+                                        @item.Payroll?.Employee?.Name<br />
+                                        <small class="text-muted">@item.Payroll?.Employee?.EmployeeCode</small>
+                                    </td>
+                                    <td>
+                                        <strong>@item.Amount.ToString("N2")</strong>
+                                    </td>
+                                    <td>
+                                        @item.InitiatedDate.ToString("dd MMM yyyy")<br />
+                                        <small class="text-muted">@item.InitiatedDate.ToString("hh:mm tt")</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-info">@item.PaymentMethod</span>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-warning">
+                                            <i class="fas fa-spinner"></i> Processing
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <form method="post" asp-action="FixStuckPayment" asp-route-id="@item.PaymentTransactionId" 
+                                              class="fix-payment-form" data-payment-id="@item.PaymentTransactionId" style="display: inline;">
+                                            @Html.AntiForgeryToken()
+                                            <button type="submit" class="btn btn-sm btn-success">
+                                                <i class="fas fa-wrench"></i> Fix Now
+                                            </button>
+                                        </form>
+                                        <a asp-controller="Payment" asp-action="Details" asp-route-id="@item.PaymentTransactionId" 
+                                           class="btn btn-sm btn-info">
+                                            <i class="fas fa-eye"></i> View
+                                        </a>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <!-- No Stuck Payments -->
+        <div class="card">
+            <div class="card-body text-center py-5">
+                <i class="fas fa-check-circle fa-5x text-success mb-3"></i>
+                <h3>No Stuck Payments!</h3>
+                <p class="text-muted">All payments are processing normally.</p>
+                <a asp-controller="Payment" asp-action="Index" class="btn btn-primary mt-3">
+                    <i class="fas fa-arrow-left"></i> Back to Payments
+                </a>
+            </div>
+        </div>
+    }
+
+    <!-- Instructions -->
+    <div class="card mt-4">
+        <div class="card-header bg-info text-white">
+            <h5 class="mb-0"><i class="fas fa-info-circle"></i> How to Fix Stuck Payments</h5>
+        </div>
+        <div class="card-body">
+            <h6><strong>Option 1: Fix Individual Payment</strong></h6>
+            <p>Click the <span class="badge bg-success"><i class="fas fa-wrench"></i> Fix Now</span> button next to any stuck payment.</p>
+            
+            <h6 class="mt-3"><strong>Option 2: Fix All at Once</strong></h6>
+            <p>Click the <span class="badge bg-warning"><i class="fas fa-magic"></i> Fix All Payments</span> button at the top to fix all stuck payments at once.</p>
+            
+            <h6 class="mt-3"><strong>What Happens When You Fix:</strong></h6>
+            <ul>
+                <li>? Payment status changed from "Processing" to "Completed"</li>
+                <li>? Payroll status changed from "Approved" to "Paid"</li>
+                <li>? Completion date set to current date/time</li>
+                <li>? Your username recorded as the person who fixed it</li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ToastNotification" />
+    
+    <script>
+        // Handle individual payment fix
+        document.querySelectorAll('.fix-payment-form').forEach(form => {
+            form.addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!confirm('Are you sure you want to mark this payment as completed?')) {
+                    return;
+                }
+                
+                const paymentId = this.dataset.paymentId;
+                const formData = new FormData(this);
+                
+                try {
+                    const response = await fetch(this.action, {
+                        method: 'POST',
+                        body: formData
+                    });
+                    
+                    const result = await response.json();
+                    
+                    if (result.success) {
+                        // Show success message
+                        alert(result.message);
+                        
+                        // Remove the row from table
+                        document.getElementById(`payment-row-${paymentId}`).remove();
+                        
+                        // Reload page if no more stuck payments
+                        if (document.querySelectorAll('.fix-payment-form').length === 0) {
+                            location.reload();
+                        }
+                    } else {
+                        alert('Error: ' + result.message);
+                    }
+                } catch (error) {
+                    alert('An error occurred while fixing the payment.');
+                    console.error(error);
+                }
+            });
+        });
+        
+        // Handle fix all
+        document.getElementById('fixAllForm')?.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            if (!confirm('Are you sure you want to fix ALL stuck payments?')) {
+                return;
+            }
+            
+            const formData = new FormData(this);
+            
+            try {
+                const response = await fetch(this.action, {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    alert(result.message);
+                    location.reload();
+                } else {
+                    alert('Error: ' + result.message);
+                }
+            } catch (error) {
+                alert('An error occurred while fixing payments.');
+                console.error(error);
+            }
+        });
+    </script>
+}
