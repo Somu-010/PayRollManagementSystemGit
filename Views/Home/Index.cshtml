@@ -1,8 +1,17 @@
 ﻿@{
+    /* ========================================
+       PAGE: ADMIN DASHBOARD
+       Main landing page for admin users
+       Shows overview stats and recent activity
+       ======================================== */
     ViewData["Title"] = "Dashboard";
 }
 
 <style>
+    /* ========================================
+       STATISTICS GRID
+       Auto-adjusts columns, minimum 250px width
+       ======================================== */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
@@ -10,9 +19,14 @@
         margin-bottom: 30px;
     }
 
+    /* ========================================
+       STAT CARD
+       Individual statistics display box
+       Change: background, border-radius, shadow
+       ======================================== */
     .stat-card {
-        background: white;
-        border-radius: 16px;
+        background: white;                    /* Card background */
+        border-radius: 16px;                  /* Corner roundness */
         padding: 24px;
         box-shadow: 0 2px 15px rgba(52, 152, 219, 0.08);
         transition: all 0.3s ease;
@@ -20,6 +34,7 @@
         overflow: hidden;
     }
 
+        /* Left colored border indicator */
         .stat-card::before {
             content: '';
             position: absolute;
@@ -27,16 +42,17 @@
             left: 0;
             width: 4px;
             height: 100%;
+            /* BLUE GRADIENT - Change for different color */
             background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         }
 
         .stat-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-4px);     /* Lift effect */
             box-shadow: 0 10px 30px rgba(52, 152, 219, 0.15);
         }
 
         .stat-card.clickable {
-            cursor: pointer;
+            cursor: pointer;                 /* Show pointer on hover */
         }
 
     .stat-header {
@@ -52,6 +68,10 @@
         font-weight: 500;
     }
 
+    /* ========================================
+       STAT ICON STYLES
+       Color variations for different stat types
+       ======================================== */
     .stat-icon {
         width: 48px;
         height: 48px;
@@ -62,54 +82,63 @@
         font-size: 24px;
     }
 
+        /* Icon color variations - Change rgba values */
         .stat-icon.blue {
-            background: rgba(109, 213, 237, 0.15);
+            background: rgba(109, 213, 237, 0.15);   /* Light blue */
         }
 
         .stat-icon.green {
-            background: rgba(52, 211, 153, 0.15);
+            background: rgba(52, 211, 153, 0.15);    /* Light green */
         }
 
         .stat-icon.orange {
-            background: rgba(251, 146, 60, 0.15);
+            background: rgba(251, 146, 60, 0.15);    /* Light orange */
         }
 
         .stat-icon.cyan {
-            background: rgba(33, 147, 176, 0.15);
+            background: rgba(33, 147, 176, 0.15);    /* Light cyan */
         }
 
         .stat-icon.purple {
-            background: rgba(168, 85, 247, 0.15);
+            background: rgba(168, 85, 247, 0.15);    /* Light purple */
         }
 
         .stat-icon.pink {
-            background: rgba(236, 72, 153, 0.15);
+            background: rgba(236, 72, 153, 0.15);    /* Light pink */
         }
 
     .stat-value {
-        font-size: 32px;
+        font-size: 32px;                     /* Main number size */
         font-weight: 700;
         color: #2c3e50;
         margin-bottom: 8px;
     }
 
+    /* ========================================
+       STAT CHANGE INDICATOR
+       Shows growth/decline percentage
+       ======================================== */
     .stat-change {
         font-size: 13px;
-        color: #10b981;
+        color: #10b981;                      /* Green for positive */
         font-weight: 500;
     }
 
         .stat-change.negative {
-            color: #ef4444;
+            color: #ef4444;                  /* Red for negative */
         }
 
         .stat-change.neutral {
-            color: #5a6c7d;
+            color: #5a6c7d;                  /* Gray for neutral */
         }
 
+    /* ========================================
+       CONTENT GRID
+       2-column grid for content cards
+       ======================================== */
     .content-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);  /* 2 equal columns */
         gap: 20px;
         margin-bottom: 30px;
     }
@@ -138,16 +167,20 @@
 
     .view-all-link {
         font-size: 14px;
-        color: #2193b0;
+        color: #2193b0;                      /* Link color */
         text-decoration: none;
         font-weight: 500;
         transition: color 0.3s;
     }
 
         .view-all-link:hover {
-            color: #6dd5ed;
+            color: #6dd5ed;                  /* Lighter blue on hover */
         }
 
+    /* ========================================
+       RECENT ITEM ROW
+       Used in all list cards
+       ======================================== */
     .recent-item {
         padding: 16px 0;
         border-bottom: 1px solid #f8fafb;
@@ -167,10 +200,15 @@
         flex: 1;
     }
 
+    /* ========================================
+       AVATAR STYLES
+       Different styles for different entities
+       ======================================== */
+    /* Employee Avatar - Circular */
     .item-avatar {
         width: 40px;
         height: 40px;
-        border-radius: 50%;
+        border-radius: 50%;                  /* Circular */
         background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         display: flex;
         align-items: center;
@@ -181,10 +219,11 @@
         flex-shrink: 0;
     }
 
+    /* Department Avatar - Square with rounded corners */
     .dept-avatar {
         width: 40px;
         height: 40px;
-        border-radius: 10px;
+        border-radius: 10px;                 /* Rounded square */
         background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         display: flex;
         align-items: center;
@@ -195,6 +234,7 @@
         flex-shrink: 0;
     }
 
+    /* Designation Avatar - Purple/Pink gradient */
     .desig-avatar {
         width: 40px;
         height: 40px;
@@ -209,6 +249,7 @@
         flex-shrink: 0;
     }
 
+    /* Shift Avatar - Orange gradient */
     .shift-avatar {
         width: 40px;
         height: 40px;
@@ -272,6 +313,10 @@
         text-align: right;
     }
 
+    /* ========================================
+       ATTENDANCE STATUS BADGES
+       Color-coded status indicators
+       ======================================== */
     .badge {
         padding: 6px 12px;
         border-radius: 20px;
@@ -305,8 +350,12 @@
         color: #eab308;
     }
 
+    /* ========================================
+       QUICK ACTIONS SECTION
+       Spans full width of content grid
+       ======================================== */
     .quick-actions-section {
-        grid-column: 1 / -1;
+        grid-column: 1 / -1;                 /* Full width */
     }
 
     .quick-actions {
@@ -353,9 +402,13 @@
         font-size: 14px;
     }
 
+    /* ========================================
+       MOBILE RESPONSIVENESS
+       Stacks cards vertically on small screens
+       ======================================== */
     @@media (max-width: 968px) {
         .content-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr;      /* Single column */
         }
 
         .stats-grid {
@@ -365,8 +418,13 @@
 </style>
 
 <div class="dashboard-container">
-    <!-- Stats Cards -->
+    <!-- ========================================
+         STATISTICS CARDS SECTION
+         8 stat cards showing key metrics
+         Data from ViewBag properties
+         ======================================== -->
     <div class="stats-grid">
+        <!-- Total Employees - Clickable, goes to Employee list -->
         <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Employee")'">
             <div class="stat-header">
                 <span class="stat-title">Total Employees</span>
@@ -378,6 +436,7 @@
             </div>
         </div>
 
+        <!-- Today's Attendance - Shows present/total ratio -->
         <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Attendance")'">
             <div class="stat-header">
                 <span class="stat-title">Today's Attendance</span>
@@ -389,6 +448,7 @@
             </div>
         </div>
 
+        <!-- Total Departments -->
         <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Department")'">
             <div class="stat-header">
                 <span class="stat-title">Total Departments</span>
@@ -398,6 +458,7 @@
             <div class="stat-change neutral">@ViewBag.ActiveDepartments active departments</div>
         </div>
 
+        <!-- Total Designations -->
         <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Designation")'">
             <div class="stat-header">
                 <span class="stat-title">Total Designations</span>
@@ -407,6 +468,7 @@
             <div class="stat-change neutral">@ViewBag.ActiveDesignations active designations</div>
         </div>
 
+        <!-- Total Shifts -->
         <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Shift")'">
             <div class="stat-header">
                 <span class="stat-title">Total Shifts</span>
@@ -416,6 +478,7 @@
             <div class="stat-change neutral">@ViewBag.ActiveShifts active shifts</div>
         </div>
 
+        <!-- Monthly Payroll -->
         <div class="stat-card">
             <div class="stat-header">
                 <span class="stat-title">Monthly Payroll</span>
@@ -425,6 +488,7 @@
             <div class="stat-change">@ViewBag.ActiveEmployees active employees</div>
         </div>
 
+        <!-- Late Arrivals Today -->
         <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Attendance", new { status = "Late" })'">
             <div class="stat-header">
                 <span class="stat-title">Late Arrivals Today</span>
@@ -443,6 +507,7 @@
             </div>
         </div>
 
+        <!-- On Leave Today -->
         <div class="stat-card clickable" onclick="window.location.href='@Url.Action("Index", "Attendance", new { status = "OnLeave" })'">
             <div class="stat-header">
                 <span class="stat-title">On Leave Today</span>
@@ -453,9 +518,12 @@
         </div>
     </div>
 
-    <!-- Content Grid -->
+    <!-- ========================================
+         CONTENT CARDS SECTION
+         Recent activity and top entities
+         ======================================== -->
     <div class="content-grid">
-        <!-- Recent Employees -->
+        <!-- ====== RECENT EMPLOYEES CARD ====== -->
         <div class="content-card">
             <div class="card-header">
                 <h2 class="card-title">👥 Recent Employees</h2>
@@ -466,6 +534,7 @@
             {
                 @foreach (var emp in ViewBag.RecentEmployees)
                 {
+                    /* Generate initials from employee name */
                     string[] nameParts = emp.Name.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     string initials = nameParts.Length > 1 && nameParts[0].Length > 0 && nameParts[1].Length > 0
                         ? nameParts[0].Substring(0, 1) + nameParts[1].Substring(0, 1)
@@ -490,7 +559,7 @@
             }
         </div>
 
-        <!-- Recent Attendance -->
+        <!-- ====== RECENT ATTENDANCE CARD ====== -->
         <div class="content-card">
             <div class="card-header">
                 <h2 class="card-title">📅 Recent Attendance</h2>
@@ -501,12 +570,14 @@
             {
                 @foreach (var att in ViewBag.RecentAttendance)
                 {
+                    /* Generate initials */
                     string employeeName = att.EmployeeName ?? "Unknown";
                     string[] nameParts = employeeName.Split(' ', StringSplitOptions.RemoveEmptyEntries);
                     string initials = nameParts.Length > 1 && nameParts[0].Length > 0 && nameParts[1].Length > 0
                         ? nameParts[0].Substring(0, 1) + nameParts[1].Substring(0, 1)
                         : employeeName.Length > 0 ? employeeName.Substring(0, Math.Min(2, employeeName.Length)) : "NA";
                     
+                    /* Determine status badge class and text */
                     string statusValue = att.Status.ToString();
                     string statusClass = statusValue == "Present" ? "badge-present" : 
                                         statusValue == "Absent" ? "badge-absent" : 
@@ -545,7 +616,7 @@
             }
         </div>
 
-        <!-- Top Departments by Employee Count -->
+        <!-- ====== TOP DEPARTMENTS CARD ====== -->
         <div class="content-card">
             <div class="card-header">
                 <h2 class="card-title">🏢 Top Departments</h2>
@@ -577,7 +648,7 @@
             }
         </div>
 
-        <!-- Top Designations by Employee Count -->
+        <!-- ====== TOP DESIGNATIONS CARD ====== -->
         <div class="content-card">
             <div class="card-header">
                 <h2 class="card-title">💼 Top Designations</h2>
@@ -611,7 +682,7 @@
             }
         </div>
 
-        <!-- Active Shifts -->
+        <!-- ====== ACTIVE SHIFTS CARD ====== -->
         <div class="content-card">
             <div class="card-header">
                 <h2 class="card-title">⏰ Active Shifts</h2>
@@ -643,7 +714,7 @@
             }
         </div>
 
-        <!-- Quick Actions -->
+        <!-- ====== QUICK ACTIONS SECTION ====== -->
         <div class="content-card quick-actions-section">
             <div class="card-header">
                 <h2 class="card-title">⚡ Quick Actions</h2>
@@ -698,3 +769,33 @@
         </div>
     </div>
 </div>
+
+<!-- ========================================
+     QUICK MODIFICATION GUIDE
+     ========================================
+     
+     TO CHANGE COLORS:
+     - Stat card border: Line 28
+     - Icon backgrounds: Lines 74-91
+     - Badge colors: Lines 265-283
+     
+     TO ADD NEW STAT CARD:
+     1. Copy existing stat-card div (around line 357)
+     2. Update icon, title, and ViewBag property
+     3. Add data to controller
+     
+     TO ADD QUICK ACTION:
+     1. Add <a> tag in quick-actions div (after line 626)
+     2. Update icon and label
+     
+     DATA SOURCES (ViewBag):
+     - TotalEmployees, ActiveEmployees
+     - PresentToday, AttendancePercentage
+     - TotalDepartments, ActiveDepartments
+     - TotalDesignations, ActiveDesignations
+     - TotalShifts, ActiveShifts
+     - MonthlyPayroll
+     - LateToday, OnLeaveToday, AbsentToday
+     - RecentEmployees, RecentAttendance
+     - TopDepartments, TopDesignations, TopShifts
+     ======================================== -->

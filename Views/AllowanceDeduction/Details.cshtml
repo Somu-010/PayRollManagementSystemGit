@@ -291,7 +291,7 @@
 
         <!-- Calculation Preview -->
         <div class="stats-card" style="margin-bottom: 30px;">
-            <div class="stat-label">Calculation Preview (Based on $5000 basic salary)</div>
+            <div class="stat-label">Calculation Preview (Based on 5000 basic salary)</div>
             <div class="stat-value">
                 @{
                     decimal sampleSalary = 5000m;
@@ -310,7 +310,7 @@
                         calculatedAmount = (sampleSalary * Model.Value) / 100;
                     }
                 }
-                @(Model.Type == PayRollManagementSystem.Models.ComponentType.Allowance ? "+" : "-") $@calculatedAmount.ToString("N2")
+                @(Model.Type == PayRollManagementSystem.Models.ComponentType.Allowance ? "+" : "-") @calculatedAmount.ToString("N2")
             </div>
         </div>
 
@@ -387,7 +387,7 @@
                 <div class="detail-item">
                     <div class="detail-label">Minimum Salary Threshold</div>
                     <div class="detail-value">
-                        <span class="detail-icon">💰</span>$@Model.MinimumSalaryThreshold.Value.ToString("N2")
+                        <span class="detail-icon">💰</span>@Model.MinimumSalaryThreshold.Value.ToString("N2")
                     </div>
                 </div>
             }
@@ -397,7 +397,7 @@
                 <div class="detail-item">
                     <div class="detail-label">Maximum Cap</div>
                     <div class="detail-value">
-                        <span class="detail-icon">📊</span>$@Model.MaximumCap.Value.ToString("N2")
+                        <span class="detail-icon">📊</span>@Model.MaximumCap.Value.ToString("N2")
                     </div>
                 </div>
             }

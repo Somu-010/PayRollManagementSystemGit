@@ -379,7 +379,7 @@
 
         <!-- Preview Box -->
         <div class="preview-box" id="previewBox">
-            <div class="preview-title">📊 Calculation Preview (Based on ৳5000 basic salary)</div>
+            <div class="preview-title">📊 Calculation Preview (Based on 5000 basic salary)</div>
             <div class="preview-grid">
                 <div class="preview-item">
                     <div class="preview-label">Component Type</div>
@@ -391,7 +391,7 @@
                 </div>
                 <div class="preview-item">
                     <div class="preview-label">Calculated Amount</div>
-                    <div class="preview-value" id="previewAmount" style="color: #10b981;">৳0.00</div>
+                    <div class="preview-value" id="previewAmount" style="color: #10b981;">0.00</div>
                 </div>
             </div>
         </div>
@@ -419,7 +419,7 @@
 
             // Update hint text based on calculation method
             if (calculationMethod === 'FixedAmount') {
-                valueHint.textContent = 'Enter fixed amount in BDT Taka';
+                valueHint.textContent = 'Enter fixed amount';
             } else if (calculationMethod === 'PercentageOfBasic') {
                 valueHint.textContent = 'Enter percentage of basic salary (e.g., 20 for 20%)';
             } else if (calculationMethod === 'PercentageOfGross') {
@@ -430,7 +430,7 @@
             if (value > 0) {
                 previewBox.style.display = 'block';
 
-                // Calculate preview amount (using ৳5000 as sample basic salary)
+                // Calculate preview amount (using 5000 as sample basic salary)
                 const basicSalary = 5000;
                 let calculatedAmount = 0;
 
@@ -451,7 +451,7 @@
                                 'Percentage of Gross';
                 document.getElementById('previewMethod').textContent = methodText;
 
-                document.getElementById('previewAmount').textContent = '৳' + calculatedAmount.toFixed(2);
+                document.getElementById('previewAmount').textContent = calculatedAmount.toFixed(2);
                 document.getElementById('previewAmount').style.color = type === 'Allowance' ? '#10b981' : '#ef4444';
             } else {
                 previewBox.style.display = 'none';

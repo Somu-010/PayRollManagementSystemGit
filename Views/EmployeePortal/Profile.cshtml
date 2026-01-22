@@ -1,16 +1,28 @@
 @model PayRollManagementSystem.Models.Employee
 
 @{
+    /* ========================================
+       PAGE: MY PROFILE
+       Employee profile view page
+       Shows personal info, employment details, and work schedule
+       ======================================== */
     ViewData["Title"] = "My Profile";
     Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
 }
 
 <style>
+    /* ========================================
+       MAIN CONTAINER
+       ======================================== */
     .profile-container {
         max-width: 900px;
         margin: 0 auto;
     }
 
+    /* ========================================
+       PROFILE HEADER
+       Blue gradient banner with profile image/avatar
+       ======================================== */
     .profile-header {
         background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         border-radius: 16px;
@@ -21,6 +33,18 @@
         position: relative;
     }
 
+    /* Profile image - for uploaded photos */
+    .profile-avatar-image {
+        width: 120px;
+        height: 120px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin: 0 auto 20px;
+        border: 4px solid rgba(255, 255, 255, 0.3);
+        display: block;
+    }
+
+    /* Profile avatar - for initials when no photo */
     .profile-avatar {
         width: 120px;
         height: 120px;
@@ -55,6 +79,7 @@
         font-size: 14px;
     }
 
+    /* Edit Profile button */
     .btn-edit-profile {
         position: absolute;
         top: 20px;
@@ -78,6 +103,7 @@
         color: white;
     }
 
+    /* Information sections */
     .info-section {
         background: white;
         border-radius: 16px;
@@ -167,6 +193,7 @@
         color: #5a6c7d;
     }
 
+    /* Mobile responsive styles */
     @@media (max-width: 768px) {
         .info-grid {
             grid-template-columns: 1fr;
@@ -185,20 +212,46 @@
 </style>
 
 <div class="profile-container">
+    <!-- ========================================
+         SUCCESS/ERROR MESSAGES
+         ======================================== -->
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success alert-dismissible fade show" role="alert" style="margin-bottom: 20px; padding: 15px 20px; border-radius: 10px; background: #d1f4e0; border-left: 4px solid #10b981; color: #065f46;">
+            <i class="fas fa-check-circle"></i> @TempData["Success"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="margin-bottom: 20px; padding: 15px 20px; border-radius: 10px; background: #fee2e2; border-left: 4px solid #ef4444; color: #991b1b;">
+            <i class="fas fa-exclamation-circle"></i> @TempData["Error"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+    
+    <!-- ========================================
+         PROFILE HEADER SECTION
+         Shows profile photo or initials
+         ======================================== -->
     <div class="profile-header">
         <a asp-action="EditProfile" class="btn-edit-profile">
             <i class="fas fa-edit"></i> Edit Profile
         </a>
+        
         @if (!string.IsNullOrEmpty(Model.ProfileImagePath))
         {
-            <img src="@Model.ProfileImagePath" alt="@Model.Name" class="profile-avatar" style="object-fit: cover; font-size: 0;" />
+            <!-- Show uploaded profile image with cache busting -->
+            <img src="@Model.ProfileImagePath?v=@DateTime.Now.Ticks" alt="@Model.Name" class="profile-avatar-image" />
         }
         else
         {
+            <!-- Show initials avatar if no image -->
             <div class="profile-avatar">
                 @Model.Name.Substring(0, Math.Min(2, Model.Name.Length)).ToUpper()
             </div>
         }
+        
         <div class="profile-name">@Model.Name</div>
         <div class="profile-title">@(Model.DesignationNavigation?.Title ?? Model.Designation) - @(Model.DepartmentNavigation?.Name ?? Model.Department)</div>
         <span class="profile-badge">
@@ -206,7 +259,9 @@
         </span>
     </div>
 
-    <!-- Personal Information -->
+    <!-- ========================================
+         PERSONAL INFORMATION SECTION
+         ======================================== -->
     <div class="info-section">
         <h3 class="section-title">
             <i class="fas fa-user" style="font-size: 20px;"></i>
@@ -240,7 +295,9 @@
         </div>
     </div>
 
-    <!-- Employment Information -->
+    <!-- ========================================
+         EMPLOYMENT INFORMATION SECTION
+         ======================================== -->
     <div class="info-section">
         <h3 class="section-title">
             <i class="fas fa-briefcase" style="font-size: 20px;"></i>
@@ -274,7 +331,10 @@
         </div>
     </div>
 
-    <!-- Work Schedule -->
+    <!-- ========================================
+         WORK SCHEDULE SECTION
+         Shows shift timing if assigned
+         ======================================== -->
     @if (Model.ShiftNavigation != null)
     {
         <div class="info-section">
@@ -304,3 +364,25 @@
         </div>
     }
 </div>
+
+<!-- ========================================
+     QUICK MODIFICATION GUIDE
+     ========================================
+     
+     TO CHANGE COLORS:
+     - Header gradient: Line 23
+     - Avatar background: Line 33
+     
+     TO MODIFY LAYOUT:
+     - Info grid columns: Line 106 (currently 2 columns)
+     - Schedule grid columns: Line 135 (currently 3 columns)
+     
+     DATA SOURCES:
+     - Model: Employee object with all details
+     - Model.ProfileImagePath: Path to uploaded image
+     - Model.ShiftNavigation: Shift details if assigned
+     
+     IMAGE DISPLAY LOGIC:
+     - If ProfileImagePath exists ? Show image
+     - If ProfileImagePath is null/empty ? Show initials
+     ======================================== -->

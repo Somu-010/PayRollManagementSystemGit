@@ -459,7 +459,7 @@
                                 <td><strong style="color: #2193b0;">#@rank</strong></td>
                                 <td><strong>@allowance.Name</strong></td>
                                 <td>@allowance.Code</td>
-                                <td><strong style="color: #10b981; font-size: 15px;">@allowance.Value.ToString("C")</strong></td>
+                                <td><strong style="color: #10b981; font-size: 15px;">@allowance.Value.ToString("N2")</strong></td>
                                 <td>
                                     @if (allowance.IsTaxable)
                                     {
@@ -511,7 +511,7 @@
                                 <td><strong style="color: #2193b0;">#@rank</strong></td>
                                 <td><strong>@deduction.Name</strong></td>
                                 <td>@deduction.Code</td>
-                                <td><strong style="color: #ef4444; font-size: 15px;">@deduction.Value.ToString("C")</strong></td>
+                                <td><strong style="color: #ef4444; font-size: 15px;">@deduction.Value.ToString("N2")</strong></td>
                                 <td>
                                     @if (deduction.IsTaxable)
                                     {

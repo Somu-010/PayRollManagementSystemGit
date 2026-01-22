@@ -1,13 +1,24 @@
 @model PayRollManagementSystem.Models.Employee
 
 @{
+    /* ========================================
+       PAGE CONFIGURATION - Employee Portal Dashboard
+       This is the main landing page for logged-in employees
+       ======================================== */
     ViewData["Title"] = "Employee Portal";
     Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
 }
 
 <style>
+    /* ========================================
+       WELCOME BANNER SECTION
+       Blue gradient banner at top with employee greeting
+       Change: background gradient for different color
+       ======================================== */
     .welcome-section {
+        /* BLUE GRADIENT - Change both colors for different theme */
         background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
+        /* Example Purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%); */
         border-radius: 16px;
         padding: 30px;
         color: white;
@@ -21,28 +32,37 @@
     }
 
     .welcome-text h1 {
-        font-size: 28px;
+        font-size: 28px;              /* Greeting text size */
         font-weight: 700;
         margin-bottom: 10px;
     }
 
     .welcome-text p {
         opacity: 0.9;
-        font-size: 16px;
+        font-size: 16px;              /* Subtext size (date, designation) */
     }
 
+    /* ========================================
+       EMPLOYEE AVATAR (Initials Circle)
+       Shows first 2 letters of employee name
+       ======================================== */
     .employee-avatar-large {
-        width: 80px;
+        width: 80px;                  /* Avatar size - Change for bigger/smaller */
         height: 80px;
-        background: rgba(255, 255, 255, 0.2);
-        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.2);  /* Semi-transparent white */
+        border-radius: 50%;           /* Makes it circular */
         display: flex;
         align-items: center;
         justify-content: center;
-        font-size: 32px;
+        font-size: 32px;              /* Initials size */
         font-weight: 700;
     }
 
+    /* ========================================
+       STATISTICS GRID
+       Shows monthly stats: Present, Absent, Late, etc.
+       Auto-adjusts columns based on screen size
+       ======================================== */
     .stats-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -59,10 +79,15 @@
     }
 
     .stat-card:hover {
-        transform: translateY(-5px);
+        transform: translateY(-5px);   /* Lift effect on hover */
         box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
     }
 
+    /* ========================================
+       STAT ICON VARIATIONS
+       Colored icons for each stat type
+       Change: background gradients for different colors
+       ======================================== */
     .stat-icon {
         width: 50px;
         height: 50px;
@@ -74,25 +99,58 @@
         margin-bottom: 15px;
     }
 
-    .stat-icon.present { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); color: white; }
-    .stat-icon.absent { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); color: white; }
-    .stat-icon.late { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; }
-    .stat-icon.hours { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); color: white; }
-    .stat-icon.leave { background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); color: white; }
-    .stat-icon.salary { background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); color: white; }
+    /* GREEN - Present days */
+    .stat-icon.present { 
+        background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); 
+        color: white; 
+    }
+    
+    /* PINK-YELLOW - Absent days */
+    .stat-icon.absent { 
+        background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); 
+        color: white; 
+    }
+    
+    /* PURPLE-PINK - Late arrivals */
+    .stat-icon.late { 
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); 
+        color: white; 
+    }
+    
+    /* BLUE - Total hours */
+    .stat-icon.hours { 
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); 
+        color: white; 
+    }
+    
+    /* LIGHT BLUE - Leave days */
+    .stat-icon.leave { 
+        background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%); 
+        color: white; 
+    }
+    
+    /* TEAL GREEN - Salary */
+    .stat-icon.salary { 
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%); 
+        color: white; 
+    }
 
     .stat-value {
-        font-size: 32px;
+        font-size: 32px;              /* Number size */
         font-weight: 700;
         color: #2c3e50;
         margin-bottom: 5px;
     }
 
     .stat-label {
-        font-size: 14px;
+        font-size: 14px;              /* Label text size */
         color: #5a6c7d;
     }
 
+    /* ========================================
+       SECTION TITLES
+       Headings like "This Month's Overview", "Quick Actions"
+       ======================================== */
     .section-title {
         font-size: 20px;
         font-weight: 600;
@@ -100,9 +158,13 @@
         margin-bottom: 20px;
     }
 
+    /* ========================================
+       INFORMATION CARDS GRID
+       Shows Personal Info and Leave Balance side by side
+       ======================================== */
     .info-grid {
         display: grid;
-        grid-template-columns: repeat(2, 1fr);
+        grid-template-columns: repeat(2, 1fr);  /* 2 columns */
         gap: 30px;
         margin-bottom: 30px;
     }
@@ -123,6 +185,7 @@
         border-bottom: 2px solid #e8f4f8;
     }
 
+    /* Info rows (label-value pairs) */
     .info-row {
         display: flex;
         justify-content: space-between;
@@ -135,16 +198,20 @@
     }
 
     .info-label {
-        color: #5a6c7d;
+        color: #5a6c7d;               /* Label color (left side) */
         font-size: 14px;
     }
 
     .info-value {
         font-weight: 600;
-        color: #2c3e50;
+        color: #2c3e50;               /* Value color (right side) */
         font-size: 14px;
     }
 
+    /* ========================================
+       QUICK ACTIONS BUTTONS
+       Grid of action buttons at bottom
+       ======================================== */
     .quick-actions {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
@@ -166,33 +233,37 @@
     }
 
     .action-btn:hover {
-        transform: translateY(-3px);
+        transform: translateY(-3px);   /* Lift effect */
         box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
-        color: #2193b0;
+        color: #2193b0;               /* Blue color on hover */
     }
 
     .action-btn .icon {
-        font-size: 28px;
+        font-size: 28px;              /* Icon size */
         margin-bottom: 10px;
     }
 
     .action-btn span {
-        font-size: 14px;
+        font-size: 14px;              /* Button label size */
         font-weight: 500;
     }
 
+    /* ========================================
+       TODAY'S ATTENDANCE STATUS BANNER
+       Shows if employee has checked in today
+       ======================================== */
     .today-status {
         display: flex;
         align-items: center;
         gap: 15px;
         padding: 15px 20px;
-        background: #d1f4e0;
+        background: #d1f4e0;          /* Light green - Checked in */
         border-radius: 10px;
         margin-top: 15px;
     }
 
     .today-status.not-marked {
-        background: #fef3c7;
+        background: #fef3c7;          /* Light yellow - Not checked in */
     }
 
     .today-status span {
@@ -200,11 +271,11 @@
     }
 
     .today-status.not-marked span {
-        color: #f59e0b;
+        color: #f59e0b;               /* Orange icon */
     }
 
     .today-status:not(.not-marked) span {
-        color: #10b981;
+        color: #10b981;               /* Green icon */
     }
 
     .status-icon {
@@ -212,16 +283,20 @@
     }
 
     .status-icon.success {
-        color: #10b981;
+        color: #10b981;               /* Green checkmark */
     }
 
     .status-icon.warning {
-        color: #f59e0b;
+        color: #f59e0b;               /* Orange warning */
     }
 
+    /* ========================================
+       MOBILE RESPONSIVENESS
+       Adjusts layout for smaller screens
+       ======================================== */
     @@media (max-width: 768px) {
         .info-grid {
-            grid-template-columns: 1fr;
+            grid-template-columns: 1fr;  /* Stack cards vertically */
         }
 
         .welcome-content {
@@ -232,20 +307,32 @@
     }
 </style>
 
-<!-- Welcome Section -->
+<!-- ========================================
+     WELCOME BANNER
+     Greeting with employee name, date, and avatar
+     ======================================== -->
 <div class="welcome-section">
     <div class="welcome-content">
         <div class="welcome-text">
+            <!-- Employee name from Model -->
             <h1>Welcome back, @Model.Name! <i class="fas fa-hand-wave" style="color: #fff;"></i></h1>
+            <!-- Current date, designation, and department -->
             <p>@DateTime.Now.ToString("dddd, MMMM dd, yyyy") | @(Model.DesignationNavigation?.Title ?? Model.Designation) - @(Model.DepartmentNavigation?.Name ?? Model.Department)</p>
         </div>
+        <!-- Avatar showing first 2 letters of name -->
         <div class="employee-avatar-large">
             @Model.Name.Substring(0, Math.Min(2, Model.Name.Length)).ToUpper()
         </div>
     </div>
 
+    <!-- ========================================
+         TODAY'S ATTENDANCE STATUS
+         Shows if checked in/out or not marked
+         Data from ViewBag.TodayAttendance
+         ======================================== -->
     @if (ViewBag.TodayAttendance != null)
     {
+        /* Employee has checked in today */
         var today = ViewBag.TodayAttendance as PayRollManagementSystem.Models.Attendance;
         <div class="today-status">
             <i class="fas fa-check-circle status-icon success"></i>
@@ -260,6 +347,7 @@
     }
     else
     {
+        /* Employee has NOT checked in today */
         <div class="today-status not-marked">
             <i class="fas fa-exclamation-circle status-icon warning"></i>
             <div>
@@ -270,34 +358,49 @@
     }
 </div>
 
-<!-- Monthly Stats -->
+<!-- ========================================
+     MONTHLY STATISTICS SECTION
+     Shows stats: Present, Absent, Late, Hours, Leaves, Salary
+     Data from ViewBag properties set in controller
+     ======================================== -->
 <h2 class="section-title"><i class="fas fa-chart-bar"></i> This Month's Overview</h2>
 <div class="stats-grid">
+    <!-- Present Days -->
     <div class="stat-card">
         <div class="stat-icon present"><i class="fas fa-check"></i></div>
         <div class="stat-value">@ViewBag.PresentDays</div>
         <div class="stat-label">Days Present</div>
     </div>
+    
+    <!-- Absent Days -->
     <div class="stat-card">
         <div class="stat-icon absent"><i class="fas fa-times"></i></div>
         <div class="stat-value">@ViewBag.AbsentDays</div>
         <div class="stat-label">Days Absent</div>
     </div>
+    
+    <!-- Late Arrivals -->
     <div class="stat-card">
         <div class="stat-icon late"><i class="fas fa-clock"></i></div>
         <div class="stat-value">@ViewBag.LateDays</div>
         <div class="stat-label">Late Arrivals</div>
     </div>
+    
+    <!-- Total Working Hours -->
     <div class="stat-card">
         <div class="stat-icon hours"><i class="fas fa-hourglass-half"></i></div>
         <div class="stat-value">@ViewBag.TotalWorkingHours.ToString("0.0")</div>
         <div class="stat-label">Total Hours</div>
     </div>
+    
+    <!-- Pending Leave Requests -->
     <div class="stat-card">
         <div class="stat-icon leave"><i class="fas fa-umbrella-beach"></i></div>
         <div class="stat-value">@ViewBag.PendingLeaves</div>
         <div class="stat-label">Pending Leaves</div>
     </div>
+    
+    <!-- Last Payslip Amount (if exists) -->
     @if (ViewBag.LatestPayroll != null)
     {
         var payroll = ViewBag.LatestPayroll as PayRollManagementSystem.Models.Payroll;
@@ -309,9 +412,15 @@
     }
 </div>
 
-<!-- Info Cards -->
+<!-- ========================================
+     INFORMATION CARDS SECTION
+     Shows Personal Info and Leave Balance
+     ======================================== -->
 <div class="info-grid">
-    <!-- Employee Info -->
+    <!-- ========================================
+         PERSONAL INFORMATION CARD
+         Shows employee details from Model
+         ======================================== -->
     <div class="info-card">
         <h3><i class="fas fa-user" style="color: #2193b0; margin-right: 10px;"></i>Personal Information</h3>
         <div class="info-row">
@@ -336,32 +445,42 @@
         </div>
     </div>
 
-    <!-- Leave Balance -->
+    <!-- ========================================
+         LEAVE BALANCE CARD
+         Shows remaining leave days from ViewBag.LeaveBalance
+         ======================================== -->
     @if (ViewBag.LeaveBalance != null)
     {
         var lb = ViewBag.LeaveBalance as PayRollManagementSystem.Models.LeaveBalance;
         <div class="info-card">
             <h3><i class="fas fa-umbrella-beach" style="color: #2193b0; margin-right: 10px;"></i>Leave Balance (@DateTime.Now.Year)</h3>
+            <!-- Annual Leave -->
             <div class="info-row">
                 <span class="info-label">Annual Leave</span>
                 <span class="info-value">@lb.RemainingAnnualLeave / @lb.AnnualLeaveBalance days</span>
             </div>
+            <!-- Sick Leave -->
             <div class="info-row">
                 <span class="info-label">Sick Leave</span>
                 <span class="info-value">@lb.RemainingSickLeave / @lb.SickLeaveBalance days</span>
             </div>
+            <!-- Casual Leave -->
             <div class="info-row">
                 <span class="info-label">Casual Leave</span>
                 <span class="info-value">@lb.RemainingCasualLeave / @lb.CasualLeaveBalance days</span>
             </div>
+            <!-- Total Available -->
             <div class="info-row">
                 <span class="info-label">Total Available</span>
-                <span class="info-value" style="color: #2193b0; font-size: 16px;">@(lb.RemainingAnnualLeave + lb.RemainingSickLeave + lb.RemainingCasualLeave) days</span>
+                <span class="info-value" style="color: #2193b0; font-size: 16px;">
+                    @(lb.RemainingAnnualLeave + lb.RemainingSickLeave + lb.RemainingCasualLeave) days
+                </span>
             </div>
         </div>
     }
     else
     {
+        /* Leave balance not set up */
         <div class="info-card">
             <h3><i class="fas fa-umbrella-beach" style="color: #2193b0; margin-right: 10px;"></i>Leave Balance</h3>
             <p style="color: #5a6c7d; text-align: center; padding: 30px 0;">Leave balance not set up yet.</p>
@@ -369,31 +488,78 @@
     }
 </div>
 
-<!-- Quick Actions -->
+<!-- ========================================
+     QUICK ACTIONS SECTION
+     Navigation buttons to common employee actions
+     ======================================== -->
 <h2 class="section-title"><i class="fas fa-bolt" style="color: #2193b0; margin-right: 10px;"></i>Quick Actions</h2>
 <div class="quick-actions">
+    <!-- My Attendance -->
     <a asp-action="Attendance" class="action-btn">
         <div class="icon"><i class="fas fa-calendar-check"></i></div>
         <span>My Attendance</span>
     </a>
+    
+    <!-- View Payslips -->
     <a asp-action="Payslips" class="action-btn">
         <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
         <span>View Payslips</span>
     </a>
+    
+    <!-- Apply Leave -->
     <a asp-action="ApplyLeave" class="action-btn">
         <div class="icon"><i class="fas fa-plane-departure"></i></div>
         <span>Apply Leave</span>
     </a>
+    
+    <!-- Leave Requests -->
     <a asp-action="LeaveRequests" class="action-btn">
         <div class="icon"><i class="fas fa-clipboard-list"></i></div>
         <span>Leave Requests</span>
     </a>
+    
+    <!-- Leave Balance -->
     <a asp-action="LeaveBalance" class="action-btn">
         <div class="icon"><i class="fas fa-balance-scale"></i></div>
         <span>Leave Balance</span>
     </a>
+    
+    <!-- My Profile -->
     <a asp-action="Profile" class="action-btn">
         <div class="icon"><i class="fas fa-user-circle"></i></div>
         <span>My Profile</span>
     </a>
 </div>
+
+<!-- ========================================
+     QUICK MODIFICATION GUIDE
+     ========================================
+     
+     TO CHANGE COLORS:
+     - Welcome Banner: Line 22 (background gradient)
+     - Stat Icons: Lines 88-124 (each stat type)
+     - Action Buttons: Line 181 (hover color)
+     - Status Banners: Lines 196-215
+     
+     TO ADD NEW STAT CARD:
+     1. Add new <div class="stat-card"> in stats-grid (after line 398)
+     2. Create new stat-icon class with gradient (in <style> section)
+     3. Get data from ViewBag in controller
+     
+     TO ADD NEW QUICK ACTION:
+     1. Add <a asp-action="ActionName" class="action-btn"> (after line 517)
+     2. Add icon and label text
+     3. Create corresponding action in EmployeePortalController
+     
+     TO MODIFY INFO CARDS:
+     - Personal Info: Lines 424-444
+     - Leave Balance: Lines 450-478
+     - Add new info-row for additional fields
+     
+     DATA SOURCES:
+     - Model: Employee object (name, email, code, etc.)
+     - ViewBag.TodayAttendance: Today's check-in/out
+     - ViewBag.PresentDays, AbsentDays, etc.: Monthly stats
+     - ViewBag.LeaveBalance: Leave days remaining
+     - ViewBag.LatestPayroll: Last payslip amount
+     ======================================== -->

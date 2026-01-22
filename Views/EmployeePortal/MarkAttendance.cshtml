@@ -1,16 +1,29 @@
 @model PayRollManagementSystem.Models.Employee
 
 @{
+    /* ========================================
+       PAGE: MARK ATTENDANCE
+       Employee check-in/check-out page
+       Handles daily attendance marking with validation
+       ======================================== */
     ViewData["Title"] = "Mark Attendance";
     Layout = "~/Views/Shared/_EmployeePortalLayout.cshtml";
+    
+    /* Get today's attendance record if exists */
     var todayAttendance = ViewBag.TodayAttendance as PayRollManagementSystem.Models.Attendance;
     var currentTime = ViewBag.CurrentTime as string;
+    
+    /* Check if today is a working day */
     var isWorkingDay = ViewBag.IsWorkingDay != null ? (bool)ViewBag.IsWorkingDay : true;
     var holiday = ViewBag.Holiday as PayRollManagementSystem.Models.Holiday;
     var isWeekend = ViewBag.IsWeekend != null ? (bool)ViewBag.IsWeekend : false;
 }
 
 <style>
+    /* ========================================
+       MAIN CONTAINER
+       Centered card layout for attendance marking
+       ======================================== */
     .mark-attendance-container {
         max-width: 800px;
         margin: 0 auto;
@@ -20,6 +33,10 @@
         box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
     }
 
+    /* ========================================
+       HEADER SECTION
+       Page title and description
+       ======================================== */
     .header-section {
         text-align: center;
         margin-bottom: 40px;
@@ -39,7 +56,13 @@
         margin: 0;
     }
 
+    /* ========================================
+       CURRENT TIME DISPLAY
+       Large clock showing current time
+       Change: background gradient for different color
+       ======================================== */
     .current-time-display {
+        /* BLUE GRADIENT - Change for different color */
         background: linear-gradient(135deg, #6dd5ed 0%, #2193b0 100%);
         color: white;
         padding: 30px;
@@ -49,18 +72,22 @@
     }
 
     .current-time-display .time {
-        font-size: 48px;
+        font-size: 48px;              /* Time size */
         font-weight: 700;
         margin-bottom: 5px;
     }
 
     .current-time-display .date {
-        font-size: 16px;
+        font-size: 16px;              /* Date size */
         opacity: 0.9;
     }
 
+    /* ========================================
+       EMPLOYEE INFO CARD
+       Shows employee details before marking
+       ======================================== */
     .employee-info-card {
-        background: #f8fafb;
+        background: #f8fafb;           /* Light gray background */
         padding: 20px;
         border-radius: 12px;
         margin-bottom: 30px;
@@ -79,7 +106,7 @@
     }
 
     .info-item i {
-        color: #2193b0;
+        color: #2193b0;              /* Icon color */
         font-size: 18px;
         width: 24px;
     }
@@ -96,6 +123,10 @@
         margin: 0;
     }
 
+    /* ========================================
+       ACTION BUTTONS
+       Check-in and Check-out buttons
+       ======================================== */
     .action-buttons {
         display: flex;
         gap: 15px;
@@ -118,6 +149,7 @@
         justify-content: center;
     }
 
+    /* Check-in button - Green gradient */
     .btn-checkin {
         background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
         color: white;
@@ -128,6 +160,7 @@
         box-shadow: 0 8px 25px rgba(67, 233, 123, 0.4);
     }
 
+    /* Check-out button - Pink-yellow gradient */
     .btn-checkout {
         background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
         color: white;
@@ -144,7 +177,12 @@
         transform: none !important;
     }
 
+    /* ========================================
+       ATTENDANCE STATUS CARD
+       Shows today's attendance details
+       ======================================== */
     .attendance-status-card {
+        /* PURPLE GRADIENT */
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 25px;
@@ -183,8 +221,12 @@
         font-weight: 700;
     }
 
+    /* ========================================
+       ALERT MESSAGES
+       Information, warning, and special day alerts
+       ======================================== */
     .alert-info {
-        background: #e0f2fe;
+        background: #e0f2fe;           /* Light blue */
         border-left: 4px solid #0284c7;
         color: #075985;
         padding: 15px 20px;
@@ -193,7 +235,7 @@
     }
 
     .alert-warning {
-        background: #fef3c7;
+        background: #fef3c7;           /* Light yellow */
         border-left: 4px solid #f59e0b;
         color: #92400e;
         padding: 15px 20px;
@@ -201,22 +243,12 @@
         margin-bottom: 20px;
     }
 
-    .back-link {
-        display: inline-flex;
-        align-items: center;
-        gap: 8px;
-        color: #2193b0;
-        text-decoration: none;
-        font-weight: 500;
-        transition: all 0.3s;
-    }
-
-    .back-link:hover {
-        color: #1a7690;
-        gap: 12px;
-    }
-
+    /* ========================================
+       HOLIDAY ALERT
+       Shown when today is a holiday
+       ======================================== */
     .alert-holiday {
+        /* PINK-PURPLE GRADIENT */
         background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
         color: white;
         padding: 30px;
@@ -237,7 +269,12 @@
         opacity: 0.95;
     }
 
+    /* ========================================
+       WEEKEND ALERT
+       Shown when today is a weekend
+       ======================================== */
     .alert-weekend {
+        /* PURPLE GRADIENT */
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 30px;
@@ -257,9 +294,27 @@
         font-size: 18px;
         opacity: 0.95;
     }
+
+    .back-link {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        color: #2193b0;
+        text-decoration: none;
+        font-weight: 500;
+        transition: all 0.3s;
+    }
+
+    .back-link:hover {
+        color: #1a7690;
+        gap: 12px;
+    }
 </style>
 
 <div class="mark-attendance-container">
+    <!-- ========================================
+         PAGE HEADER
+         ======================================== -->
     <div class="header-section">
         <h2>
             <i class="fas fa-clock" style="color: #2193b0;"></i>
@@ -268,10 +323,15 @@
         <p>Track your daily work hours efficiently</p>
     </div>
 
+    <!-- ========================================
+         NON-WORKING DAY CHECK
+         Show holiday/weekend message if not working day
+         ======================================== -->
     @if (!isWorkingDay)
     {
-        if (holiday != null)
+        @if (holiday != null)
         {
+            <!-- Holiday message -->
             <div class="alert-holiday">
                 <div style="font-size: 64px; margin-bottom: 15px;">&#127881;</div>
                 <h2>@holiday.Name</h2>
@@ -284,6 +344,7 @@
         }
         else if (isWeekend)
         {
+            <!-- Weekend message -->
             <div class="alert-weekend">
                 <div style="font-size: 64px; margin-bottom: 15px;">&#127958;&#65039;</div>
                 <h2>Weekend</h2>
@@ -300,13 +361,17 @@
     }
     else
     {
-        <!-- Current Time Display -->
+        <!-- ========================================
+             WORKING DAY - ATTENDANCE MARKING INTERFACE
+             ======================================== -->
+        
+        <!-- Current Time Display (updates every second) -->
         <div class="current-time-display">
             <div class="time" id="currentTime">@DateTime.Now.ToString("hh:mm:ss tt")</div>
             <div class="date">@DateTime.Now.ToString("dddd, MMMM dd, yyyy")</div>
         </div>
 
-        <!-- Employee Info Card -->
+        <!-- Employee Information -->
         <div class="employee-info-card">
             <div class="info-row">
                 <div class="info-item">
@@ -343,9 +408,11 @@
             </div>
         </div>
 
+        <!-- ========================================
+             STATUS: NOT CHECKED IN YET
+             ======================================== -->
         @if (todayAttendance == null)
         {
-            <!-- Not Checked In Yet -->
             <div class="alert-info">
                 <i class="fas fa-info-circle"></i> You haven't checked in yet today. Click the button below to mark your check-in.
             </div>
@@ -356,9 +423,11 @@
                 </button>
             </div>
         }
+        <!-- ========================================
+             STATUS: CHECKED IN, NOT CHECKED OUT
+             ======================================== -->
         else if (!todayAttendance.CheckOutTime.HasValue)
         {
-            <!-- Checked In, Not Checked Out -->
             <div class="attendance-status-card">
                 <h3>
                     <i class="fas fa-check-circle"></i>
@@ -402,9 +471,11 @@
                 </button>
             </div>
         }
+        <!-- ========================================
+             STATUS: ALREADY CHECKED OUT
+             ======================================== -->
         else
         {
-            <!-- Already Checked Out -->
             <div class="attendance-status-card">
                 <h3>
                     <i class="fas fa-check-double"></i>
@@ -479,7 +550,10 @@
 
 @section Scripts {
     <script>
-        // Update time every second
+        /* ========================================
+           TIME UPDATE SCRIPT
+           Updates current time every second
+           ======================================== */
         function updateTime() {
             const now = new Date();
             const hours = now.getHours();
@@ -497,12 +571,15 @@
 
         setInterval(updateTime, 1000);
 
-        // Get anti-forgery token
+        /* Get anti-forgery token for AJAX requests */
         function getAntiForgeryToken() {
             return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
         }
 
-        // Check In
+        /* ========================================
+           CHECK IN HANDLER
+           Sends AJAX request to mark check-in
+           ======================================== */
         const checkInBtn = document.getElementById('btnCheckIn');
         if (checkInBtn) {
             checkInBtn.addEventListener('click', function() {
@@ -514,7 +591,6 @@
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking In...';
 
-                // Create form data
                 const formData = new FormData();
                 formData.append('__RequestVerificationToken', getAntiForgeryToken());
 
@@ -542,7 +618,10 @@
             });
         }
 
-        // Check Out
+        /* ========================================
+           CHECK OUT HANDLER
+           Sends AJAX request to mark check-out
+           ======================================== */
         const checkOutBtn = document.getElementById('btnCheckOut');
         if (checkOutBtn) {
             checkOutBtn.addEventListener('click', function() {
@@ -554,7 +633,6 @@
                 btn.disabled = true;
                 btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Checking Out...';
 
-                // Create form data
                 const formData = new FormData();
                 formData.append('__RequestVerificationToken', getAntiForgeryToken());
 
@@ -582,8 +660,8 @@
             });
         }
 
+        /* Toast notification function */
         function showToast(message, type) {
-            // Use the existing toast notification system
             const toast = document.createElement('div');
             toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'}`;
             toast.style.position = 'fixed';
@@ -607,3 +685,31 @@
 
     @Html.AntiForgeryToken()
 }
+
+<!-- ========================================
+     QUICK MODIFICATION GUIDE
+     ========================================
+     
+     TO CHANGE COLORS:
+     - Time display: Line 60 (background gradient)
+     - Check-in button: Line 120 (green gradient)
+     - Check-out button: Line 129 (pink-yellow gradient)
+     - Status card: Line 144 (purple gradient)
+     - Holiday alert: Line 183 (pink-purple gradient)
+     - Weekend alert: Line 201 (purple gradient)
+     
+     TO MODIFY ALERTS:
+     - Info alert: Line 173 (light blue)
+     - Warning alert: Line 180 (light yellow)
+     
+     DATA SOURCES:
+     - Model: Employee object
+     - ViewBag.TodayAttendance: Today's attendance record
+     - ViewBag.IsWorkingDay: Boolean for working day check
+     - ViewBag.Holiday: Holiday object if today is holiday
+     - ViewBag.IsWeekend: Boolean for weekend check
+     
+     AJAX ENDPOINTS:
+     - Check In: /EmployeePortal/CheckIn (POST)
+     - Check Out: /EmployeePortal/CheckOut (POST)
+     ======================================== -->

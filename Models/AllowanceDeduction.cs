@@ -81,7 +81,7 @@ namespace PayRollManagementSystem.Models
 
         [NotMapped]
         public string CalculationDisplay => CalculationMethod == CalculationMethod.FixedAmount
-            ? $"৳{Value:N2}"
+            ? $"{Value:N2}"
             : $"{Value}%";
     }
 
